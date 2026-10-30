@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Nababi Ristorante | Admin Panel</title>
+
+<link rel="stylesheet" href="assets/style.css">
+
+<style>
+body {
+  background: #f2f5f2;
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 270px;
+  background: #09291f;
+  color: white;
+  padding: 22px 15px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  color: #d9b45d;
+  font-size: 25px;
+  font-family: Georgia, serif;
+  padding: 15px;
+  border-bottom: 1px solid #496153;
+  margin-bottom: 20px;
+}
+
+.sidebar-logo small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+
+.sidebar button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 4px 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: white;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sidebar button:hover,
+.sidebar button.active {
+  background: #d9b45d;
+  color: #09291f;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 25px;
+  min-width: 0;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.admin-header h1 {
+  color: #09291f;
+  font-family: Georgia, serif;
+}
+
+.status {
+  background: #d9f5e3;
+  color: #14733c;
+  padding: 9px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.stat-card,
+.content-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8e3;
+  margin-bottom: 15px;
+}
+
+.stat-card h2 {
+  color: #d9b45d;
+  font-size: 30px;
+  margin-top: 10px;
+}
+
+.content-card h2 {
+  color: #09291f;
+  margin-bottom: 15px;
+  font-family: Georgia, serif;
+}
+
+.content-card input,
+.content-card textarea,
+.content-card select {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  font: inherit;
+}
+
+.save-button {
+  background: #09291f;
+  color: #d9b45d;
+  border: none;
+  border-radius: 7px;
+  padding: 12px 20px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.login-box {
+  max-width: 390px;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin: 100px auto;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 13px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+}
+
+#login-view {
+  min-height: 100vh;
+  padding: 20px;
+  background: #09291f;
+}
+
+#login-view h1 {
+  color: #09291f;
+  margin: 15px 0;
+}
+
+#login-error {
+  color: #bd2929;
+  font-size: 13px;
+}
+
+@media(max-width:900px) {
+  .admin-layout {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .sidebar-logo {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+  }
+
+  .sidebar button {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .admin-main {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ADMIN LOGIN -->
+
+<div id="login-view">
+
+  <div class="login-box">
+
+    <div class="sidebar-logo">
+      ♛ NABABI
+      <small>ADMIN PANEL</small>
+    </div>
+
+    <h1>Admin Login</h1>
+
+    <form id="login-form">
+
+      <input
+        type="email"
+        name="email"
+        placeholder="Admin Email"
+        required
+      >
+
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        required
+      >
+
+      <button class="save-button" type="submit">
+        LOGIN
+      </button>
+
+    </form>
+
+    <p id="login-error"></p>
+
+    <p style="margin-top:15px">
+      <a href="index.html">← Back to Website</a>
+    </p>
+
+  </div>
+
+</div>
+
+<!-- ADMIN DASHBOARD -->
+
+<div id="admin-app" class="admin-layout" hidden>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">
+      ♛ NABABI
+      <small>RISTORANTE ADMIN</small>
+    </div>
+
+    <nav id="admin-nav">
+
+      <button class="active" data-page="dashboard">
+        ▦ Dashboard
+      </button>
+
+      <button data-page="customers">
+        ♙ Customers
+      </button>
+
+      <button data-page="categories">
+        ▦ Categories
+      </button>
+
+      <button data-page="staff">
+        ♟ Staff Management
+      </button>
+
+      <button data-page="performance">
+        ▥ Staff Performance
+      </button>
+
+      <button data-page="attendance">
+        ◷ Staff Attendance
+      </button>
+
+      <button data-page="activity">
+        ☷ Staff Activity Log
+      </button>
+
+      <button data-page="tables">
+        ▤ Tavolo
+      </button>
+
+      <button data-page="coupons">
+        ％ Coupon Manager
+      </button>
+
+      <button data-page="website">
+        ◉ Website ON/OFF
+      </button>
+
+      <button data-page="delivery">
+        ➜ Food Delivery Link
+      </button>
+
+      <button data-page="hours">
+        ◷ Opening Hours
+      </button>
+
+      <button data-page="events">
+        ✧ Staff Event & Advice
+      </button>
+
+      <button data-page="messages">
+        ✉ Staff Message
+      </button>
+
+      <button data-page="news">
+        ⚡ Breaking News
+      </button>
+
+    </nav>
+
+    <button id="logout">
+      ⇥ Logout
+    </button>
+
+  </aside>
+
+  <main class="admin-main">
+
+    <header class="admin-header">
+
+      <div>
+        <small style="color:#bd9a48">
+          NABABI RISTORANTE
+        </small>
+
+        <h1 id="page-title">
+          Dashboard
+        </h1>
+      </div>
+
+      <span class="status">
+        ● Admin Online
+      </span>
+
+    </header>
+
+    <section id="page-content">
+
+      <div class="stats">
+
+        <div class="stat-card">
+          Customers
+          <h2>—</h2>
+        </div>
+
+        <div class="stat-card">
+          Staff
+          <h2>—</h2>
+        </div>
+
+        <div class="stat-card">
+          Bookings
+          <h2>—</h2>
+        </div>
+
+        <div class="stat-card">
+          Coupons
+          <h2>—</h2>
+        </div>
+
+      </div>
+
+      <div class="content-card">
+        <h2>Welcome to Nababi Ristorante</h2>
+        <p>
+          Manage your restaurant from one place.
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/admin.js"></script>
+
+</body>
+</html>
