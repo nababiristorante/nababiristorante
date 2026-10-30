@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nababi Ristorante</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="topline">
+UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO
+</div>
+
+<header class="header">
+  <div class="logo">
+    <span>♛ N</span>
+    <div>
+      NABABI
+      <small>RISTORANTE</small>
+    </div>
+  </div>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#menu">Menu</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#story">La Storia</a>
+    <a href="#events">Eventi</a>
+    <a href="#booking">Prenota</a>
+  </nav>
+
+  <select id="language">
+    <option value="it">🇮🇹 Italiano</option>
+    <option value="en">🇬🇧 English</option>
+    <option value="bn">🇧🇩 বাংলা</option>
+  </select>
+
+  <a href="admin.html" class="admin-button">Admin</a>
+</header>
+
+<main>
+
+<section class="hero" id="home">
+
+  <div class="hero-content">
+    <p>NABABI RISTORANTE</p>
+
+    <h1>
+      Tradizione.<br>
+      <span>Gusto regale.</span>
+    </h1>
+
+    <h3>UN VIAGGIO NEI SAPORI</h3>
+
+    <a href="#booking" class="gold-button">
+      Prenota il tuo tavolo
+    </a>
+
+    <p>☎ +39 393 3805350</p>
+  </div>
+
+  <aside id="breaking-news" class="breaking-news" hidden>
+    <h2>BREAKING NEWS <span>LIVE</span></h2>
+    <img id="news-image" hidden alt="">
+    <h3 id="news-title"></h3>
+    <p id="news-body"></p>
+    <div>
+      Tempo rimanente:
+      <strong id="news-countdown"></strong>
+    </div>
+  </aside>
+
+</section>
+
+<section class="features">
+  <div>✧ Cucina Indiana Autentica</div>
+  <div>◇ Ingredienti Freschi</div>
+  <div>♧ Ambiente Elegante</div>
+  <div>▦ Prenotazione Facile</div>
+</section>
+
+<section id="menu" class="section">
+  <h2>Il Nostro Menu</h2>
+  <div id="category-list"></div>
+</section>
+
+<section id="story" class="section">
+  <h2>La Storia</h2>
+  <p>Un viaggio nei sapori autentici della cucina indiana.</p>
+</section>
+
+<section id="gallery" class="section">
+  <h2>Gallery</h2>
+</section>
+
+<section id="events" class="section">
+  <h2>Eventi</h2>
+</section>
+
+<section id="booking" class="section">
+  <h2>Prenota il tuo tavolo</h2>
+
+  <form id="booking-form">
+    <input name="name" placeholder="Nome" required>
+    <input name="phone" placeholder="Telefono" required>
+    <input name="date" type="datetime-local" required>
+    <input name="guests" type="number"
+      min="1" max="20" value="2" required>
+    <textarea name="notes" placeholder="Note"></textarea>
+    <button type="submit">Invia prenotazione</button>
+  </form>
+
+  <p id="booking-status"></p>
+</section>
+
+</main>
+
+<footer>
+  © Nababi Ristorante
+  <br>
+  Via Vespasiano 73/75/77 Roma
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/config.js"></script>
+<script src="assets/site.js"></script>
+
+</body>
+</html>
