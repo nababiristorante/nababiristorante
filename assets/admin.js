@@ -26,6 +26,134 @@
   let currentUser = null;
   let editingNewsId = null;
 
+  // -----------------------------
+  // RESTAURANT LOGO UPLOAD
+  // -----------------------------
+
+  async function loadAdminLogo() {
+    const logo = $("#admin-logo");
+    const fallback = $("#admin-logo-fallback");
+
+    if (!logo) return;
+
+    const { data, error } = await db
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "logo_url")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Logo loading error:", error.message);
+      return;
+    }
+
+    const logoUrl = data?.setting_value;
+
+    if (logoUrl) {
+      logo.src = logoUrl;
+      logo.hidden = false;
+      if (fallback) fallback.hidden = true;
+    } else {
+      logo.hidden = true;
+      if (fallback) fallback.hidden = false;
+    }
+  }
+
+  async function uploadRestaurantLogo(file) {
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please select a PNG, JPG or WEBP image.");
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Logo size must be 3 MB or less.");
+      return;
+    }
+
+    const changeButton = $("#change-logo");
+
+    try {
+      if (changeButton) {
+        changeButton.disabled = true;
+        changeButton.textContent = "Uploading...";
+      }
+
+      const safeName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, "-");
+
+      const filePath =
+        "logo/" + Date.now() + "-" + safeName;
+
+      const { data: uploaded, error: uploadError } =
+        await db.storage
+          .from("site-assets")
+          .upload(filePath, file, {
+            contentType: file.type,
+            upsert: false
+          });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = db.storage
+        .from("site-assets")
+        .getPublicUrl(uploaded.path);
+
+      const logoUrl = publicData.publicUrl;
+
+      const { error: saveError } = await db
+        .from("site_settings")
+        .upsert({
+          setting_key: "logo_url",
+          setting_value: logoUrl,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: "setting_key"
+        });
+
+      if (saveError) throw saveError;
+
+      await loadAdminLogo();
+
+      alert("Restaurant logo uploaded successfully.");
+
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      alert("Logo upload failed: " + error.message);
+
+    } finally {
+      if (changeButton) {
+        changeButton.disabled = false;
+        changeButton.textContent = "Change Logo";
+      }
+
+      const fileInput = $("#logo-file");
+      if (fileInput) fileInput.value = "";
+    }
+  }
+
+  const changeLogoButton = $("#change-logo");
+  const logoFileInput = $("#logo-file");
+
+  if (changeLogoButton && logoFileInput) {
+    changeLogoButton.addEventListener("click", () => {
+      logoFileInput.click();
+    });
+
+    logoFileInput.addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (file) uploadRestaurantLogo(file);
+    });
+  }
+
+  
   // Escape database content before displaying it in HTML.
   function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({
