@@ -1,5 +1,5 @@
 
 window.NABABI_CONFIG = {
-  SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY"
+  SUPABASE_URL: "https://iwqkbzionayooecildfd.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_lkAfMXvL-oCovuyr_jXshA_76TUwzOb"
 };
