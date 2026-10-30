@@ -2,437 +2,358 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nababi Ristorante | Admin Panel</title>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/admin-mobile.css">
-  
-<style>
-:root {
-  --purple: #32134f;
-  --deep-purple: #210b38;
-  --gold: #d8b45c;
-  --cream: #faf6ed;
-  --white: #ffffff;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#210b38">
 
-body {
-  margin: 0;
-  background: var(--cream);
-  color: #30263a;
-  font-family: Arial, sans-serif;
-}
+  <title>Nababi Ristorante | Admin Panel</title>
 
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-}
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="assets/style.css">
 
-.sidebar {
-  width: 270px;
-  background: var(--deep-purple);
-  color: white;
-  padding: 20px 15px;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
+  <!-- Admin CSS -->
+  <link rel="stylesheet" href="assets/admin-mobile.css">
 
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 8px;
-  border-bottom: 1px solid #65477d;
-  margin-bottom: 15px;
-}
+  <style>
+    :root {
+      --purple: #32134f;
+      --deep-purple: #210b38;
+      --gold: #d8b45c;
+      --cream: #faf6ed;
+      --white: #ffffff;
+    }
 
-.sidebar-logo img {
-  width: 58px;
-  height: 58px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: white;
-  padding: 3px;
-}
+    * {
+      box-sizing: border-box;
+    }
 
-.logo-fallback {
-  width: 58px;
-  height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gold);
-  color: var(--deep-purple);
-  font-family: Georgia, serif;
-  font-size: 30px;
-  border-radius: 8px;
-}
+    html {
+      scroll-behavior: smooth;
+    }
 
-.logo-name {
-  color: var(--gold);
-  font-family: Georgia, serif;
-  font-size: 21px;
-}
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: #30263a;
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
 
-.logo-name small {
-  display: block;
-  font-family: Arial, sans-serif;
-  font-size: 9px;
-  letter-spacing: 2px;
-  margin-top: 5px;
-  color: #eee2f5;
-}
+    .login-box {
+      margin: 70px auto;
+    }
 
-.logo-controls {
-  padding: 0 8px 15px;
-}
+    .login-brand {
+      text-align: center;
+      margin-bottom: 25px;
+    }
 
-.logo-controls button {
-  background: transparent;
-  color: var(--gold);
-  border: 1px solid var(--gold);
-  border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 12px;
-}
+    .login-brand h1 {
+      color: var(--gold);
+      font-family: Georgia, serif;
+      margin-bottom: 5px;
+    }
 
-.logo-controls button:hover {
-  background: var(--gold);
-  color: var(--deep-purple);
-}
+    .login-brand p {
+      color: #eee2f5;
+      letter-spacing: 2px;
+      font-size: 12px;
+    }
 
-.sidebar nav button,
-#logout {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin: 4px 0;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  color: white;
-  text-align: left;
-  font-size: 13px;
-  cursor: pointer;
-}
+    .admin-header h1 {
+      font-family: Georgia, serif;
+    }
 
-.sidebar nav button:hover,
-.sidebar nav button.active,
-#logout:hover {
-  background: var(--gold);
-  color: var(--deep-purple);
-}
+    .sidebar-logo {
+      text-align: center;
+    }
 
-#logout {
-  border: 1px solid #765b8c;
-  margin-top: 20px;
-}
+    .logo-fallback {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, serif;
+      font-size: 25px;
+      font-weight: bold;
+    }
 
-.admin-main {
-  flex: 1;
-  padding: 25px;
-  min-width: 0;
-}
+    #admin-logo {
+      max-width: 150px;
+      max-height: 90px;
+      object-fit: contain;
+    }
 
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 25px;
-}
+    .logo-controls {
+      margin-top: 12px;
+    }
 
-.admin-header h1 {
-  color: var(--purple);
-  font-family: Georgia, serif;
-}
+    #page-content {
+      min-height: 300px;
+    }
 
-.status {
-  background: #e5f5e9;
-  color: #14733c;
-  padding: 9px 15px;
-  border-radius: 20px;
-  font-size: 12px;
-}
+    #login-error {
+      color: #bd3545;
+      margin-top: 12px;
+      font-size: 14px;
+    }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-}
+    .admin-footer {
+      text-align: center;
+      color: #82768a;
+      padding: 20px 10px;
+      font-size: 12px;
+    }
 
-.stat-card,
-.content-card {
-  background: var(--white);
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #eadff0;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-}
-
-.stat-card h2 {
-  color: var(--gold);
-  font-size: 30px;
-  margin-top: 10px;
-}
-
-.content-card h2 {
-  color: var(--purple);
-  margin-bottom: 15px;
-  font-family: Georgia, serif;
-}
-
-.content-card input,
-.content-card textarea,
-.content-card select {
-  width: 100%;
-  padding: 12px;
-  margin: 6px 0;
-  border: 1px solid #ddd;
-  border-radius: 7px;
-  font: inherit;
-  box-sizing: border-box;
-}
-
-.save-button {
-  background: var(--purple);
-  color: var(--gold);
-  border: none;
-  border-radius: 7px;
-  padding: 12px 20px;
-  margin-top: 8px;
-  cursor: pointer;
-}
-
-.save-button:hover {
-  background: var(--deep-purple);
-}
-
-.login-box {
-  max-width: 390px;
-  background: white;
-  padding: 30px;
-  border-radius: 15px;
-  margin: 100px auto;
-  box-sizing: border-box;
-}
-
-.login-box input {
-  width: 100%;
-  padding: 13px;
-  margin: 10px 0;
-  border: 1px solid #ddd;
-  border-radius: 7px;
-  box-sizing: border-box;
-}
-
-#login-view {
-  min-height: 100vh;
-  padding: 20px;
-  background: var(--deep-purple);
-  box-sizing: border-box;
-}
-
-#login-view h1 {
-  color: var(--purple);
-  margin: 15px 0;
-}
-
-#login-error {
-  color: #bd2929;
-  font-size: 13px;
-}
-
-@media(max-width:900px) {
-  .admin-layout {
-    display: block;
-  }
-
-  .sidebar {
-    width: 100%;
-    padding: 12px;
-  }
-
-  .sidebar nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 5px;
-  }
-
-  .sidebar nav button {
-    width: auto;
-    white-space: nowrap;
-  }
-
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .admin-main {
-    padding: 15px;
-  }
-
-  .login-box {
-    margin: 50px auto;
-  }
-}
-
-@media(max-width:420px) {
-  .stats {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+    @media (max-width: 600px) {
+      .login-box {
+        margin: 35px auto;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- ADMIN LOGIN -->
-<div id="login-view">
-  <div class="login-box">
+  <!-- =================================
+       ADMIN LOGIN
+  ================================== -->
 
-    <div class="sidebar-logo">
-      <div class="logo-fallback">N</div>
-      <div class="logo-name">
-        NABABI
-        <small>ADMIN PANEL</small>
+  <section id="login-view">
+
+    <div class="login-box">
+
+      <div class="login-brand">
+        <h1>NABABI</h1>
+        <p>RISTORANTE · ADMINISTRATION</p>
       </div>
+
+      <h2>Admin Login</h2>
+
+      <p>Accedi al pannello amministrativo</p>
+
+      <form id="login-form">
+
+        <label for="admin-email">Email</label>
+
+        <input
+          type="email"
+          id="admin-email"
+          name="email"
+          placeholder="Admin email"
+          autocomplete="username"
+          required
+        >
+
+        <label for="admin-password">Password</label>
+
+        <input
+          type="password"
+          id="admin-password"
+          name="password"
+          placeholder="Admin password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button
+          type="submit"
+          class="save-button"
+          style="width:100%; margin-top:15px;"
+        >
+          Accedi
+        </button>
+
+      </form>
+
+      <div id="login-error" role="alert"></div>
+
     </div>
 
-    <h1>Admin Login</h1>
+  </section>
 
-    <form id="login-form">
-      <input type="email" name="email"
-        placeholder="Admin Email" required>
 
-      <input type="password" name="password"
-        placeholder="Password" required>
+  <!-- =================================
+       ADMIN APPLICATION
+  ================================== -->
 
-      <button class="save-button" type="submit">
-        LOGIN
+  <div id="admin-app" class="admin-layout" hidden>
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-logo">
+
+        <div id="admin-logo-fallback" class="logo-fallback">
+          N
+        </div>
+
+        <img
+          id="admin-logo"
+          src=""
+          alt="Nababi Ristorante Logo"
+          hidden
+        >
+
+        <div class="logo-name">
+          <h2>NABABI</h2>
+          <small>RISTORANTE ADMIN</small>
+        </div>
+
+        <div class="logo-controls">
+
+          <button type="button" id="change-logo">
+            Change Logo
+          </button>
+
+          <input
+            type="file"
+            id="logo-file"
+            accept="image/*"
+            hidden
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- NAVIGATION -->
+
+      <nav id="admin-nav" aria-label="Admin navigation">
+
+        <button type="button" data-page="dashboard" class="active">
+          🏠 Dashboard
+        </button>
+
+        <button type="button" data-page="customers">
+          👥 Customers
+        </button>
+
+        <button type="button" data-page="categories">
+          🍽️ Categories
+        </button>
+
+        <button type="button" data-page="staff">
+          👨‍🍳 Staff Management
+        </button>
+
+        <button type="button" data-page="performance">
+          📊 Performance
+        </button>
+
+        <button type="button" data-page="attendance">
+          🕒 Attendance
+        </button>
+
+        <button type="button" data-page="activity">
+          📋 Activity Logs
+        </button>
+
+        <button type="button" data-page="tables">
+          🪑 Restaurant Tables
+        </button>
+
+        <button type="button" data-page="coupons">
+          🎟️ Coupons
+        </button>
+
+        <button type="button" data-page="website">
+          🌐 Website Settings
+        </button>
+
+        <button type="button" data-page="delivery">
+          🛵 Delivery Settings
+        </button>
+
+        <button type="button" data-page="hours">
+          🕐 Opening Hours
+        </button>
+
+        <button type="button" data-page="events">
+          🎉 Events
+        </button>
+
+        <button type="button" data-page="messages">
+          💬 Staff Messages
+        </button>
+
+        <button type="button" data-page="breaking">
+          📢 Breaking News
+        </button>
+
+      </nav>
+
+
+      <!-- LOGOUT -->
+
+      <button type="button" id="logout">
+        🚪 Logout
       </button>
-    </form>
 
-    <p id="login-error"></p>
+    </aside>
 
-    <p style="margin-top:15px">
-      <a href="index.html">← Back to Website</a>
-    </p>
+
+    <!-- MAIN CONTENT -->
+
+    <main class="admin-main">
+
+      <header class="admin-header">
+
+        <div>
+          <p>Benvenuto nel pannello</p>
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+
+        <div class="status">
+          ● Admin Panel
+        </div>
+
+      </header>
+
+
+      <!-- DYNAMIC PAGE CONTENT -->
+
+      <section id="page-content">
+
+        <div class="content-card">
+          <h2>Benvenuto in Nababi Ristorante</h2>
+
+          <p>
+            Gestisci il tuo ristorante da un unico pannello.
+          </p>
+
+          <p>
+            Seleziona una sezione dal menu per iniziare.
+          </p>
+        </div>
+
+      </section>
+
+
+      <footer class="admin-footer">
+        Nababi Ristorante · Admin Panel
+      </footer>
+
+    </main>
+
   </div>
-</div>
 
-<!-- ADMIN DASHBOARD -->
-<div id="admin-app" class="admin-layout" hidden>
 
-  <aside class="sidebar">
+  <!-- =================================
+       SUPABASE CONNECTION
+  ================================== -->
 
-    <div class="sidebar-logo">
-      <img id="admin-logo"
-        src=""
-        alt="Nababi Ristorante Logo"
-        hidden>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-      <div id="admin-logo-fallback" class="logo-fallback">
-        N
-      </div>
+  <!-- Supabase Public Configuration -->
+  <script src="assets/config.js"></script>
 
-      <div class="logo-name">
-        NABABI
-        <small>RISTORANTE ADMIN</small>
-      </div>
-    </div>
-
-    <div class="logo-controls">
-      <button type="button" id="change-logo">
-        ✎ Change Logo
-      </button>
-
-      <input
-        type="file"
-        id="logo-file"
-        accept="image/png,image/jpeg,image/webp"
-        hidden
-      >
-    </div>
-
-    <nav id="admin-nav">
-
-      <button class="active" data-page="dashboard">▦ Dashboard</button>
-      <button data-page="customers">♙ Customers</button>
-      <button data-page="categories">▦ Categories</button>
-      <button data-page="staff">♟ Staff Management</button>
-      <button data-page="performance">▥ Staff Performance</button>
-      <button data-page="attendance">◷ Staff Attendance</button>
-      <button data-page="activity">☷ Staff Activity Log</button>
-      <button data-page="tables">▤ Tavolo</button>
-      <button data-page="coupons">％ Coupon Manager</button>
-      <button data-page="website">◉ Website ON/OFF</button>
-      <button data-page="delivery">➜ Food Delivery Link</button>
-      <button data-page="hours">◷ Opening Hours</button>
-      <button data-page="events">✧ Staff Event & Advice</button>
-      <button data-page="messages">✉ Staff Message</button>
-      <button data-page="breaking">⚡ Breaking News</button>
-
-    </nav>
-
-    <button id="logout">⇥ Logout</button>
-
-  </aside>
-
-  <main class="admin-main">
-
-    <header class="admin-header">
-      <div>
-        <small style="color:#b38b37">
-          NABABI RISTORANTE
-        </small>
-        <h1 id="page-title">Dashboard</h1>
-      </div>
-
-      <span class="status">● Admin Online</span>
-    </header>
-
-    <section id="page-content">
-
-      <div class="stats">
-        <div class="stat-card">
-          Customers
-          <h2>—</h2>
-        </div>
-
-        <div class="stat-card">
-          Staff
-          <h2>—</h2>
-        </div>
-
-        <div class="stat-card">
-          Bookings
-          <h2>—</h2>
-        </div>
-
-        <div class="stat-card">
-          Coupons
-          <h2>—</h2>
-        </div>
-      </div>
-
-      <div class="content-card">
-        <h2>Welcome to Nababi Ristorante</h2>
-        <p>Manage your restaurant from one place.</p>
-      </div>
-
-    </section>
-
-  </main>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/config.js"></script>
-<script src="assets/admin.js"></script>
+  <!-- Admin Application -->
+  <script src="assets/admin.js"></script>
 
 </body>
 </html>
