@@ -735,6 +735,233 @@
     });
   }
 
+  // =====================================
+  // STAFF MANAGEMENT
+  // =====================================
+
+  let editingStaffId = null;
+
+  async function loadStaff() {
+    editingStaffId = null;
+
+    pageContent.innerHTML = `
+      <h2>Staff Management</h2>
+
+      <form id="staff-form" class="admin-form">
+        <label>Staff Full Name</label>
+        <input name="full_name" required maxlength="120"
+          placeholder="Enter staff name">
+
+        <label>Job Title</label>
+        <input name="job_title" maxlength="100"
+          placeholder="Chef, Waiter, Manager...">
+
+        <label>Phone Number</label>
+        <input name="phone" maxlength="40"
+          placeholder="Staff phone number">
+
+        <label>Staff Photo URL</label>
+        <input name="photo_url" type="url"
+          placeholder="https://example.com/photo.jpg">
+
+        <label>
+          <input name="is_active" type="checkbox" checked>
+          Active Staff
+        </label>
+
+        <button type="submit">Add Staff</button>
+        <button type="button" id="cancel-staff-edit" hidden>
+          Cancel Edit
+        </button>
+      </form>
+
+      <h3>Staff List</h3>
+      <div id="staff-list">Loading staff...</div>
+    `;
+
+    $("#staff-form").addEventListener("submit", saveStaff);
+
+    $("#cancel-staff-edit").addEventListener("click", () => {
+      loadStaff();
+    });
+
+    await refreshStaffList();
+  }
+
+  async function saveStaff(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const values = new FormData(form);
+
+    const staffData = {
+      full_name: String(values.get("full_name") || "").trim(),
+      job_title: String(values.get("job_title") || "").trim() || null,
+      phone: String(values.get("phone") || "").trim() || null,
+      photo_url: String(values.get("photo_url") || "").trim() || null,
+      is_active: values.get("is_active") === "on"
+    };
+
+    if (!staffData.full_name) {
+      alert("Please enter the staff name.");
+      return;
+    }
+
+    try {
+      let result;
+
+      if (editingStaffId) {
+        result = await db
+          .from("staff")
+          .update(staffData)
+          .eq("id", editingStaffId);
+      } else {
+        result = await db
+          .from("staff")
+          .insert([staffData]);
+      }
+
+      if (result.error) throw result.error;
+
+      alert(editingStaffId
+        ? "Staff information updated."
+        : "New staff added successfully."
+      );
+
+      await loadStaff();
+
+    } catch (error) {
+      console.error("Staff save error:", error.message);
+      alert("Could not save staff. Please check Supabase permissions.");
+    }
+  }
+
+  async function refreshStaffList() {
+    const list = $("#staff-list");
+    if (!list) return;
+
+    const { data, error } = await db
+      .from("staff")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      list.textContent = "Could not load staff: " + error.message;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.textContent = "No staff members added yet.";
+      return;
+    }
+
+    list.innerHTML = data.map((staff) => `
+      <div class="admin-list-item">
+        ${
+          staff.photo_url
+            ? `<img src="${escapeHTML(staff.photo_url)}"
+                alt="Staff photo"
+                width="75"
+                height="75"
+                style="object-fit:cover;border-radius:50%">`
+            : ""
+        }
+
+        <h3>${escapeHTML(staff.full_name)}</h3>
+
+        <p>${escapeHTML(staff.job_title || "No job title")}</p>
+        <p>${escapeHTML(staff.phone || "No phone number")}</p>
+
+        <p>
+          Status:
+          <strong>${staff.is_active ? "Active" : "Inactive"}</strong>
+        </p>
+
+        <button type="button" data-edit-staff="${escapeHTML(staff.id)}">
+          Edit
+        </button>
+
+        <button type="button"
+          data-toggle-staff="${escapeHTML(staff.id)}"
+          data-active="${staff.is_active ? "true" : "false"}">
+          ${staff.is_active ? "Deactivate" : "Activate"}
+        </button>
+
+        <button type="button" data-delete-staff="${escapeHTML(staff.id)}">
+          Delete
+        </button>
+      </div>
+    `).join("");
+
+    // EDIT STAFF
+    list.querySelectorAll("[data-edit-staff]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const staff = data.find(
+          (item) => item.id === button.dataset.editStaff
+        );
+
+        if (!staff) return;
+
+        editingStaffId = staff.id;
+
+        const form = $("#staff-form");
+
+        form.elements.full_name.value = staff.full_name || "";
+        form.elements.job_title.value = staff.job_title || "";
+        form.elements.phone.value = staff.phone || "";
+        form.elements.photo_url.value = staff.photo_url || "";
+        form.elements.is_active.checked = Boolean(staff.is_active);
+
+        form.querySelector('button[type="submit"]').textContent =
+          "Update Staff";
+
+        $("#cancel-staff-edit").hidden = false;
+
+        form.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+
+    // ACTIVATE / DEACTIVATE STAFF
+    list.querySelectorAll("[data-toggle-staff]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const currentlyActive = button.dataset.active === "true";
+
+        const { error } = await db
+          .from("staff")
+          .update({ is_active: !currentlyActive })
+          .eq("id", button.dataset.toggleStaff);
+
+        if (error) {
+          alert("Could not change staff status.");
+          return;
+        }
+
+        await refreshStaffList();
+      });
+    });
+
+    // DELETE STAFF
+    list.querySelectorAll("[data-delete-staff]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to delete this staff member?")) {
+          return;
+        }
+
+        const { error } = await db
+          .from("staff")
+          .delete()
+          .eq("id", button.dataset.deleteStaff);
+
+        if (error) {
+          alert("Could not delete staff member.");
+          return;
+        }
+
+        await refreshStaffList();
+      });
+    });
+  }
+
   // -----------------------------
   // CHECK EXISTING SESSION
   // -----------------------------
