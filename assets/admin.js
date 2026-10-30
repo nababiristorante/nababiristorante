@@ -15,17 +15,26 @@
   let db = null;
   let currentUser = null;
 
-  const CONFIG = window.SUPABASE_CONFIG || window.supabaseConfig || {};
-  const SUPABASE_URL =
-    CONFIG.url ||
-    window.SUPABASE_URL ||
-    window.supabaseUrl;
+  
+const CONFIG =
+  window.SUPABASE_CONFIG ||
+  window.NABABI_CONFIG ||
+  window.supabaseConfig ||
+  {};
 
-  const SUPABASE_KEY =
-    CONFIG.anonKey ||
-    CONFIG.key ||
-    window.SUPABASE_ANON_KEY ||
-    window.supabaseAnonKey;
+const SUPABASE_URL =
+  CONFIG.url ||
+  CONFIG.SUPABASE_URL ||
+  window.SUPABASE_URL ||
+  window.supabaseUrl;
+
+const SUPABASE_KEY =
+  CONFIG.anonKey ||
+  CONFIG.SUPABASE_ANON_KEY ||
+  CONFIG.key ||
+  window.SUPABASE_ANON_KEY ||
+  window.supabaseAnonKey;
+
 
   function message(text, type = "info") {
     let box = $("#admin-message");
