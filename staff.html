@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21102f">
+  <title>Nababi Staff Attendance</title>
+  <link rel="stylesheet" href="assets/staff.css">
+</head>
+<body>
+
+  <main class="shell">
+
+    <header class="brand">
+      <div class="mark">N</div>
+      <div>
+        <h1>Nababi Ristorante</h1>
+        <p>STAFF ATTENDANCE</p>
+      </div>
+    </header>
+
+    <section id="notice" class="notice hidden"></section>
+
+    <section class="panel">
+      <div class="eyebrow">STAFF PORTAL</div>
+
+      <h2>আপনার প্রোফাইল নির্বাচন করুন</h2>
+      <p class="muted">
+        নিজের নাম ও ছবি নির্বাচন করে PIN দিন।
+      </p>
+
+      <div id="staff-list" class="staff-grid">
+        স্টাফ তালিকা লোড হচ্ছে...
+      </div>
+
+      <div id="pin-area" class="pin-area hidden">
+
+        <div id="chosen-staff" class="chosen"></div>
+
+        <label for="pin">আপনার PIN</label>
+
+        <input
+          id="pin"
+          type="password"
+          inputmode="numeric"
+          maxlength="8"
+          placeholder="৪–৮ সংখ্যার PIN"
+        >
+
+        <button id="punch" class="gold-btn">
+          Check In / Check Out
+        </button>
+
+        <button id="back" class="quiet-btn">
+          অন্য স্টাফ নির্বাচন
+        </button>
+
+        <p id="feedback" role="status"></p>
+
+      </div>
+    </section>
+
+    <footer>
+      Nababi Ristorante · Staff Portal
+    </footer>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/staff.js"></script>
+
+</body>
+</html>
