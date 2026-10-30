@@ -184,6 +184,7 @@
     if (page === "breaking") return loadBreakingNews();
     if (page === "categories") return loadCategories();
     if (page === "customers") return loadCustomers();
+    if (page === "staff") return loadStaff();
     if (page === "tables") return loadTables();
     if (page === "coupons") return loadCoupons();
     if (page === "hours") return loadOpeningHours();
