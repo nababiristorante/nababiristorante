@@ -43,10 +43,19 @@
     if (loginError) loginError.textContent = message;
   }
 
-  function showAdmin() {
-    if (loginView) loginView.style.display = "none";
-    if (adminApp) adminApp.style.display = "block";
+
+function showAdmin() {
+  if (loginView) {
+    loginView.style.display = "none";
+    loginView.hidden = true;
   }
+
+  if (adminApp) {
+    adminApp.hidden = false;
+    adminApp.style.display = "flex";
+  }
+}
+
 
   function showError(message) {
     if (pageContent) {
