@@ -1,8 +1,8 @@
 
 /* ==========================================
    NABABI RISTORANTE
-   PERMANENT ADMIN LOGO
-   SUPABASE STORAGE + SITE SETTINGS
+   PERMANENT LOGO SAVE AND LOAD
+   SUPABASE STORAGE + DATABASE
 ========================================== */
 
 (() => {
@@ -17,25 +17,31 @@
     window.supabaseConfig;
 
   if (!config || !window.supabase?.createClient) {
-    console.error("Nababi: Supabase configuration missing.");
+    console.error("Nababi: Supabase configuration not found.");
     return;
   }
 
-  const url = config.SUPABASE_URL || config.url;
-  const key =
+  const supabaseUrl =
+    config.SUPABASE_URL || config.url;
+
+  const supabaseKey =
     config.SUPABASE_ANON_KEY ||
     config.anonKey ||
     config.key;
 
-  if (!url || !key) {
-    console.error("Nababi: Supabase URL or public key missing.");
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Nababi: Supabase credentials missing.");
     return;
   }
 
-  // Reuse Supabase's normal browser session.
-  const client = window.supabase.createClient(url, key);
+  const client = window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+  );
 
   const get = (id) => document.getElementById(id);
+
+  let isUploading = false;
 
   function showLogo(imageUrl) {
     const logo = get("admin-logo");
@@ -73,29 +79,36 @@
 
       if (error) throw error;
 
-      if (data?.setting_value) {
+      if (data && data.setting_value) {
         showLogo(data.setting_value);
       }
+
     } catch (error) {
-      console.error("Nababi: Could not load saved logo.", error);
+      console.error("Nababi: Logo loading failed.", error);
     }
   }
 
   async function uploadAndSaveLogo(file) {
-    if (!file) return;
+    if (!file || isUploading) return;
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file.");
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) {
+      alert("Please select a PNG, JPG, WEBP or GIF image.");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be smaller than 5 MB.");
+      alert("Logo must be smaller than 5 MB.");
       return;
     }
 
+    isUploading = true;
+
     const button = get("change-logo");
-    if (button) button.disabled = true;
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Uploading...";
+    }
 
     try {
       const { data: sessionData, error: sessionError } =
@@ -108,7 +121,7 @@
       }
 
       const extension =
-        file.name.split(".").pop().toLowerCase() || "jpg";
+        file.name.split(".").pop().toLowerCase();
 
       const filePath =
         "restaurant-logo/logo-" +
@@ -120,7 +133,7 @@
         .from(BUCKET)
         .upload(filePath, file, {
           cacheControl: "3600",
-          upsert: true,
+          upsert: false,
           contentType: file.type
         });
 
@@ -130,7 +143,11 @@
         .from(BUCKET)
         .getPublicUrl(filePath);
 
-      const imageUrl = publicData.publicUrl;
+      const imageUrl = publicData?.publicUrl;
+
+      if (!imageUrl) {
+        throw new Error("Could not generate public image URL.");
+      }
 
       const { error: saveError } = await client
         .from("site_settings")
@@ -152,7 +169,7 @@
       alert("Logo uploaded and saved successfully!");
 
     } catch (error) {
-      console.error("Nababi logo upload error:", error);
+      console.error("Nababi logo upload failed:", error);
 
       alert(
         "Logo could not be saved: " +
@@ -160,57 +177,48 @@
       );
 
     } finally {
-      if (button) button.disabled = false;
+      isUploading = false;
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Change Logo";
+      }
     }
   }
 
-  // Load the saved logo when the admin panel becomes visible.
-  function watchAdminPanel() {
-    const app = get("admin-app");
+  function setupLogoUpload() {
+    const fileInput = get("logo-file");
+    const changeButton = get("change-logo");
 
-    if (!app) return;
+    if (!fileInput || !changeButton) {
+      console.error("Nababi: Logo upload elements not found.");
+      return;
+    }
 
-    const observer = new MutationObserver(() => {
-      if (!app.hidden) {
-        loadSavedLogo();
-      }
+    changeButton.addEventListener("click", () => {
+      fileInput.click();
     });
 
-    observer.observe(app, {
-      attributes: true,
-      attributeFilter: ["hidden", "style", "class"]
-    });
-
-    if (!app.hidden) loadSavedLogo();
-  }
-
-  // Capture the file change before the older logo handler.
-  // This prevents the old temporary-only upload from running.
-  document.addEventListener(
-    "change",
-    (event) => {
-      if (event.target?.id !== "logo-file") return;
-
-      event.stopImmediatePropagation();
-
-      const file = event.target.files?.[0];
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
 
       if (file) {
-        uploadAndSaveLogo(file);
+        await uploadAndSaveLogo(file);
       }
 
-      event.target.value = "";
-    },
-    true
-  );
+      fileInput.value = "";
+    });
+
+    loadSavedLogo();
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener(
       "DOMContentLoaded",
-      watchAdminPanel
+      setupLogoUpload
     );
   } else {
-    watchAdminPanel();
+    setupLogoUpload();
   }
 
 })();
