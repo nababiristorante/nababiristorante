@@ -1120,9 +1120,10 @@ function showAdmin() {
       return;
     }
 
-    currentUser = user;
-    showAdmin();
-    await openPage("dashboard");
+   currentUser = user;
+  showAdmin();
+  await loadAdminLogo();
+ await openPage("dashboard");
   }
 
   initialise();
