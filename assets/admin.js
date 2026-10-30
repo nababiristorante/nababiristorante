@@ -253,9 +253,10 @@ function showAdmin() {
         return;
       }
 
-      currentUser = data.user;
-      showAdmin();
-      await openPage("dashboard");
+     currentUser = data.user;
+     showAdmin();
+     await loadAdminLogo();
+     await openPage("dashboard");
 
     } catch (error) {
       console.error("Login error:", error.message);
