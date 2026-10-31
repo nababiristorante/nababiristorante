@@ -6,7 +6,7 @@
   const $ = selector => document.querySelector(selector);
   const NEWS_TABLE = 'breaking_news';
   const BOOKING_TABLE = 'bookings';
-  const GALLERY_TABLE = 'gallery_images';
+  const GALLERY_TABLE = 'gallery_items';
   const REFRESH_MS = 30000;
 
   document.documentElement.lang = 'it';
