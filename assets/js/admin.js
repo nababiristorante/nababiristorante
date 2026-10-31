@@ -5,6 +5,7 @@
 const cfg=window.NABABI_CONFIG||{};
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const enc=v=>encodeURIComponent(String(v??''));
 
 const menu=[
 ['dashboard','▦','Dashboard'],['secret','🎁','Secret Coupon Box'],
@@ -31,7 +32,7 @@ menu_manager:'menu_items',news:'breaking_news',
 reviews:'reviews',hours:'opening_hours',secret:'coupons'
 };
 
-let db=null,current='dashboard',newsRows=[];
+let db=null,current='dashboard',newsRows=[],bookingRows=[];
 
 function nav(){
  const html=menu.map(([id,ico,label])=>
@@ -150,16 +151,174 @@ async function loadRecent(){
   if(!el)return;
   el.innerHTML=data?.length?
    `<div class="table-scroll"><table class="data-table">
-   <thead><tr><th>Cliente</th><th>Data</th><th>Stato</th></tr></thead>
+   <thead><tr><th>Cliente</th><th>Data</th><th>Stato</th><th>Codice</th></tr></thead>
    <tbody>${data.map(x=>`<tr>
    <td>${esc(x.full_name||'—')}</td>
    <td>${esc(x.booking_date||'—')}</td>
-   <td><span class="tag">${esc(x.status||'Nuovo')}</span></td>
+   <td><span class="tag">${esc(statusLabel(x.status))}</span></td>
+   <td>${esc(x.confirmation_code||'—')}</td>
    </tr>`).join('')}</tbody></table></div>`:
    '<div class="empty-state">Nessuna prenotazione trovata.</div>';
  }catch(e){
   const el=$('#recentBookings');
   if(el)el.innerHTML=`<span class="error-text">${esc(e.message)}</span>`;
+ }
+}
+
+function statusLabel(status){
+ const labels={
+  new:'Nuova',pending:'In attesa',confirmed:'Confermata',
+  cancelled:'Annullata'
+ };
+ return labels[String(status||'').toLowerCase()]||String(status||'Nuova');
+}
+
+function bookingTypeLabel(type){
+ const labels={
+  table:'Tavolo normale',birthday:'Compleanno',
+  special_event:'Evento speciale'
+ };
+ return labels[type]||type||'Tavolo';
+}
+
+function formatBookingDate(value){
+ if(!value)return '—';
+ const parts=String(value).split('-');
+ if(parts.length!==3)return value;
+ return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function phoneDigits(phone){
+ return String(phone||'').replace(/\D/g,'');
+}
+
+function bookingMessage(booking,kind){
+ const name=booking.full_name||'Cliente';
+ const date=formatBookingDate(booking.booking_date);
+ const time=booking.booking_time||'';
+ const code=booking.confirmation_code||'';
+ const type=bookingTypeLabel(booking.booking_type);
+ const details=`${date} alle ${time}`;
+ if(kind==='invitation'){
+  return `Ciao ${name}, Nababi Ristorante è lieto di invitarti per il tuo ${type.toLowerCase()}! Ti aspettiamo il ${details}. Codice richiesta: ${code}. Per informazioni contattaci al +39 393 3805350.`;
+ }
+ return `Gentile ${name}, la tua richiesta per ${type.toLowerCase()} del ${details} è stata confermata da Nababi Ristorante. Codice: ${code}. Ti aspettiamo! Via Vespasiano 73/75/77, Roma.`;
+}
+
+function bookingEmailUrl(booking,kind){
+ const recipient=String(booking.email||'').trim();
+ if(!recipient)return '';
+ const subject=kind==='invitation'
+  ?'Invito speciale - Nababi Ristorante'
+  :'Conferma prenotazione - Nababi Ristorante';
+ const body=bookingMessage(booking,kind);
+ return `mailto:${encodeURIComponent(recipient)}?subject=${enc(subject)}&body=${enc(body)}`;
+}
+
+function bookingCard(booking){
+ const phone=String(booking.phone||'').trim();
+ const email=String(booking.email||'').trim();
+ const digits=phoneDigits(phone);
+ const waText=bookingMessage(booking,'confirmation');
+ const inviteText=bookingMessage(booking,'invitation');
+ const isConfirmed=booking.status==='confirmed';
+ const isCancelled=booking.status==='cancelled';
+
+ return `<article class="section-card booking-admin-card">
+ <div class="section-title">
+  <h3>${esc(booking.full_name||'Cliente')}</h3>
+  <span class="tag ${isConfirmed?'success-text':isCancelled?'pending':''}">
+   ${esc(statusLabel(booking.status))}
+  </span>
+ </div>
+ <p><b>Codice:</b> ${esc(booking.confirmation_code||'Non disponibile')}</p>
+ <p><b>Tipo:</b> ${esc(bookingTypeLabel(booking.booking_type))}</p>
+ <p><b>Data:</b> ${esc(formatBookingDate(booking.booking_date))}</p>
+ <p><b>Orario:</b> ${esc(booking.booking_time||'—')}</p>
+ <p><b>Ospiti:</b> ${esc(booking.guests??'—')}</p>
+ <p><b>Telefono:</b> ${
+  phone
+   ? `<a href="tel:${enc(phone)}">${esc(phone)}</a>`
+   : 'Non fornito'
+ }</p>
+ <p><b>Email:</b> ${email?`<a href="mailto:${enc(email)}">${esc(email)}</a>`:'Non fornita'}</p>
+ <p><b>Note:</b> ${esc(booking.notes||'—')}</p>
+ <div class="booking-admin-actions">
+  ${phone&&digits?`<a class="outline-btn" href="tel:${enc(phone)}">☎ Chiama</a>`:''}
+  ${phone&&digits?`<a class="outline-btn" href="https://wa.me/${enc(digits)}?text=${enc(waText)}" target="_blank" rel="noopener noreferrer">WhatsApp - Conferma</a>`:''}
+  ${phone&&digits&&booking.booking_type!=='table'?`<a class="outline-btn" href="https://wa.me/${enc(digits)}?text=${enc(inviteText)}" target="_blank" rel="noopener noreferrer">WhatsApp - Invito</a>`:''}
+  ${email?`<a class="outline-btn" href="${esc(bookingEmailUrl(booking,'confirmation'))}">Email - Conferma</a>`:''}
+  ${email&&booking.booking_type!=='table'?`<a class="outline-btn" href="${esc(bookingEmailUrl(booking,'invitation'))}">Email - Invito</a>`:''}
+ </div>
+ <div class="booking-admin-actions">
+  ${!isConfirmed&&!isCancelled?`<button class="gold-btn" data-booking-action="confirmed" data-booking-id="${esc(booking.id)}">Conferma</button>`:''}
+  ${!isCancelled?`<button class="outline-btn danger-btn" data-booking-action="cancelled" data-booking-id="${esc(booking.id)}">Annulla</button>`:''}
+ </div>
+ </article>`;
+}
+
+function bookingsPage(){
+ return `<section class="section-card">
+ <div class="section-title">
+  <h2>▣ Gestione prenotazioni</h2>
+  <button class="outline-btn" id="bookingRefresh">Aggiorna</button>
+ </div>
+ <p class="help">Controlla le richieste, contatta i clienti e aggiorna lo stato della prenotazione.</p>
+ <div id="bookingAdminList" class="help">Caricamento prenotazioni…</div>
+ <p id="bookingAdminStatus" class="help" aria-live="polite"></p>
+ </section>`;
+}
+
+async function bookingsLoad(){
+ const box=$('#bookingAdminList');
+ if(!box)return;
+ box.textContent='Caricamento prenotazioni…';
+ try{
+  const {data,error}=await db.from('bookings').select('*')
+   .order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  bookingRows=data||[];
+  box.innerHTML=bookingRows.length
+   ?bookingRows.map(bookingCard).join('')
+   :'<div class="empty-state">Nessuna prenotazione trovata.</div>';
+ }catch(e){
+  box.innerHTML=`<div class="empty-state"><span class="error-text">${esc(e.message)}</span>
+  <p class="help">Verifica i permessi SELECT della tabella bookings per l'account Admin.</p></div>`;
+ }
+}
+
+async function bookingAction(event){
+ const button=event.target.closest('[data-booking-action]');
+ if(!button)return;
+
+ const id=button.dataset.bookingId;
+ const status=button.dataset.bookingAction;
+ if(!['confirmed','cancelled'].includes(status))return;
+
+ const question=status==='confirmed'
+  ?'Confermare questa prenotazione?'
+  :'Annullare questa prenotazione?';
+
+ if(!confirm(question))return;
+
+ button.disabled=true;
+ const output=$('#bookingAdminStatus');
+ if(output)output.textContent='Aggiornamento…';
+
+ try{
+  const {error}=await db.from('bookings')
+   .update({status})
+   .eq('id',id);
+
+  if(error)throw error;
+
+  if(output)output.textContent=
+   status==='confirmed'?'Prenotazione confermata.':'Prenotazione annullata.';
+
+  await bookingsLoad();
+ }catch(e){
+  if(output)output.textContent='Errore: '+e.message;
+  button.disabled=false;
  }
 }
 
@@ -172,7 +331,7 @@ const descriptions={
 secret:'Gestisci offerte riservate e coupon esclusivi.',
 menu_manager:'Aggiungi e modifica piatti, descrizioni, prezzi e immagini.',
 categories:'Organizza le categorie del menu.',
-bookings:'Consulta le prenotazioni dei tavoli.',
+bookings:'Consulta e gestisci le prenotazioni dei tavoli.',
 customers:'Archivio clienti.',
 coupons:'Crea e gestisci codici sconto.',
 staff:'Gestisci profili e ruoli del personale.',
@@ -199,7 +358,8 @@ function uploadPanel(kind){
  <div class="upload-box">
  <label class="field">Scegli foto dal telefono
  <input id="mediaFile" type="file" accept="image/*" multiple>
- <button id="uploadBtn" class="gold-btn">Carica su Supabase</button>
+ </label>
+ <button id="uploadBtn" class="gold-btn" type="button">Carica su Supabase</button>
  <p id="uploadStatus" class="help">Formato JPG, PNG o WebP. Bucket: ${esc(cfg.STORAGE_BUCKET||'nababi-media')}.</p>
  <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
  <div id="uploadedUrl"></div>
@@ -222,7 +382,7 @@ async function uploadHandler(){
   const pub=db.storage.from(cfg.STORAGE_BUCKET||'nababi-media').getPublicUrl(data.path).data.publicUrl;
   $('#uploadedUrl').innerHTML=`<p class="success-text">Caricamento completato.</p>
   <input class="search-input" readonly value="${esc(pub)}">
-  <button class="outline-btn" id="copyUrl">Copia URL</button>`;
+  <button class="outline-btn" id="copyUrl" type="button">Copia URL</button>`;
   $('#copyUrl').onclick=()=>navigator.clipboard?.writeText(pub);
   status.textContent='Foto salvata. URL pronto da copiare.';
  }catch(e){
@@ -440,6 +600,15 @@ async function render(id){
  current=id;nav();$('#pageTitle').textContent=moduleInfo(id);
  const host=$('#pageContent');host.innerHTML='<div class="empty-state">Caricamento…</div>';
  if(id==='dashboard'){host.innerHTML=await dashboard();loadRecent();return;}
+
+ if(id==='bookings'){
+  host.innerHTML=bookingsPage();
+  $('#bookingRefresh').onclick=bookingsLoad;
+  $('#bookingAdminList').addEventListener('click',bookingAction);
+  bookingsLoad();
+  return;
+ }
+
  if(id==='news'){
   host.innerHTML=newsPage();
   $('#newsForm').onsubmit=newsSave;
@@ -502,7 +671,7 @@ async function render(id){
  host.innerHTML=`<section class="section-card">
  <div class="section-title"><h2>${esc(moduleInfo(id))}</h2>
  <span class="help">${esc(descriptions[id]||'Gestione Nababi')}</span></div>${body}</section>
- ${['secret','menu_public','social','hours','contact','settings','reports','performance','attendance','activity','tables','delivery','bookings','customers','coupons','staff','reviews'].includes(id)?
+ ${['secret','menu_public','social','hours','contact','settings','reports','performance','attendance','activity','tables','delivery','customers','coupons','staff','reviews'].includes(id)?
  `<section class="section-card"><h2>Gestione e configurazione</h2>
  <p class="help">Il pannello legge la tabella disponibile. Per attivare aggiunta/modifica completa bisogna verificare le colonne reali della tabella Supabase.</p>
  ${id==='secret'?uploadPanel('gallery'):''}</section>`:''}`;
