@@ -74,9 +74,7 @@
       #page-content input[type="checkbox"] {
         width:auto; margin-right:8px;
       }
-      #page-content button {
-        min-height:42px; cursor:pointer;
-      }
+      #page-content button { min-height:42px; cursor:pointer; }
       .staff-grid {
         display:grid;
         grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
@@ -106,9 +104,6 @@
       .staff-actions .secondary { background:#6c6173; }
       .staff-form-actions {
         display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
-      }
-      .staff-form-actions button {
-        border:0; border-radius:7px; padding:12px 18px;
       }
       .staff-edit-panel {
         background:#faf6ed; border:1px solid #eadff0;
@@ -153,6 +148,12 @@
       }
       .admin-stat strong {
         display:block; font-size:24px; margin-top:6px;
+      }
+      .coupon-logo-preview {
+        display:block; max-width:220px; max-height:130px;
+        object-fit:contain; margin:12px 0;
+        padding:8px; background:#32134f;
+        border-radius:10px;
       }
       @media(max-width:900px) {
         .admin-layout { display:block !important; }
@@ -251,12 +252,148 @@
     </div>`;
   }
 
-  async function countRows(table) {
-    const { count, error } = await db
-      .from(table)
-      .select("*", { count: "exact", head: true });
+  // =========================================
+  // COUPON BOX LOGO MANAGER
+  // =========================================
 
-    return error ? "—" : (count ?? 0);
+  async function loadCouponLogo() {
+    const preview = $("#coupon-logo-preview");
+    const status = $("#coupon-logo-status");
+
+    if (!preview) return;
+
+    const { data, error } = await db
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "coupon_logo_url")
+      .maybeSingle();
+
+    if (error) {
+      if (status) status.textContent =
+        "Saved logo load করা যায়নি: " + error.message;
+      return;
+    }
+
+    if (data?.setting_value) {
+      preview.src = data.setting_value;
+      preview.hidden = false;
+      if (status) status.textContent = "বর্তমান Coupon Logo লোড হয়েছে।";
+    } else {
+      preview.hidden = true;
+      if (status) status.textContent = "এখনও Coupon Logo Save করা হয়নি।";
+    }
+  }
+
+  async function saveCouponLogo(event) {
+    event.preventDefault();
+
+    const fileInput = $("#coupon-logo-file");
+    const preview = $("#coupon-logo-preview");
+    const status = $("#coupon-logo-status");
+    const button = $("#coupon-logo-save");
+    const file = fileInput?.files?.[0];
+
+    if (!file) {
+      status.textContent = "প্রথমে একটি Logo ছবি নির্বাচন করুন।";
+      return;
+    }
+
+    const allowed = ["image/png", "image/jpeg", "image/webp"];
+
+    if (!allowed.includes(file.type)) {
+      status.textContent = "শুধু PNG, JPG অথবা WEBP ছবি ব্যবহার করুন।";
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      status.textContent = "Logo-এর সাইজ ৩ MB-এর কম হতে হবে।";
+      return;
+    }
+
+    button.disabled = true;
+    status.textContent = "Logo Upload হচ্ছে...";
+
+    try {
+      const extension =
+        file.type === "image/png" ? "png" :
+        file.type === "image/webp" ? "webp" : "jpg";
+
+      const path =
+        `coupon-logo/coupon-logo-${Date.now()}.${extension}`;
+
+      const { error: uploadError } = await db.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, file, {
+          upsert: false,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = db.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(path);
+
+      const logoUrl = publicData?.publicUrl;
+
+      if (!logoUrl) {
+        throw new Error("Logo-এর Public URL পাওয়া যায়নি।");
+      }
+
+      const { error: saveError } = await db
+        .from("site_settings")
+        .upsert({
+          setting_key: "coupon_logo_url",
+          setting_value: logoUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "setting_key" });
+
+      if (saveError) throw saveError;
+
+      preview.src = logoUrl;
+      preview.hidden = false;
+      status.textContent = "Coupon Box Logo সফলভাবে Save হয়েছে।";
+      fileInput.value = "";
+    } catch (error) {
+      status.textContent = "Logo Save করা যায়নি: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  function setupCouponLogoForm() {
+    const fileInput = $("#coupon-logo-file");
+    const preview = $("#coupon-logo-preview");
+    const form = $("#coupon-logo-form");
+    const status = $("#coupon-logo-status");
+
+    if (!fileInput || !preview || !form) return;
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+
+      if (!file) return;
+
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+        status.textContent = "শুধু PNG, JPG অথবা WEBP ছবি ব্যবহার করুন।";
+        fileInput.value = "";
+        return;
+      }
+
+      if (file.size > 3 * 1024 * 1024) {
+        status.textContent = "Logo-এর সাইজ ৩ MB-এর কম হতে হবে।";
+        fileInput.value = "";
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      preview.src = previewUrl;
+      preview.hidden = false;
+      status.textContent = "Preview তৈরি হয়েছে। Save Coupon Logo চাপুন।";
+    });
+
+    form.addEventListener("submit", saveCouponLogo);
+    loadCouponLogo();
   }
 
   // =========================================
@@ -278,6 +415,37 @@
         <div class="admin-stat">Current Discount
           <strong id="coupon-discount">...</strong>
         </div>
+      </div>
+
+      <div class="admin-panel-card">
+        <h2>Coupon Box Logo</h2>
+        <p>Website-এর Coupon Box-এ যে Logo দেখাতে চান সেটি এখানে Upload করুন।</p>
+
+        <form id="coupon-logo-form">
+          <label>Choose Coupon Logo</label>
+          <input
+            type="file"
+            id="coupon-logo-file"
+            accept="image/png,image/jpeg,image/webp"
+          >
+
+          <img
+            id="coupon-logo-preview"
+            class="coupon-logo-preview"
+            alt="Coupon Logo Preview"
+            hidden
+          >
+
+          <button
+            type="submit"
+            id="coupon-logo-save"
+            class="admin-primary"
+          >
+            Save Coupon Logo
+          </button>
+
+          <p id="coupon-logo-status" aria-live="polite"></p>
+        </form>
       </div>
 
       <div class="admin-panel-card">
@@ -310,7 +478,7 @@
         <form id="coupon-redeem-form">
           <label>Customer Coupon Code</label>
           <input name="code"
-            placeholder="NABABI-XXXXXXXXXX" required>
+            placeholder="NABABI-123456" required>
           <button class="admin-primary" type="submit">
             Verify & Redeem
           </button>
@@ -324,6 +492,8 @@
       </div>
     `);
 
+    setupCouponLogoForm();
+
     const { data: offer, error: offerError } = await db
       .from("coupon_offer_settings")
       .select("*")
@@ -334,7 +504,6 @@
 
     const form = $("#coupon-settings-form");
 
-    // datetime-local input uses the device's local time.
     const toLocalInput = value => {
       const date = new Date(value);
       const local = new Date(
@@ -393,8 +562,7 @@
     $("#coupon-generated").textContent = generated;
     $("#coupon-redeemed").textContent = redeemed;
     $("#coupon-unused").textContent = activeUnused;
-    $("#coupon-discount").textContent =
-      offer.discount_percent + "%";
+    $("#coupon-discount").textContent = offer.discount_percent + "%";
 
     $("#coupon-list").innerHTML = !generated
       ? "<p>No coupons generated yet.</p>"
@@ -442,7 +610,7 @@
     const ends = new Date(form.elements.ends.value);
 
     if (!Number.isInteger(discount) || discount < 1 || discount > 100) {
-      notify("Discount 1 থেকে 100-এর মধ্যে হতে হবে।", "error");
+      notify("Discount ১ থেকে ১০০-এর মধ্যে হতে হবে।", "error");
       return;
     }
 
@@ -497,9 +665,7 @@
       return;
     }
 
-    resultBox.textContent =
-      data?.message || "Unknown response";
-
+    resultBox.textContent = data?.message || "Unknown response";
     resultBox.style.color =
       data?.success ? "#176b38" : "#a21d1d";
 
@@ -562,9 +728,7 @@
       enabled = next;
       render();
 
-      notify(
-        enabled ? "Website ON হয়েছে।" : "Website OFF হয়েছে।"
-      );
+      notify(enabled ? "Website ON হয়েছে।" : "Website OFF হয়েছে।");
     });
   }
 
@@ -575,9 +739,7 @@
   async function uploadStaffPhoto(file, staffId) {
     if (!file) return null;
 
-    const allowed = [
-      "image/jpeg", "image/png", "image/webp"
-    ];
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowed.includes(file.type)) {
       throw new Error("শুধু JPG, PNG অথবা WEBP ছবি ব্যবহার করুন।");
@@ -591,8 +753,7 @@
       file.type === "image/png" ? "png" :
       file.type === "image/webp" ? "webp" : "jpg";
 
-    const path =
-      `staff/${staffId}/${Date.now()}.${extension}`;
+    const path = `staff/${staffId}/${Date.now()}.${extension}`;
 
     const { error } = await db.storage
       .from(STORAGE_BUCKET)
@@ -631,19 +792,14 @@
           <button class="save-button" type="submit">Add Staff</button>
         </form>
       `)}
-      ${card("Staff List", `
-        <div id="staff-list">Loading...</div>
-      `)}
+      ${card("Staff List", `<div id="staff-list">Loading...</div>`)}
     `);
 
     const form = $("#staff-form");
     form.addEventListener("submit", addStaff);
 
     form.elements.photo.addEventListener("change", () => {
-      previewPhoto(
-        form.elements.photo.files[0],
-        $("#new-photo-preview")
-      );
+      previewPhoto(form.elements.photo.files[0], $("#new-photo-preview"));
     });
 
     await renderStaffList();
@@ -912,7 +1068,7 @@
   async function toggleStaff(id) {
     const { data, error } = await db
       .from("staff")
-      .select("is_active,full_name")
+      .select("is_active")
       .eq("id", id)
       .single();
 
@@ -933,9 +1089,7 @@
       return;
     }
 
-    notify(
-      nextValue ? "Staff Activate হয়েছে।" : "Staff Deactivate হয়েছে।"
-    );
+    notify(nextValue ? "Staff Activate হয়েছে।" : "Staff Deactivate হয়েছে।");
     await renderStaffList();
   }
 
@@ -1106,7 +1260,7 @@
   }
 
   // =========================================
-  // ADMIN LOGO UPLOAD
+  // RESTAURANT LOGO UPLOAD
   // =========================================
 
   async function uploadLogo(event) {
