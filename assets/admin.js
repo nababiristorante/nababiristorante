@@ -1208,196 +1208,150 @@
 // MENU CATEGORIES: ADD / EDIT / DELETE
 // =========================================
 
-async function loadCategories() {
-  setPage("Menu Categories", `
+
+async function loadAttendance() {
+  setPage("Staff Attendance", `
     <div class="admin-panel-card">
-      <h2>Add New Category</h2>
-
-      <form id="category-form">
-        <label>Category Name</label>
-        <input
-          name="name"
-          type="text"
-          placeholder="যেমন: Antipasti"
-          maxlength="100"
-          required
-        >
-
-        <button class="admin-primary" type="submit">
-          Add Category
-        </button>
-      </form>
+      <h2>Staff Check In / Check Out</h2>
+      <p>কর্মীর উপস্থিতি এখানে রেকর্ড করুন।</p>
+      <div id="attendance-controls">Loading...</div>
     </div>
 
     <div class="admin-panel-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <h2>Menu Categories</h2>
-        <button id="category-refresh" class="admin-primary" type="button">
-          ↻ Refresh
-        </button>
-      </div>
-
-      <p id="category-count">Loading...</p>
-      <div id="category-list">Loading...</div>
+      <h2>Attendance Event History</h2>
+      <p>সর্বশেষ ২০০টি Check-in / Check-out Event</p>
+      <button id="attendance-refresh" class="admin-primary" type="button">
+        ↻ Refresh
+      </button>
+      <div id="attendance-list">Loading...</div>
     </div>
   `);
 
-  const form = $("#category-form");
-  const list = $("#category-list");
-  const count = $("#category-count");
+  const controls = $("#attendance-controls");
+  const list = $("#attendance-list");
 
   async function refresh() {
+    controls.textContent = "Loading...";
     list.textContent = "Loading...";
-    count.textContent = "Loading...";
 
-    const { data, error } = await db
-      .from("categories")
-      .select("id,name,created_at")
-      .order("id", { ascending: true });
+    const { data: staff, error: staffError } = await db
+      .from("staff")
+      .select("id,full_name,is_active")
+      .order("full_name");
 
-    if (error) {
-      list.textContent = error.message;
-      count.textContent = "Load failed";
-      return;
+    if (staffError) throw staffError;
+
+    const { data: events, error: eventError } = await db
+      .from("staff_attendance_events")
+      .select("id,staff_id,event_type,occurred_at,source")
+      .order("occurred_at", { ascending: false })
+      .limit(200);
+
+    if (eventError) throw eventError;
+
+    const latest = new Map();
+
+    (events || []).forEach(event => {
+      if (!latest.has(event.staff_id)) {
+        latest.set(event.staff_id, event);
+      }
+    });
+
+    controls.innerHTML = (staff || []).length
+      ? (staff || []).map(person => {
+          const last = latest.get(person.id);
+          const checkedIn = last?.event_type === "check_in";
+
+          return `
+            <div class="staff-card" style="margin-bottom:12px;">
+              <h3>${escapeHTML(person.full_name)}</h3>
+              <p>Status: ${person.is_active ? "Active" : "Inactive"}</p>
+              <p>Attendance: ${
+                checkedIn ? "Checked In" :
+                last ? "Checked Out" : "No record"
+              }</p>
+
+              ${
+                person.is_active
+                  ? checkedIn
+                    ? `<button class="admin-danger"
+                        data-attendance-action="check_out"
+                        data-id="${escapeHTML(person.id)}">
+                        Check Out
+                      </button>`
+                    : `<button class="admin-primary"
+                        data-attendance-action="check_in"
+                        data-id="${escapeHTML(person.id)}">
+                        Check In
+                      </button>`
+                  : "<p>Inactive staff cannot check in.</p>"
+              }
+            </div>
+          `;
+        }).join("")
+      : "<p>No staff found.</p>";
+
+    if (!(events || []).length) {
+      list.textContent = "এখনও Attendance Event নেই।";
+    } else {
+      const names = new Map(
+        (staff || []).map(person => [person.id, person.full_name])
+      );
+
+      list.innerHTML = events.map(event => `
+        <div class="content-card">
+          <strong>${escapeHTML(
+            names.get(event.staff_id) || "Unknown Staff"
+          )}</strong>
+          <p>${event.event_type === "check_in" ? "Check In" : "Check Out"}</p>
+          <p>${escapeHTML(
+            new Date(event.occurred_at).toLocaleString()
+          )}</p>
+          <small>Source: ${escapeHTML(event.source || "Unknown")}</small>
+        </div>
+      `).join("");
     }
-
-    count.textContent = `${data.length} record(s) loaded`;
-
-    if (!data.length) {
-      list.innerHTML = "<p>No categories found.</p>";
-      return;
-    }
-
-    list.innerHTML = `
-      <div class="admin-table-wrap">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Category Name</th>
-              <th>Created At</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${data.map(item => `
-              <tr>
-                <td>${escapeHTML(item.id)}</td>
-                <td>
-                  <input
-                    class="category-name-input"
-                    data-id="${escapeHTML(item.id)}"
-                    value="${escapeHTML(item.name)}"
-                    maxlength="100"
-                    aria-label="Category name"
-                  >
-                </td>
-                <td>${escapeHTML(
-                  new Date(item.created_at).toLocaleDateString()
-                )}</td>
-                <td>
-                  <div class="staff-actions">
-                    <button
-                      type="button"
-                      data-category-action="edit"
-                      data-id="${escapeHTML(item.id)}"
-                    >Save</button>
-
-                    <button
-                      type="button"
-                      class="danger"
-                      data-category-action="delete"
-                      data-id="${escapeHTML(item.id)}"
-                    >Delete</button>
-                  </div>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
   }
 
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
+  controls.addEventListener("click", async event => {
+    const button = event.target.closest("[data-attendance-action]");
+    if (!button) return;
 
-    const name = String(new FormData(form).get("name") || "").trim();
+    const staffId = button.dataset.id;
+    const eventType = button.dataset.attendanceAction;
 
-    if (!name) {
-      notify("Category Name লিখুন।", "error");
-      return;
-    }
+    button.disabled = true;
+    button.textContent = "Saving...";
 
     const { error } = await db
-      .from("categories")
-      .insert({ name });
+      .from("staff_attendance_events")
+      .insert({
+        staff_id: staffId,
+        event_type: eventType,
+        occurred_at: new Date().toISOString(),
+        source: "admin"
+      });
 
     if (error) {
-      notify("Category যোগ করা যায়নি: " + error.message, "error");
+      notify("Attendance Save করা যায়নি: " + error.message, "error");
+      button.disabled = false;
       return;
     }
 
-    form.reset();
-    notify("নতুন Category যোগ হয়েছে।");
+    notify(
+      eventType === "check_in"
+        ? "Check In সংরক্ষণ হয়েছে।"
+        : "Check Out সংরক্ষণ হয়েছে।"
+    );
+
     await refresh();
   });
 
-  $("#category-refresh").addEventListener("click", refresh);
-
-  list.addEventListener("click", async event => {
-    const button = event.target.closest("button[data-category-action]");
-    if (!button) return;
-
-    const id = button.dataset.id;
-    const action = button.dataset.categoryAction;
-
-    if (action === "edit") {
-      const input = list.querySelector(
-        `.category-name-input[data-id="${CSS.escape(id)}"]`
-      );
-
-      const name = input?.value.trim();
-
-      if (!name) {
-        notify("Category Name খালি রাখা যাবে না।", "error");
-        return;
-      }
-
-      const { error } = await db
-        .from("categories")
-        .update({ name })
-        .eq("id", id);
-
-      if (error) {
-        notify("Update করা যায়নি: " + error.message, "error");
-        return;
-      }
-
-      notify("Category Update হয়েছে।");
-      await refresh();
-    }
-
-    if (action === "delete") {
-      if (!confirm("এই Category Delete করতে চান?")) return;
-
-      const { error } = await db
-        .from("categories")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        notify("Delete করা যায়নি: " + error.message, "error");
-        return;
-      }
-
-      notify("Category Delete হয়েছে।");
-      await refresh();
-    }
-  });
+  $("#attendance-refresh").addEventListener("click", refresh);
 
   await refresh();
 }
+
   // =========================================
   // OTHER ADMIN PAGES
   // =========================================
