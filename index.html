@@ -6,29 +6,111 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nababi Ristorante</title>
 <link rel="stylesheet" href="assets/style.css">
+
 <style>
-.coupon-section{padding:55px 20px;text-align:center;background:#102d24}
-.coupon-card{max-width:520px;margin:auto;padding:32px 22px;border:2px solid #d8b76a;border-radius:16px;background:#183e31;color:#f7f1e5}
-.coupon-card h2{color:#d8b76a;margin-top:0}
-.coupon-card p{line-height:1.6}
-.coupon-discount{font-size:42px;font-weight:bold;color:#d8b76a;margin:15px 0}
-.coupon-button{display:inline-block;padding:14px 28px;border:0;border-radius:6px;background:#d8b76a;color:#102d24;font-weight:bold;cursor:pointer;font-size:16px}
-.coupon-button:disabled{opacity:.6;cursor:wait}
-.coupon-result{margin-top:20px;overflow-wrap:anywhere}
-.coupon-code{display:block;margin:12px auto;padding:14px;max-width:300px;border:1px dashed #d8b76a;border-radius:8px;color:#d8b76a;background:#102d24;font-size:22px;font-weight:bold;letter-spacing:2px}
-.coupon-copy{margin-top:8px;padding:10px 18px;border:1px solid #d8b76a;border-radius:5px;background:transparent;color:#f7f1e5;cursor:pointer}
-#coupon-box-logo{max-width:180px;max-height:100px;object-fit:contain;margin:0 auto 18px}
+[hidden] {
+  display: none !important;
+}
+
+.coupon-section {
+  padding: 55px 20px;
+  text-align: center;
+  background: #102d24;
+}
+
+.coupon-card {
+  max-width: 520px;
+  margin: auto;
+  padding: 32px 22px;
+  border: 2px solid #d8b76a;
+  border-radius: 16px;
+  background: #183e31;
+  color: #f7f1e5;
+}
+
+.coupon-card h2 {
+  color: #d8b76a;
+  margin-top: 0;
+}
+
+.coupon-card p {
+  line-height: 1.6;
+}
+
+.coupon-discount {
+  font-size: 42px;
+  font-weight: bold;
+  color: #d8b76a;
+  margin: 15px 0;
+}
+
+.coupon-button {
+  display: inline-block;
+  padding: 14px 28px;
+  border: 0;
+  border-radius: 6px;
+  background: #d8b76a;
+  color: #102d24;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.coupon-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.coupon-result {
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+
+.coupon-code {
+  display: block;
+  margin: 12px auto;
+  padding: 14px;
+  max-width: 300px;
+  border: 1px dashed #d8b76a;
+  border-radius: 8px;
+  color: #d8b76a;
+  background: #102d24;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.coupon-copy {
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: 1px solid #d8b76a;
+  border-radius: 5px;
+  background: transparent;
+  color: #f7f1e5;
+  cursor: pointer;
+}
+
+#coupon-box-logo {
+  max-width: 180px;
+  max-height: 100px;
+  object-fit: contain;
+  margin: 0 auto 18px;
+}
 </style>
 </head>
+
 <body>
 
-<div class="topline">UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO</div>
+<div class="topline">
+  UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO
+</div>
 
 <header class="header">
   <div class="logo">
     <span>♛ N</span>
     <div>NABABI<small>RISTORANTE</small></div>
   </div>
+
   <nav>
     <a href="#home">Home</a>
     <a href="#menu">Menu</a>
@@ -36,17 +118,20 @@
     <a href="#story">La Storia</a>
     <a href="#events">Eventi</a>
     <a href="#booking">Prenota</a>
-    <a href="#coupon">Coupon</a>
+    <a href="#coupon" id="coupon-nav-link" hidden>Coupon</a>
   </nav>
+
   <select id="language" aria-label="Language">
     <option value="it">🇮🇹 Italiano</option>
     <option value="en">🇬🇧 English</option>
     <option value="bn">🇧🇩 বাংলা</option>
   </select>
+
   <a href="admin.html" class="admin-button">Admin</a>
 </header>
 
 <main>
+
 <section class="hero" id="home">
   <div class="hero-content">
     <p>NABABI RISTORANTE</p>
@@ -73,18 +158,26 @@
   <div>▦ Prenotazione Facile</div>
 </section>
 
-<section id="coupon" class="coupon-section">
+<!-- Coupon Box: শুরুতে লুকানো থাকবে।
+     Active offer যাচাই হওয়ার পর JavaScript এটি দেখাবে। -->
+<section id="coupon" class="coupon-section" hidden>
   <div class="coupon-card">
     <img id="coupon-box-logo" alt="Nababi Ristorante" hidden>
+
     <h2>🎁 NABABI SPECIAL OFFER</h2>
+
     <p id="coupon-intro">Un regalo speciale per te!</p>
+
     <div id="coupon-discount" class="coupon-discount">--% OFF</div>
+
     <p id="coupon-description">
       Richiedi il tuo coupon esclusivo e mostralo al nostro staff al ristorante.
     </p>
+
     <button id="get-coupon" class="coupon-button" type="button" disabled>
       LOADING...
     </button>
+
     <div id="coupon-result" class="coupon-result" aria-live="polite"></div>
   </div>
 </section>
@@ -109,6 +202,7 @@
 
 <section id="booking" class="section">
   <h2>Prenota il tuo tavolo</h2>
+
   <form id="booking-form">
     <input name="name" placeholder="Nome" required>
     <input name="phone" type="tel" placeholder="Telefono" required>
@@ -118,8 +212,10 @@
     <textarea name="notes" placeholder="Note"></textarea>
     <button type="submit">Invia prenotazione</button>
   </form>
+
   <p id="booking-status" aria-live="polite"></p>
 </section>
+
 </main>
 
 <footer>
@@ -131,5 +227,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/config.js"></script>
 <script src="assets/site.js"></script>
+
 </body>
 </html>
