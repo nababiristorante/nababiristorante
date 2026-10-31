@@ -480,8 +480,7 @@
     }
   }
 
-  const PAGE_HANDLERS = {
-    categories: () => loadTablePage("categories"),
+    const PAGE_HANDLERS = {
     attendance: () => loadTablePage("attendance"),
     activity: () => loadTablePage("activity"),
     tables: () => loadTablePage("tables"),
@@ -495,10 +494,6 @@
     performance: loadPerformance
   };
 
-  /*
-   * Capture only the listed navigation items.
-   * Other admin navigation is left untouched.
-   */
   document.addEventListener("click", event => {
     const button = event.target.closest(
       "#admin-nav [data-page]"
@@ -509,6 +504,7 @@
     const page = button.getAttribute("data-page");
     const handler = PAGE_HANDLERS[page];
 
+    // Categories এখন admin.js নিজে পরিচালনা করবে।
     if (!handler) return;
 
     event.preventDefault();
