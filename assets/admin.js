@@ -1363,6 +1363,129 @@ async function loadAttendance() {
     `));
   }
 
+async function loadCategories() {
+  const content = `
+    <section class="admin-section">
+      <h2>Menu Categories</h2>
+
+      <form id="category-form">
+        <input
+          type="text"
+          id="category-name"
+          placeholder="New category name"
+          required
+        />
+        <button type="submit">Add Category</button>
+      </form>
+
+      <p id="category-message"></p>
+      <div id="category-list">Loading categories...</div>
+    </section>
+  `;
+
+  setPage("Menu Categories", content);
+
+  const form = $("#category-form");
+  const message = $("#category-message");
+
+  async function renderCategories() {
+    const list = $("#category-list");
+    list.textContent = "Loading...";
+
+    const { data, error } = await db
+      .from("categories")
+      .select("*")
+      .order("name");
+
+    if (error) {
+      list.textContent = "Error: " + error.message;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.textContent = "No categories found.";
+      return;
+    }
+
+    list.innerHTML = data.map(item => `
+      <div class="category-row">
+        <strong>${escapeHTML(item.name)}</strong>
+        <button type="button" data-edit="${item.id}">Edit</button>
+        <button type="button" data-delete="${item.id}">Delete</button>
+      </div>
+    `).join("");
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name = $("#category-name").value.trim();
+    if (!name) return;
+
+    const { error } = await db
+      .from("categories")
+      .insert({ name });
+
+    if (error) {
+      message.textContent = error.message;
+      return;
+    }
+
+    form.reset();
+    message.textContent = "Category added successfully.";
+    await renderCategories();
+  });
+
+  $("#category-list").addEventListener("click", async event => {
+    const editId = event.target.dataset.edit;
+    const deleteId = event.target.dataset.delete;
+
+    if (editId) {
+      const { data, error } = await db
+        .from("categories")
+        .select("name")
+        .eq("id", editId)
+        .single();
+
+      if (error) {
+        message.textContent = error.message;
+        return;
+      }
+
+      const newName = prompt("Enter the new category name:", data.name);
+      if (!newName || !newName.trim()) return;
+
+      const { error: updateError } = await db
+        .from("categories")
+        .update({ name: newName.trim() })
+        .eq("id", editId);
+
+      message.textContent = updateError
+        ? updateError.message
+        : "Category updated.";
+
+      await renderCategories();
+    }
+
+    if (deleteId) {
+      if (!confirm("Delete this category?")) return;
+
+      const { error } = await db
+        .from("categories")
+        .delete()
+        .eq("id", deleteId);
+
+      message.textContent = error
+        ? error.message
+        : "Category deleted.";
+
+      await renderCategories();
+    }
+  });
+
+  await renderCategories();
+}
+
   const pages = {
     dashboard: loadCouponDashboard,
     coupons: loadCouponDashboard,
