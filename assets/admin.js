@@ -1370,7 +1370,7 @@ async function loadAttendance() {
     staff: loadStaff,
     attendance: loadAttendance,
     customers: () => placeholder("Customers", "Customer Management"),
-    categories: loadCategories,
+    categories: () => placeholder("Menu Categories", "Menu Categories"),
     performance: () => placeholder("Staff Performance", "Staff Performance"),
     activity: () => placeholder("Staff Activity Log", "Staff Activity History"),
     tables: () => placeholder("Tavolo", "Restaurant Tables"),
