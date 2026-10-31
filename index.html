@@ -1,8 +1,8 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070a0b">
 
@@ -11,18 +11,19 @@
 
   <link rel="stylesheet" href="assets/css/style.css">
 
-  <!-- Supabase client -->
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Public Supabase configuration -->
+  <!-- Configurazione Supabase -->
   <script defer src="assets/js/config.js"></script>
 
-  <!-- Public website functionality -->
+  <!-- Funzioni del sito -->
   <script defer src="assets/js/site.js"></script>
 </head>
 
 <body class="site-body">
 
+  <!-- HEADER -->
   <header class="site-header">
     <a class="site-logo" href="#home">
       ♛ Nababi
@@ -39,11 +40,10 @@
     </nav>
 
     <span class="site-phone">☎ +39 393 3805350</span>
-
     <a class="gold-btn" href="admin.html">Admin</a>
   </header>
 
-  <!-- Breaking News is inserted here by site.js -->
+  <!-- BREAKING NEWS -->
   <section
     id="breakingNewsBar"
     class="breaking-news-bar"
@@ -51,6 +51,7 @@
     hidden>
   </section>
 
+  <!-- HOME -->
   <section class="site-hero" id="home">
     <div>
       <p class="eyebrow">BENVENUTI DA</p>
@@ -72,11 +73,13 @@
     </div>
   </section>
 
+  <!-- MENU -->
   <section class="site-section" id="menu">
     <h2>Il Nostro Menu</h2>
     <p>Scopri i nostri piatti speciali, preparati con amore e tradizione.</p>
 
     <div class="site-cards">
+
       <article class="site-card">
         <img
           src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80"
@@ -120,49 +123,121 @@
           <p>Dolci tradizionali</p>
         </div>
       </article>
+
     </div>
   </section>
 
+  <!-- GALLERY -->
   <section class="site-section" id="gallery">
     <h2>La Nostra Gallery</h2>
     <p>Vivi l’atmosfera del nostro ristorante attraverso le immagini.</p>
-    <a class="gold-btn" href="admin.html">Gestisci Gallery</a>
+    <div id="publicGallery" class="site-cards">
+      <p class="help">Le nostre foto saranno mostrate qui.</p>
+    </div>
   </section>
 
+  <!-- RESERVATION -->
   <section class="site-section" id="reservation">
     <h2>Prenota il Tuo Tavolo</h2>
-    <p>Scegli il tipo di evento e vivi un’esperienza indimenticabile.</p>
+    <p>
+      Compila il modulo per inviare una richiesta di prenotazione.
+      Ti contatteremo per confermare la disponibilità.
+    </p>
 
-    <div class="site-cards">
-      <article class="site-card">
-        <div>
-          <h3>♜ Tavolo Normale</h3>
-          <p>Dine &amp; Enjoy</p>
-        </div>
-      </article>
+    <form id="bookingForm" class="booking-form">
 
-      <article class="site-card">
-        <div>
-          <h3>♛ Compleanno</h3>
-          <p>Festeggia con noi</p>
-        </div>
-      </article>
+      <label class="field">
+        Nome e cognome
+        <input
+          type="text"
+          name="full_name"
+          autocomplete="name"
+          maxlength="120"
+          required
+          placeholder="Il tuo nome">
+      </label>
 
-      <article class="site-card">
-        <div>
-          <h3>♙ Eventi Speciali</h3>
-          <p>Eventi su misura</p>
-        </div>
-      </article>
-    </div>
+      <label class="field">
+        Numero di telefono
+        <input
+          type="tel"
+          name="phone"
+          autocomplete="tel"
+          maxlength="30"
+          required
+          placeholder="+39 ...">
+      </label>
+
+      <label class="field">
+        Data
+        <input
+          type="date"
+          name="booking_date"
+          required>
+      </label>
+
+      <label class="field">
+        Orario
+        <input
+          type="time"
+          name="booking_time"
+          required>
+      </label>
+
+      <label class="field">
+        Numero di ospiti
+        <input
+          type="number"
+          name="guests"
+          min="1"
+          max="30"
+          value="2"
+          required>
+      </label>
+
+      <label class="field">
+        Tipo di prenotazione
+        <select name="booking_type" required>
+          <option value="table">Tavolo normale</option>
+          <option value="birthday">Compleanno</option>
+          <option value="special_event">Evento speciale</option>
+        </select>
+      </label>
+
+      <label class="field">
+        Richieste aggiuntive
+        <textarea
+          name="notes"
+          maxlength="1000"
+          placeholder="Eventuali richieste..."></textarea>
+      </label>
+
+      <button
+        type="submit"
+        class="gold-btn"
+        id="bookingSubmit">
+        Invia richiesta
+      </button>
+
+      <p
+        id="bookingStatus"
+        class="help"
+        aria-live="polite">
+      </p>
+
+    </form>
 
     <p>
-      <a class="gold-btn" href="https://wa.me/393337687319">
+      Preferisci WhatsApp?
+      <a
+        class="gold-btn"
+        href="https://wa.me/393337687319">
         Prenota su WhatsApp
       </a>
     </p>
   </section>
 
+  <!-- ABOUT -->
   <section class="site-section" id="about">
     <h2>Chi Siamo</h2>
     <p>
@@ -172,19 +247,23 @@
     </p>
   </section>
 
-  <section class="site-section">
+  <!-- REVIEWS -->
+  <section class="site-section" id="reviews">
     <h2>Cosa Dicono di Noi</h2>
     <p>La soddisfazione dei nostri clienti è la nostra migliore ricompensa.</p>
     <p>★★★★★</p>
   </section>
 
+  <!-- CONTACT -->
   <section class="site-section" id="contact">
     <h2>Vieni a trovarci</h2>
     <p>Via Vespasiano 73/75/77, Roma</p>
-    <p>☎ +39 393 3805350 · WhatsApp +39 333 7687319</p>
+    <p>☎ +39 393 3805350</p>
+    <p>WhatsApp +39 333 7687319</p>
     <p>Aperti tutti i giorni: 12:00 – 23:00</p>
   </section>
 
+  <!-- FOOTER -->
   <footer class="site-footer">
     <div class="site-logo">
       ♛ Nababi
