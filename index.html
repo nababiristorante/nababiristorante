@@ -11,13 +11,8 @@
 
   <link rel="stylesheet" href="assets/css/style.css">
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Configurazione Supabase -->
   <script defer src="assets/js/config.js"></script>
-
-  <!-- Funzioni del sito -->
   <script defer src="assets/js/site.js"></script>
 </head>
 
@@ -79,7 +74,6 @@
     <p>Scopri i nostri piatti speciali, preparati con amore e tradizione.</p>
 
     <div class="site-cards">
-
       <article class="site-card">
         <img
           src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80"
@@ -123,7 +117,6 @@
           <p>Dolci tradizionali</p>
         </div>
       </article>
-
     </div>
   </section>
 
@@ -164,9 +157,23 @@
           name="phone"
           autocomplete="tel"
           maxlength="30"
-          required
           placeholder="+39 ...">
       </label>
+
+      <label class="field">
+        Indirizzo email
+        <input
+          type="email"
+          name="email"
+          autocomplete="email"
+          maxlength="254"
+          placeholder="nome@example.com">
+      </label>
+
+      <p class="help">
+        Per un tavolo normale puoi inserire telefono oppure email.
+        Per compleanni ed eventi sono obbligatori entrambi.
+      </p>
 
       <label class="field">
         Data
@@ -225,13 +232,43 @@
         aria-live="polite">
       </p>
 
+      <!-- Confirmation code appears here after successful submission -->
+      <div
+        id="bookingConfirmation"
+        class="booking-confirmation"
+        aria-live="polite"
+        hidden>
+
+        <h3>Richiesta ricevuta</h3>
+        <p>
+          Conserva questo codice per consultare la tua richiesta.
+          La prenotazione sarà confermata dopo il nostro contatto.
+        </p>
+
+        <p>
+          Codice di riferimento:
+          <strong id="bookingConfirmationCode"></strong>
+        </p>
+
+        <button
+          type="button"
+          class="outline-btn"
+          id="copyBookingCode">
+          Copia codice
+        </button>
+
+        <p id="bookingCopyStatus" class="help"></p>
+      </div>
+
     </form>
 
     <p>
       Preferisci WhatsApp?
       <a
         class="gold-btn"
-        href="https://wa.me/393337687319">
+        href="https://wa.me/393337687319"
+        target="_blank"
+        rel="noopener">
         Prenota su WhatsApp
       </a>
     </p>
@@ -258,8 +295,13 @@
   <section class="site-section" id="contact">
     <h2>Vieni a trovarci</h2>
     <p>Via Vespasiano 73/75/77, Roma</p>
-    <p>☎ +39 393 3805350</p>
-    <p>WhatsApp +39 333 7687319</p>
+    <p>☎ <a href="tel:+393933805350">+39 393 3805350</a></p>
+    <p>
+      WhatsApp
+      <a href="https://wa.me/393337687319" target="_blank" rel="noopener">
+        +39 333 7687319
+      </a>
+    </p>
     <p>Aperti tutti i giorni: 12:00 – 23:00</p>
   </section>
 
