@@ -26,7 +26,7 @@ const tableMap={
 categories:'categories',bookings:'bookings',customers:'customers',
 coupons:'coupons',staff:'staff',performance:'staff_activity_logs',
 attendance:'staff_attendance',activity:'staff_activity_logs',
-tables:'restaurant_tables',gallery:'gallery_images',
+tables:'restaurant_tables',gallery:'gallery_items',
 delivery:'delivery_orders',menu_public:'menu_items',
 menu_manager:'menu_items',news:'breaking_news',
 reviews:'reviews',hours:'opening_hours',secret:'coupons'
@@ -104,7 +104,7 @@ async function count(table){
 async function dashboard(){
  const [visits,clicks,gallery,coupons,bookings,reviews,staff]=
  await Promise.all([
-  count('website_analytics'),count('menu_items'),count('gallery_images'),
+  count('website_analytics'),count('menu_items'),count('gallery_items'),
   count('coupon_redemptions'),count('bookings'),count('reviews'),count('staff')
  ]);
  return `<section class="hero-card"><div>
@@ -367,27 +367,98 @@ function uploadPanel(kind){
 }
 
 async function uploadHandler(){
- const input=$('#mediaFile'),btn=$('#uploadBtn'),
- status=$('#uploadStatus'),file=input?.files?.[0];
- if(!file){status.textContent='Seleziona prima una foto.';return;}
- if(!file.type.startsWith('image/')){status.textContent='Seleziona un file immagine.';return;}
- if(file.size>8*1024*1024){status.textContent='La foto deve essere inferiore a 8 MB.';return;}
- btn.disabled=true;status.textContent='Caricamento…';
+ const input=$('#mediaFile');
+ const btn=$('#uploadBtn');
+ const status=$('#uploadStatus');
+ const files=Array.from(input?.files||[]);
+
+ if(!files.length){
+  status.textContent='Seleziona prima una foto.';
+  return;
+ }
+
+ const invalid=files.find(file=>!file.type.startsWith('image/'));
+ if(invalid){
+  status.textContent='Seleziona solo file immagine.';
+  return;
+ }
+
+ const tooLarge=files.find(file=>file.size>8*1024*1024);
+ if(tooLarge){
+  status.textContent='Ogni foto deve essere inferiore a 8 MB.';
+  return;
+ }
+
+ btn.disabled=true;
+ status.textContent='Caricamento in corso…';
+
+ const bucket=cfg.STORAGE_BUCKET||'nababi-media';
+ const uploaded=[];
+
  try{
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
-  const path=`${current}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-  const {data,error}=await db.storage.from(cfg.STORAGE_BUCKET||'nababi-media')
-   .upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
-  if(error)throw error;
-  const pub=db.storage.from(cfg.STORAGE_BUCKET||'nababi-media').getPublicUrl(data.path).data.publicUrl;
-  $('#uploadedUrl').innerHTML=`<p class="success-text">Caricamento completato.</p>
-  <input class="search-input" readonly value="${esc(pub)}">
-  <button class="outline-btn" id="copyUrl" type="button">Copia URL</button>`;
-  $('#copyUrl').onclick=()=>navigator.clipboard?.writeText(pub);
-  status.textContent='Foto salvata. URL pronto da copiare.';
+  for(const file of files){
+   const ext=(file.name.split('.').pop()||'jpg')
+    .toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+
+   const path=`${current}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+
+   const {data,error}=await db.storage.from(bucket)
+    .upload(path,file,{
+     cacheControl:'3600',
+     upsert:false,
+     contentType:file.type
+    });
+
+   if(error)throw error;
+
+   const pub=db.storage.from(bucket)
+    .getPublicUrl(data.path).data.publicUrl;
+
+   if(current==='gallery'){
+    const {error:dbError}=await db
+     .from('gallery_items')
+     .insert({
+      image_url:pub,
+      is_active:true,
+      sort_order:0
+     });
+
+    if(dbError)throw dbError;
+   }
+
+   uploaded.push(pub);
+  }
+
+  $('#uploadedUrl').innerHTML=uploaded.map((url,index)=>`
+   <div class="uploaded-image-result">
+    <p class="success-text">Immagine ${index+1} caricata.</p>
+    <input class="search-input" readonly value="${esc(url)}">
+    <button class="outline-btn copy-image-url" type="button"
+     data-url="${esc(url)}">Copia URL</button>
+   </div>
+  `).join('');
+
+  $('#uploadedUrl').querySelectorAll('.copy-image-url').forEach(button=>{
+   button.onclick=async()=>{
+    try{
+     await navigator.clipboard.writeText(button.dataset.url);
+     button.textContent='Copiato';
+    }catch(e){
+     button.textContent='Copia non disponibile';
+    }
+   };
+  });
+
+  status.textContent=current==='gallery'
+   ?`${uploaded.length} foto caricate e aggiunte alla Gallery.`
+   :'Caricamento completato. URL pronto da copiare.';
+
+  input.value='';
  }catch(e){
-  status.innerHTML=`<span class="error-text">${esc(e.message)}. Verifica bucket e policy Storage.</span>`;
- }finally{btn.disabled=false;}
+  status.innerHTML=`<span class="error-text">${esc(e.message)}. Verifica bucket, tabella gallery_items e policy Supabase.</span>`;
+ }finally{
+  btn.disabled=false;
+ }
 }
 
 function categoryPage(){
