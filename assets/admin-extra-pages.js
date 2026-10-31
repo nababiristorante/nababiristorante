@@ -389,96 +389,101 @@
     }
   }
 
-  async function loadPerformance() {
-    const title = "Staff Performance";
+ 
+async function loadPerformance() {
+  const title = "Staff Performance";
 
-    const titleElement = document.getElementById("page-title");
-    if (titleElement) titleElement.textContent = title;
+  const titleElement = document.getElementById("page-title");
+  if (titleElement) titleElement.textContent = title;
 
-    renderShell(
-      title,
-      "Summary based on recorded staff attendance."
+  renderShell(title, "Summary based on recorded staff attendance.");
+
+  const status = document.getElementById("extra-status");
+  const results = document.getElementById("extra-results");
+
+  document.getElementById("extra-refresh")
+    ?.addEventListener("click", loadPerformance);
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await db.auth.getSession();
+
+    if (sessionError) throw sessionError;
+    if (!sessionData.session) throw new Error("Admin login required.");
+
+    const { data: staff, error: staffError } = await db
+      .from("staff")
+      .select("id,full_name,is_active")
+      .order("full_name");
+
+    if (staffError) throw staffError;
+
+    const { data: events, error: eventError } = await db
+      .from("staff_attendance_events")
+      .select("staff_id,event_type,occurred_at")
+      .order("occurred_at", { ascending: false })
+      .limit(1000);
+
+    if (eventError) throw eventError;
+
+    const summary = new Map();
+
+    (staff || []).forEach(person => {
+      summary.set(person.id, {
+        staff_name: person.full_name,
+        status: person.is_active ? "Active" : "Inactive",
+        check_ins: 0,
+        check_outs: 0,
+        currently_checked_in: "No"
+      });
+    });
+
+    const latest = new Map();
+
+    (events || []).forEach(event => {
+      const item = summary.get(event.staff_id);
+      if (!item) return;
+
+      if (event.event_type === "check_in") item.check_ins++;
+      if (event.event_type === "check_out") item.check_outs++;
+
+      if (!latest.has(event.staff_id)) {
+        latest.set(event.staff_id, event.event_type);
+      }
+    });
+
+    latest.forEach((eventType, staffId) => {
+      const item = summary.get(staffId);
+      if (item) {
+        item.currently_checked_in =
+          eventType === "check_in" ? "Yes" : "No";
+      }
+    });
+
+    const rows = Array.from(summary.values());
+
+    status.textContent = `${rows.length} staff member(s) found`;
+
+    results.innerHTML = renderTable(
+      [
+        "staff_name",
+        "status",
+        "check_ins",
+        "check_outs",
+        "currently_checked_in"
+      ],
+      rows
     );
 
-    const status = document.getElementById("extra-status");
-    const results = document.getElementById("extra-results");
-
-    document.getElementById("extra-refresh")
-      ?.addEventListener("click", loadPerformance);
-
-    try {
-      const { data: sessionData, error: sessionError } =
-        await db.auth.getSession();
-
-      if (sessionError) throw sessionError;
-
-      if (!sessionData.session) {
-        throw new Error("Admin login required.");
-      }
-
-      const { data, error } = await db
-        .from("staff_attendance")
-        .select("staff_id,staff_name,attendance_date,check_in,check_out,status")
-        .order("attendance_date", { ascending: false })
-        .limit(500);
-
-      if (error) throw error;
-
-      const summary = {};
-
-      (data || []).forEach(record => {
-        const key = record.staff_id || record.staff_name || "Unknown";
-
-        if (!summary[key]) {
-          summary[key] = {
-            staff_name: record.staff_name || "Unknown",
-            total_records: 0,
-            present: 0,
-            absent: 0,
-            with_check_in: 0,
-            with_check_out: 0
-          };
-        }
-
-        const item = summary[key];
-
-        item.total_records++;
-
-        if (record.status === "present") item.present++;
-        if (record.status === "absent") item.absent++;
-        if (record.check_in) item.with_check_in++;
-        if (record.check_out) item.with_check_out++;
-      });
-
-      const rows = Object.values(summary);
-
-      status.textContent =
-        `${rows.length} staff member(s) found`;
-
-      results.innerHTML = renderTable(
-        [
-          "staff_name",
-          "total_records",
-          "present",
-          "absent",
-          "with_check_in",
-          "with_check_out"
-        ],
-        rows
-      );
-
-    } catch (error) {
-      console.error("Staff performance:", error);
-
-      status.textContent = "Could not load performance.";
-
-      results.innerHTML = `
-        <p style="color:#bd3545;">
-          ${escapeHTML(error.message)}
-        </p>
-      `;
-    }
+  } catch (error) {
+    console.error("Staff performance:", error);
+    status.textContent = "Could not load performance.";
+    results.innerHTML = `<p style="color:#bd3545;">
+      ${escapeHTML(error.message)}
+    </p>`;
   }
+}
+
 
     const PAGE_HANDLERS = {
     attendance: () => loadTablePage("attendance"),
