@@ -54,11 +54,31 @@
      BOOKING FORM
   ========================= */
 
+  function createConfirmationCode() {
+    const randomPart = window.crypto &&
+      typeof window.crypto.randomUUID === 'function'
+        ? window.crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+        : Array.from(
+            { length: 8 },
+            () => Math.floor(Math.random() * 16).toString(16)
+          ).join('');
+
+    return 'NAB-' + randomPart.toUpperCase();
+  }
+
   function setupBookingForm() {
     const form = $('#bookingForm');
     if (!form) return;
 
     const dateInput = form.elements.booking_date;
+    const typeInput = form.elements.booking_type;
+    const phoneInput = form.elements.phone;
+    const emailInput = form.elements.email;
+    const confirmationBox = $('#bookingConfirmation');
+    const confirmationCode = $('#bookingConfirmationCode');
+    const copyButton = $('#copyBookingCode');
+    const copyStatus = $('#bookingCopyStatus');
+
     const today = new Date();
     const localToday = [
       today.getFullYear(),
@@ -67,6 +87,36 @@
     ].join('-');
 
     dateInput.min = localToday;
+
+    function updateContactRequirements() {
+      const type = typeInput.value;
+      const isSpecial = type === 'birthday' ||
+        type === 'special_event';
+
+      phoneInput.required = isSpecial;
+      emailInput.required = isSpecial;
+
+      phoneInput.setCustomValidity('');
+      emailInput.setCustomValidity('');
+    }
+
+    typeInput.addEventListener('change', updateContactRequirements);
+    updateContactRequirements();
+
+    if (copyButton) {
+      copyButton.addEventListener('click', async () => {
+        const code = confirmationCode?.textContent?.trim();
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code);
+          copyStatus.textContent = 'Codice copiato.';
+        } catch {
+          copyStatus.textContent =
+            'Copia non disponibile. Seleziona il codice e copialo manualmente.';
+        }
+      });
+    }
 
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -80,6 +130,11 @@
       const bookingDate = String(data.get('booking_date') || '');
       const bookingTime = String(data.get('booking_time') || '');
       const guests = Number(data.get('guests'));
+      const bookingType = String(data.get('booking_type') || 'table');
+
+      const fullName = String(data.get('full_name') || '').trim();
+      const phone = String(data.get('phone') || '').trim();
+      const email = String(data.get('email') || '').trim();
 
       if (bookingDate < localToday) {
         status.textContent = 'Seleziona una data valida.';
@@ -91,25 +146,56 @@
         return;
       }
 
+      if (!fullName) {
+        status.textContent = 'Inserisci nome e cognome.';
+        return;
+      }
+
+      if (!['table', 'birthday', 'special_event'].includes(bookingType)) {
+        status.textContent = 'Tipo di prenotazione non valido.';
+        return;
+      }
+
+      if (bookingType === 'table' && !phone && !email) {
+        status.textContent =
+          'Inserisci almeno un numero di telefono oppure un indirizzo email.';
+        return;
+      }
+
+      if (
+        (bookingType === 'birthday' || bookingType === 'special_event') &&
+        (!phone || !email)
+      ) {
+        status.textContent =
+          'Per compleanni ed eventi inserisci telefono ed email.';
+        return;
+      }
+
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        status.textContent = 'Inserisci un indirizzo email valido.';
+        return;
+      }
+
+      const code = createConfirmationCode();
+
       const payload = {
-        full_name: String(data.get('full_name') || '').trim(),
-        phone: String(data.get('phone') || '').trim(),
+        full_name: fullName,
+        phone: phone || null,
+        email: email || null,
         booking_date: bookingDate,
         booking_time: bookingTime,
         guests,
-        booking_type: String(data.get('booking_type') || 'table'),
+        booking_type: bookingType,
         notes: String(data.get('notes') || '').trim() || null,
-        status: 'new'
+        status: 'new',
+        confirmation_code: code
       };
-
-      if (!payload.full_name || !payload.phone) {
-        status.textContent = 'Inserisci nome e telefono.';
-        return;
-      }
 
       button.disabled = true;
       button.textContent = 'Invio in corso…';
       status.textContent = 'Invio della richiesta…';
+
+      if (confirmationBox) confirmationBox.hidden = true;
 
       try {
         const client = getClient();
@@ -122,6 +208,17 @@
 
         form.reset();
         dateInput.min = localToday;
+        updateContactRequirements();
+
+        if (confirmationCode) {
+          confirmationCode.textContent = code;
+        }
+
+        if (copyStatus) copyStatus.textContent = '';
+
+        if (confirmationBox) {
+          confirmationBox.hidden = false;
+        }
 
         status.textContent =
           'Richiesta inviata! Ti contatteremo per confermare la prenotazione.';
