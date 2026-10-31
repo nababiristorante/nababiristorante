@@ -357,10 +357,12 @@
     try {
       const client = getClient();
 
-      const { data, error } = await client
-        .from(GALLERY_TABLE)
-        .select('*')
-        .limit(100);
+      cconst { data, error } = await client
+  .from(GALLERY_TABLE)
+  .select('*')
+  .eq('is_active', true)
+  .order('sort_order', { ascending: true })
+  .limit(100);
 
       if (error) throw error;
 
