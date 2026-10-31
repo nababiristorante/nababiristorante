@@ -52,6 +52,7 @@
 
     if (newsImage) {
       newsImage.hidden = !news.image_url;
+
       if (news.image_url) {
         newsImage.src = news.image_url;
         newsImage.alt = news.title || "Nababi Ristorante news";
@@ -62,6 +63,7 @@
 
     if (newsVideo) {
       newsVideo.hidden = !news.youtube_url;
+
       if (news.youtube_url) {
         newsVideo.href = news.youtube_url;
         newsVideo.target = "_blank";
@@ -138,12 +140,36 @@
   // COUPON OFFER AND COUPON LOGO
   // --------------------------------
 
+  const couponSection = $("#coupon");
+  const couponNavLink = $("#coupon-nav-link");
   const couponButton = $("#get-coupon");
   const couponResult = $("#coupon-result");
   const couponDiscount = $("#coupon-discount");
   const couponLogo = $("#coupon-box-logo");
 
   let couponOfferActive = false;
+  let loadingCouponOffer = false;
+
+  // শুরু থেকেই Coupon Box ও Navbar Link লুকানো।
+  // Active offer নিশ্চিত না হওয়া পর্যন্ত দেখানো হবে না।
+  function hideCouponBox() {
+    couponOfferActive = false;
+
+    if (couponSection) couponSection.hidden = true;
+    if (couponNavLink) couponNavLink.hidden = true;
+
+    if (couponButton) {
+      couponButton.disabled = true;
+      couponButton.textContent = "NOT AVAILABLE";
+    }
+
+    if (couponResult) couponResult.replaceChildren();
+  }
+
+  function showCouponBox() {
+    if (couponSection) couponSection.hidden = false;
+    if (couponNavLink) couponNavLink.hidden = false;
+  }
 
   function setCouponMessage(message) {
     if (couponResult) couponResult.textContent = message;
@@ -171,23 +197,26 @@
         couponLogo.hidden = false;
       } else {
         couponLogo.hidden = true;
+        couponLogo.removeAttribute("src");
       }
     } catch (error) {
       console.error("Coupon logo:", error.message);
+      couponLogo.hidden = true;
     }
   }
 
   async function loadCouponOffer() {
-    if (!couponButton) return;
+    if (!couponButton || loadingCouponOffer) return;
 
-    couponButton.disabled = true;
-    couponButton.textContent = "LOADING...";
+    loadingCouponOffer = true;
 
     try {
       const { data, error } = await db.rpc("get_nababi_coupon_offer");
+
       if (error) throw error;
 
       const offer = normalizeResponse(data);
+
       const active =
         offer.is_active === true ||
         offer.active === true ||
@@ -197,32 +226,42 @@
         offer.discount_percent ?? offer.discount ?? 0
       );
 
-      if (!active || !Number.isFinite(discount) || discount <= 0) {
-        couponOfferActive = false;
-        if (couponDiscount) couponDiscount.textContent = "OFFER ENDED";
-        couponButton.disabled = true;
-        couponButton.textContent = "OFFER NOT AVAILABLE";
-        setCouponMessage("Al momento non ci sono offerte attive.");
+      // অফার Active না হলে বা Discount ভুল হলে
+      // সম্পূর্ণ Coupon Box এবং Navbar Link লুকানো হবে।
+      if (
+        !active ||
+        !Number.isFinite(discount) ||
+        discount <= 0
+      ) {
+        hideCouponBox();
         return;
       }
 
       couponOfferActive = true;
+
       if (couponDiscount) {
         couponDiscount.textContent = `${discount}% OFF`;
       }
 
+      showCouponBox();
+
       couponButton.disabled = false;
       couponButton.textContent = "GET MY COUPON";
+
       setCouponMessage("");
+
+      // অফার Active থাকলেই Logo load হবে।
+      await loadCouponLogo();
+
     } catch (error) {
       console.error("Coupon offer:", error.message);
-      couponOfferActive = false;
-      if (couponDiscount) couponDiscount.textContent = "OFFER UNAVAILABLE";
-      couponButton.disabled = true;
-      couponButton.textContent = "NOT AVAILABLE";
-      setCouponMessage(
-        "Offerta temporaneamente non disponibile. Riprova più tardi."
-      );
+
+      // Offer যাচাই করা না গেলে নিরাপত্তার জন্য
+      // Coupon Box দেখানো হবে না।
+      hideCouponBox();
+
+    } finally {
+      loadingCouponOffer = false;
     }
   }
 
@@ -259,13 +298,14 @@
     const note = document.createElement("p");
     note.textContent =
       "Mostra questo codice al personale del ristorante. Valido secondo le condizioni dell'offerta.";
+
     couponResult.appendChild(note);
   }
 
   if (couponButton) {
     couponButton.addEventListener("click", async () => {
       if (!couponOfferActive) {
-        setCouponMessage("Al momento non ci sono offerte attive.");
+        hideCouponBox();
         return;
       }
 
@@ -275,9 +315,11 @@
 
       try {
         const { data, error } = await db.rpc("generate_nababi_coupon");
+
         if (error) throw error;
 
         const response = normalizeResponse(data);
+
         const code =
           response.code ||
           response.coupon_code ||
@@ -286,28 +328,37 @@
 
         if (!code) {
           throw new Error(
-            response.message || response.error ||
+            response.message ||
+            response.error ||
             "Non è stato possibile creare il coupon."
           );
         }
 
         displayCoupon(String(code));
+
       } catch (error) {
         console.error("Coupon generation:", error.message);
+
         setCouponMessage(
           "Coupon non disponibile. Controlla le date dell'offerta e riprova."
         );
+
       } finally {
+        // কুপন তৈরির পর Offer-এর অবস্থা আবার যাচাই হবে।
         await loadCouponOffer();
       }
     });
   }
 
-  loadCouponLogo();
+  // Page load হওয়ার সঙ্গে সঙ্গে Coupon লুকানো থাকবে।
+  hideCouponBox();
+
+  // প্রথমবার Offer যাচাই।
   loadCouponOffer();
 
-  // Refresh offer state periodically.
-  setInterval(loadCouponOffer, 60000);
+  // প্রতি ৩০ সেকেন্ডে Offer-এর অবস্থা যাচাই।
+  // অফার শেষ হলে Box নিজে থেকেই লুকিয়ে যাবে।
+  setInterval(loadCouponOffer, 30000);
 
   // --------------------------------
   // BOOKING FORM
@@ -322,6 +373,7 @@
       const submitButton = bookingForm.querySelector(
         'button[type="submit"],input[type="submit"]'
       );
+
       const statusMessage = $("#booking-status");
 
       const showMessage = (message, isError = false) => {
@@ -350,8 +402,10 @@
 
       const selectedDate = new Date(dateTime);
 
-      if (!Number.isFinite(selectedDate.getTime()) ||
-          selectedDate.getTime() <= Date.now()) {
+      if (
+        !Number.isFinite(selectedDate.getTime()) ||
+        selectedDate.getTime() <= Date.now()
+      ) {
         showMessage("Seleziona una data e un'ora future.", true);
         return;
       }
@@ -384,13 +438,17 @@
         showMessage(
           "Grazie! La tua richiesta di prenotazione è stata ricevuta."
         );
+
         bookingForm.reset();
+
       } catch (error) {
         console.error("Booking error:", error.message);
+
         showMessage(
           "Prenotazione non inviata. Riprova o chiama il ristorante.",
           true
         );
+
       } finally {
         if (submitButton) submitButton.disabled = false;
       }
@@ -417,6 +475,7 @@
       offerDescription:
         "Richiedi il tuo coupon esclusivo e mostralo al nostro staff al ristorante."
     },
+
     en: {
       home: "Home",
       menu: "Menu",
@@ -432,6 +491,7 @@
       offerDescription:
         "Get your exclusive coupon and show it to our restaurant staff."
     },
+
     bn: {
       home: "হোম",
       menu: "মেনু",
@@ -454,10 +514,21 @@
     if (!text) return;
 
     const nav = document.querySelectorAll(".header nav a");
-    const keys = ["home", "menu", "gallery", "story", "events", "booking", "coupon"];
+
+    const keys = [
+      "home",
+      "menu",
+      "gallery",
+      "story",
+      "events",
+      "booking",
+      "coupon"
+    ];
 
     nav.forEach((link, index) => {
-      if (keys[index]) link.textContent = text[keys[index]];
+      if (keys[index]) {
+        link.textContent = text[keys[index]];
+      }
     });
 
     const bookingTitle = $("#booking h2");
@@ -466,20 +537,36 @@
     const offerIntro = $("#coupon-intro");
     const offerDescription = $("#coupon-description");
 
-    if (bookingTitle) bookingTitle.textContent = text.bookTitle;
-    if (bookingSubmit) bookingSubmit.textContent = text.bookButton;
-    if (offerTitle) offerTitle.textContent = text.offerTitle;
-    if (offerIntro) offerIntro.textContent = text.offerIntro;
-    if (offerDescription) offerDescription.textContent = text.offerDescription;
+    if (bookingTitle) {
+      bookingTitle.textContent = text.bookTitle;
+    }
+
+    if (bookingSubmit) {
+      bookingSubmit.textContent = text.bookButton;
+    }
+
+    if (offerTitle) {
+      offerTitle.textContent = text.offerTitle;
+    }
+
+    if (offerIntro) {
+      offerIntro.textContent = text.offerIntro;
+    }
+
+    if (offerDescription) {
+      offerDescription.textContent = text.offerDescription;
+    }
 
     document.documentElement.lang = language;
   }
 
   const languageSelect = $("#language");
+
   if (languageSelect) {
     languageSelect.addEventListener("change", event => {
       setLanguage(event.target.value);
     });
+
     setLanguage(languageSelect.value || "it");
   }
 
