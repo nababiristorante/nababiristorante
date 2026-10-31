@@ -1204,7 +1204,200 @@
       </div>
     `).join("");
   }
+// =========================================
+// MENU CATEGORIES: ADD / EDIT / DELETE
+// =========================================
 
+async function loadCategories() {
+  setPage("Menu Categories", `
+    <div class="admin-panel-card">
+      <h2>Add New Category</h2>
+
+      <form id="category-form">
+        <label>Category Name</label>
+        <input
+          name="name"
+          type="text"
+          placeholder="যেমন: Antipasti"
+          maxlength="100"
+          required
+        >
+
+        <button class="admin-primary" type="submit">
+          Add Category
+        </button>
+      </form>
+    </div>
+
+    <div class="admin-panel-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2>Menu Categories</h2>
+        <button id="category-refresh" class="admin-primary" type="button">
+          ↻ Refresh
+        </button>
+      </div>
+
+      <p id="category-count">Loading...</p>
+      <div id="category-list">Loading...</div>
+    </div>
+  `);
+
+  const form = $("#category-form");
+  const list = $("#category-list");
+  const count = $("#category-count");
+
+  async function refresh() {
+    list.textContent = "Loading...";
+    count.textContent = "Loading...";
+
+    const { data, error } = await db
+      .from("categories")
+      .select("id,name,created_at")
+      .order("id", { ascending: true });
+
+    if (error) {
+      list.textContent = error.message;
+      count.textContent = "Load failed";
+      return;
+    }
+
+    count.textContent = `${data.length} record(s) loaded`;
+
+    if (!data.length) {
+      list.innerHTML = "<p>No categories found.</p>";
+      return;
+    }
+
+    list.innerHTML = `
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Category Name</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(item => `
+              <tr>
+                <td>${escapeHTML(item.id)}</td>
+                <td>
+                  <input
+                    class="category-name-input"
+                    data-id="${escapeHTML(item.id)}"
+                    value="${escapeHTML(item.name)}"
+                    maxlength="100"
+                    aria-label="Category name"
+                  >
+                </td>
+                <td>${escapeHTML(
+                  new Date(item.created_at).toLocaleDateString()
+                )}</td>
+                <td>
+                  <div class="staff-actions">
+                    <button
+                      type="button"
+                      data-category-action="edit"
+                      data-id="${escapeHTML(item.id)}"
+                    >Save</button>
+
+                    <button
+                      type="button"
+                      class="danger"
+                      data-category-action="delete"
+                      data-id="${escapeHTML(item.id)}"
+                    >Delete</button>
+                  </div>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name = String(new FormData(form).get("name") || "").trim();
+
+    if (!name) {
+      notify("Category Name লিখুন।", "error");
+      return;
+    }
+
+    const { error } = await db
+      .from("categories")
+      .insert({ name });
+
+    if (error) {
+      notify("Category যোগ করা যায়নি: " + error.message, "error");
+      return;
+    }
+
+    form.reset();
+    notify("নতুন Category যোগ হয়েছে।");
+    await refresh();
+  });
+
+  $("#category-refresh").addEventListener("click", refresh);
+
+  list.addEventListener("click", async event => {
+    const button = event.target.closest("button[data-category-action]");
+    if (!button) return;
+
+    const id = button.dataset.id;
+    const action = button.dataset.categoryAction;
+
+    if (action === "edit") {
+      const input = list.querySelector(
+        `.category-name-input[data-id="${CSS.escape(id)}"]`
+      );
+
+      const name = input?.value.trim();
+
+      if (!name) {
+        notify("Category Name খালি রাখা যাবে না।", "error");
+        return;
+      }
+
+      const { error } = await db
+        .from("categories")
+        .update({ name })
+        .eq("id", id);
+
+      if (error) {
+        notify("Update করা যায়নি: " + error.message, "error");
+        return;
+      }
+
+      notify("Category Update হয়েছে।");
+      await refresh();
+    }
+
+    if (action === "delete") {
+      if (!confirm("এই Category Delete করতে চান?")) return;
+
+      const { error } = await db
+        .from("categories")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        notify("Delete করা যায়নি: " + error.message, "error");
+        return;
+      }
+
+      notify("Category Delete হয়েছে।");
+      await refresh();
+    }
+  });
+
+  await refresh();
+}
   // =========================================
   // OTHER ADMIN PAGES
   // =========================================
