@@ -71,6 +71,9 @@
         margin:6px 0; border:1px solid #ddd;
         border-radius:7px; font:inherit; font-size:16px;
       }
+      #page-content input[type="checkbox"] {
+        width:auto; margin-right:8px;
+      }
       #page-content button {
         min-height:42px; cursor:pointer;
       }
@@ -117,6 +120,40 @@
         object-fit:cover; border-radius:9px; margin:8px 0;
         background:#eee;
       }
+      .admin-table-wrap { overflow-x:auto; }
+      .admin-table {
+        width:100%; border-collapse:collapse; min-width:520px;
+      }
+      .admin-table th,.admin-table td {
+        padding:10px; border-bottom:1px solid #eee;
+        text-align:left;
+      }
+      .admin-table th { background:#f7f1e5; }
+      .admin-panel-card {
+        background:#fff; border:1px solid #eadff0;
+        border-radius:12px; padding:15px; margin-bottom:15px;
+      }
+      .admin-panel-card h2 { margin-top:0; }
+      .admin-primary {
+        background:#32134f; color:white; border:0;
+        border-radius:7px; padding:11px 16px;
+      }
+      .admin-danger {
+        background:#a52b35; color:white; border:0;
+        border-radius:7px; padding:11px 16px;
+      }
+      .admin-stats {
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px; margin-bottom:16px;
+      }
+      .admin-stat {
+        padding:16px; background:#f7f1e5;
+        border-radius:10px; min-width:0;
+      }
+      .admin-stat strong {
+        display:block; font-size:24px; margin-top:6px;
+      }
       @media(max-width:900px) {
         .admin-layout { display:block !important; }
         .sidebar { width:100% !important; padding:12px !important; }
@@ -129,9 +166,9 @@
         .stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
       }
       @media(max-width:480px) {
-        .stats { grid-template-columns:1fr !important; }
+        .stats,.admin-stats { grid-template-columns:1fr !important; }
         .staff-grid { grid-template-columns:1fr; }
-        .staff-photo, .staff-photo-placeholder { height:220px; }
+        .staff-photo,.staff-photo-placeholder { height:220px; }
       }
     `;
     document.head.appendChild(style);
@@ -150,13 +187,13 @@
   }
 
   function showLogin() {
-    loginView.hidden = false;
-    adminApp.hidden = true;
+    if (loginView) loginView.hidden = false;
+    if (adminApp) adminApp.hidden = true;
   }
 
   function showAdmin() {
-    loginView.hidden = true;
-    adminApp.hidden = false;
+    if (loginView) loginView.hidden = true;
+    if (adminApp) adminApp.hidden = false;
   }
 
   async function verifyAdmin(userId) {
@@ -191,7 +228,7 @@
 
       currentUser = data.user;
       showAdmin();
-      await loadDashboard();
+      await loadCouponDashboard();
     } catch (error) {
       loginError.textContent = error.message || "Login করা যায়নি।";
     }
@@ -222,34 +259,325 @@
     return error ? "—" : (count ?? 0);
   }
 
-  async function loadDashboard() {
-    setPage("Dashboard", `
-      <div class="stats">
-        <div class="stat-card">Customers<h2 id="stat-customers">…</h2></div>
-        <div class="stat-card">Staff<h2 id="stat-staff">…</h2></div>
-        <div class="stat-card">Bookings<h2>—</h2></div>
-        <div class="stat-card">Coupons<h2 id="stat-coupons">…</h2></div>
+  // =========================================
+  // COUPON DASHBOARD
+  // =========================================
+
+  async function loadCouponDashboard() {
+    setPage("Coupon Dashboard", `
+      <div class="admin-stats">
+        <div class="admin-stat">Generated Coupons
+          <strong id="coupon-generated">...</strong>
+        </div>
+        <div class="admin-stat">Redeemed
+          <strong id="coupon-redeemed">...</strong>
+        </div>
+        <div class="admin-stat">Unused
+          <strong id="coupon-unused">...</strong>
+        </div>
+        <div class="admin-stat">Current Discount
+          <strong id="coupon-discount">...</strong>
+        </div>
       </div>
-      ${card("Welcome to Nababi Ristorante",
-        "<p>আপনার Restaurant Admin Panel-এ স্বাগতম।</p>")}
+
+      <div class="admin-panel-card">
+        <h2>Coupon Offer Settings</h2>
+        <form id="coupon-settings-form">
+          <label>Discount Percentage (%)</label>
+          <input name="discount" type="number"
+            min="1" max="100" step="1" required>
+
+          <label>Start Date & Time</label>
+          <input name="starts" type="datetime-local" required>
+
+          <label>Expiry Date & Time</label>
+          <input name="ends" type="datetime-local" required>
+
+          <label>
+            <input name="enabled" type="checkbox">
+            Enable Coupon Offer
+          </label>
+
+          <button class="admin-primary" type="submit">
+            Save Coupon Settings
+          </button>
+        </form>
+        <p id="coupon-offer-status"></p>
+      </div>
+
+      <div class="admin-panel-card">
+        <h2>Verify & Redeem Coupon</h2>
+        <form id="coupon-redeem-form">
+          <label>Customer Coupon Code</label>
+          <input name="code"
+            placeholder="NABABI-XXXXXXXXXX" required>
+          <button class="admin-primary" type="submit">
+            Verify & Redeem
+          </button>
+        </form>
+        <div id="coupon-result" aria-live="polite"></div>
+      </div>
+
+      <div class="admin-panel-card">
+        <h2>Recent Coupons</h2>
+        <div id="coupon-list">Loading...</div>
+      </div>
     `);
 
-    const [customers, staff, coupons] = await Promise.all([
-      countRows("customers"),
-      countRows("staff"),
-      countRows("coupons")
-    ]);
+    const { data: offer, error: offerError } = await db
+      .from("coupon_offer_settings")
+      .select("*")
+      .eq("id", true)
+      .single();
 
-    $("#stat-customers").textContent = customers;
-    $("#stat-staff").textContent = staff;
-    $("#stat-coupons").textContent = coupons;
+    if (offerError) throw offerError;
+
+    const form = $("#coupon-settings-form");
+
+    // datetime-local input uses the device's local time.
+    const toLocalInput = value => {
+      const date = new Date(value);
+      const local = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60000
+      );
+      return local.toISOString().slice(0, 16);
+    };
+
+    form.elements.discount.value = offer.discount_percent;
+    form.elements.starts.value = toLocalInput(offer.starts_at);
+    form.elements.ends.value = toLocalInput(offer.ends_at);
+    form.elements.enabled.checked = offer.is_enabled;
+
+    const now = Date.now();
+    const starts = new Date(offer.starts_at).getTime();
+    const ends = new Date(offer.ends_at).getTime();
+
+    let status = "Offer is disabled";
+
+    if (offer.is_enabled && now < starts) status = "Offer scheduled";
+    if (offer.is_enabled && now >= starts && now < ends) status = "Offer is active";
+    if (now >= ends) status = "Discount Offer Has Ended";
+
+    $("#coupon-offer-status").textContent = status;
+
+    form.addEventListener("submit", saveCouponSettings);
+    $("#coupon-redeem-form").addEventListener("submit", redeemCoupon);
+
+    const { data: coupons, error } = await db
+      .from("coupons")
+      .select("id,code,discount_percent,is_active,starts_at,ends_at,created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+
+    const { data: redemptions, error: redemptionError } = await db
+      .from("coupon_redemptions")
+      .select("coupon_id");
+
+    if (redemptionError) throw redemptionError;
+
+    const redeemedIds = new Set(
+      (redemptions || []).map(item => String(item.coupon_id))
+    );
+
+    const generated = coupons?.length || 0;
+    const redeemed = redeemedIds.size;
+
+    const activeUnused = (coupons || []).filter(c =>
+      c.is_active &&
+      !redeemedIds.has(String(c.id)) &&
+      Date.now() < new Date(c.ends_at).getTime()
+    ).length;
+
+    $("#coupon-generated").textContent = generated;
+    $("#coupon-redeemed").textContent = redeemed;
+    $("#coupon-unused").textContent = activeUnused;
+    $("#coupon-discount").textContent =
+      offer.discount_percent + "%";
+
+    $("#coupon-list").innerHTML = !generated
+      ? "<p>No coupons generated yet.</p>"
+      : `<div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Status</th>
+                <th>Expiry</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(coupons || []).map(c => {
+                const used = redeemedIds.has(String(c.id));
+                const expired =
+                  !c.is_active ||
+                  Date.now() >= new Date(c.ends_at).getTime();
+
+                const couponStatus = used
+                  ? "Redeemed"
+                  : expired ? "Expired" : "Unused";
+
+                return `<tr>
+                  <td>${escapeHTML(c.code)}</td>
+                  <td>${escapeHTML(c.discount_percent)}%</td>
+                  <td>${couponStatus}</td>
+                  <td>${escapeHTML(
+                    new Date(c.ends_at).toLocaleString()
+                  )}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>`;
   }
 
-  // ছবি Storage-এ আপলোড করে Public URL ফেরত দেয়।
+  async function saveCouponSettings(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const discount = Number(form.elements.discount.value);
+    const starts = new Date(form.elements.starts.value);
+    const ends = new Date(form.elements.ends.value);
+
+    if (!Number.isInteger(discount) || discount < 1 || discount > 100) {
+      notify("Discount 1 থেকে 100-এর মধ্যে হতে হবে।", "error");
+      return;
+    }
+
+    if (
+      !Number.isFinite(starts.getTime()) ||
+      !Number.isFinite(ends.getTime()) ||
+      ends <= starts
+    ) {
+      notify("সঠিক Start ও Expiry Date দিন।", "error");
+      return;
+    }
+
+    const { error } = await db
+      .from("coupon_offer_settings")
+      .update({
+        discount_percent: discount,
+        starts_at: starts.toISOString(),
+        ends_at: ends.toISOString(),
+        is_enabled: form.elements.enabled.checked,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", true);
+
+    if (error) {
+      notify(error.message, "error");
+      return;
+    }
+
+    notify("Coupon Offer Settings সংরক্ষণ হয়েছে।");
+    await loadCouponDashboard();
+  }
+
+  async function redeemCoupon(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const code = String(
+      new FormData(form).get("code") || ""
+    ).trim();
+
+    const resultBox = $("#coupon-result");
+    resultBox.textContent = "Checking...";
+
+    const { data, error } = await db.rpc(
+      "redeem_nababi_coupon",
+      { p_code: code }
+    );
+
+    if (error) {
+      resultBox.textContent = error.message;
+      resultBox.style.color = "#a21d1d";
+      return;
+    }
+
+    resultBox.textContent =
+      data?.message || "Unknown response";
+
+    resultBox.style.color =
+      data?.success ? "#176b38" : "#a21d1d";
+
+    if (data?.success) {
+      form.reset();
+      await loadCouponDashboard();
+    }
+  }
+
+  // =========================================
+  // WEBSITE ON / OFF
+  // =========================================
+
+  async function loadWebsiteSettings() {
+    setPage("Website ON/OFF", `
+      <div class="admin-panel-card">
+        <h2>Website Status</h2>
+        <p id="website-status">Loading...</p>
+        <button id="website-toggle" class="admin-primary"
+          type="button">Loading...</button>
+      </div>
+    `);
+
+    const { data, error } = await db
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "website_enabled")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    let enabled = data?.setting_value !== "false";
+
+    const render = () => {
+      $("#website-status").textContent =
+        enabled ? "Website is ON" : "Website is OFF";
+
+      $("#website-toggle").textContent =
+        enabled ? "Turn Website OFF" : "Turn Website ON";
+    };
+
+    render();
+
+    $("#website-toggle").addEventListener("click", async () => {
+      const next = !enabled;
+
+      const { error: updateError } = await db
+        .from("site_settings")
+        .upsert({
+          setting_key: "website_enabled",
+          setting_value: String(next),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "setting_key" });
+
+      if (updateError) {
+        notify(updateError.message, "error");
+        return;
+      }
+
+      enabled = next;
+      render();
+
+      notify(
+        enabled ? "Website ON হয়েছে।" : "Website OFF হয়েছে।"
+      );
+    });
+  }
+
+  // =========================================
+  // STAFF PHOTO UPLOAD
+  // =========================================
+
   async function uploadStaffPhoto(file, staffId) {
     if (!file) return null;
 
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    const allowed = [
+      "image/jpeg", "image/png", "image/webp"
+    ];
 
     if (!allowed.includes(file.type)) {
       throw new Error("শুধু JPG, PNG অথবা WEBP ছবি ব্যবহার করুন।");
@@ -259,10 +587,12 @@
       throw new Error("ছবির সাইজ ৫ MB-এর কম হতে হবে।");
     }
 
-    const extension = file.type === "image/png" ? "png" :
+    const extension =
+      file.type === "image/png" ? "png" :
       file.type === "image/webp" ? "webp" : "jpg";
 
-    const path = `staff/${staffId}/${Date.now()}.${extension}`;
+    const path =
+      `staff/${staffId}/${Date.now()}.${extension}`;
 
     const { error } = await db.storage
       .from(STORAGE_BUCKET)
@@ -294,7 +624,8 @@
           <input name="photo" type="file"
             accept="image/png,image/jpeg,image/webp">
 
-          <img id="new-photo-preview" class="staff-photo-preview"
+          <img id="new-photo-preview"
+            class="staff-photo-preview"
             alt="Photo preview" hidden>
 
           <button class="save-button" type="submit">Add Staff</button>
@@ -306,11 +637,13 @@
     `);
 
     const form = $("#staff-form");
-
     form.addEventListener("submit", addStaff);
 
     form.elements.photo.addEventListener("change", () => {
-      previewPhoto(form.elements.photo.files[0], $("#new-photo-preview"));
+      previewPhoto(
+        form.elements.photo.files[0],
+        $("#new-photo-preview")
+      );
     });
 
     await renderStaffList();
@@ -372,7 +705,8 @@
         if (updateError) throw updateError;
       } catch (uploadError) {
         notify(
-          "Staff যোগ হয়েছে, কিন্তু ছবি আপলোড হয়নি: " + uploadError.message,
+          "Staff যোগ হয়েছে, কিন্তু ছবি আপলোড হয়নি: " +
+          uploadError.message,
           "error"
         );
         await renderStaffList();
@@ -394,7 +728,9 @@
 
     const { data, error } = await db
       .from("staff")
-      .select("id,full_name,job_title,phone,photo_url,is_active,created_at,pin_updated_at")
+      .select(
+        "id,full_name,job_title,phone,photo_url,is_active,created_at,pin_updated_at"
+      )
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -481,7 +817,9 @@
               }
 
               <div class="staff-form-actions">
-                <button class="save-button" type="submit">Save Changes</button>
+                <button class="save-button" type="submit">
+                  Save Changes
+                </button>
                 <button type="button" class="secondary"
                   data-action="cancel"
                   data-id="${escapeHTML(person.id)}">Cancel</button>
@@ -500,7 +838,7 @@
       form.addEventListener("submit", saveStaffEdit);
     });
 
-    list.addEventListener("click", handleStaffAction);
+    list.onclick = handleStaffAction;
   }
 
   async function handleStaffAction(event) {
@@ -584,6 +922,7 @@
     }
 
     const nextValue = !data.is_active;
+
     const { error: updateError } = await db
       .from("staff")
       .update({ is_active: nextValue })
@@ -594,7 +933,9 @@
       return;
     }
 
-    notify(nextValue ? "Staff Activate হয়েছে।" : "Staff Deactivate হয়েছে।");
+    notify(
+      nextValue ? "Staff Activate হয়েছে।" : "Staff Deactivate হয়েছে।"
+    );
     await renderStaffList();
   }
 
@@ -651,11 +992,16 @@
     await renderStaffList();
   }
 
+  // =========================================
+  // ATTENDANCE
+  // =========================================
+
   async function loadAttendance() {
-    setPage("Staff Attendance", card("Attendance Event History", `
-      <p>সর্বশেষ ২০০টি Check-in / Check-out Event</p>
-      <div id="attendance-list">Loading...</div>
-    `));
+    setPage("Staff Attendance", card(
+      "Attendance Event History",
+      `<p>সর্বশেষ ২০০টি Check-in / Check-out Event</p>
+       <div id="attendance-list">Loading...</div>`
+    ));
 
     const list = $("#attendance-list");
 
@@ -693,13 +1039,21 @@
 
     list.innerHTML = events.map(item => `
       <div class="content-card">
-        <strong>${escapeHTML(names.get(item.staff_id) || "Unknown Staff")}</strong>
+        <strong>${escapeHTML(
+          names.get(item.staff_id) || "Unknown Staff"
+        )}</strong>
         <p>${item.event_type === "check_in" ? "Check In" : "Check Out"}</p>
-        <p>${escapeHTML(new Date(item.occurred_at).toLocaleString())}</p>
+        <p>${escapeHTML(
+          new Date(item.occurred_at).toLocaleString()
+        )}</p>
         <small>Source: ${escapeHTML(item.source || "Unknown")}</small>
       </div>
     `).join("");
   }
+
+  // =========================================
+  // OTHER ADMIN PAGES
+  // =========================================
 
   function placeholder(title, description) {
     setPage(title, card(title, `
@@ -709,7 +1063,9 @@
   }
 
   const pages = {
-    dashboard: loadDashboard,
+    dashboard: loadCouponDashboard,
+    coupons: loadCouponDashboard,
+    website: loadWebsiteSettings,
     staff: loadStaff,
     attendance: loadAttendance,
     customers: () => placeholder("Customers", "Customer Management"),
@@ -717,8 +1073,6 @@
     performance: () => placeholder("Staff Performance", "Staff Performance"),
     activity: () => placeholder("Staff Activity Log", "Staff Activity History"),
     tables: () => placeholder("Tavolo", "Restaurant Tables"),
-    coupons: () => placeholder("Coupon Manager", "Manage Coupons"),
-    website: () => placeholder("Website ON/OFF", "Website Status"),
     delivery: () => placeholder("Food Delivery Link", "Delivery Settings"),
     hours: () => placeholder("Opening Hours", "Restaurant Opening Hours"),
     events: () => placeholder("Staff Event & Advice", "Staff Events and Advice"),
@@ -751,12 +1105,32 @@
     $("#logout")?.addEventListener("click", logout);
   }
 
+  // =========================================
+  // ADMIN LOGO UPLOAD
+  // =========================================
+
   async function uploadLogo(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowed.includes(file.type)) {
+      alert("শুধু JPG, PNG অথবা WEBP ছবি ব্যবহার করুন।");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Logo-এর সাইজ ৫ MB-এর কম হতে হবে।");
+      return;
+    }
+
     try {
-      const path = `admin-logo-${Date.now()}.${file.name.split(".").pop()}`;
+      const extension =
+        file.type === "image/png" ? "png" :
+        file.type === "image/webp" ? "webp" : "jpg";
+
+      const path = `restaurant-logo/logo-${Date.now()}.${extension}`;
 
       const { error } = await db.storage
         .from(STORAGE_BUCKET)
@@ -768,13 +1142,25 @@
         .from(STORAGE_BUCKET)
         .getPublicUrl(path);
 
-      $("#admin-logo").src = data.publicUrl;
+      const logoUrl = data.publicUrl;
+
+      const { error: settingsError } = await db
+        .from("site_settings")
+        .upsert({
+          setting_key: "logo_url",
+          setting_value: logoUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "setting_key" });
+
+      if (settingsError) throw settingsError;
+
+      $("#admin-logo").src = logoUrl;
       $("#admin-logo").hidden = false;
       $("#admin-logo-fallback").hidden = true;
 
-      alert("Logo upload হয়েছে।");
+      alert("Logo upload ও সংরক্ষণ হয়েছে।");
     } catch (error) {
-      alert(error.message);
+      alert(error.message || "Logo upload করা যায়নি।");
     }
   }
 
@@ -786,8 +1172,15 @@
     $("#logo-file")?.addEventListener("change", uploadLogo);
   }
 
+  // =========================================
+  // RESTORE SESSION
+  // =========================================
+
   async function restoreSession() {
-    const { data } = await db.auth.getSession();
+    const { data, error } = await db.auth.getSession();
+
+    if (error) throw error;
+
     const session = data?.session;
 
     if (!session?.user) {
@@ -804,12 +1197,16 @@
 
       currentUser = session.user;
       showAdmin();
-      await loadDashboard();
+      await loadCouponDashboard();
     } catch (error) {
       console.error(error);
       showLogin();
     }
   }
+
+  // =========================================
+  // START
+  // =========================================
 
   async function start() {
     setupStyles();
