@@ -6,7 +6,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nababi Ristorante</title>
 <link rel="stylesheet" href="assets/style.css">
+
+<style>
+/* Nababi Coupon Box */
+.coupon-section {
+  padding: 55px 20px;
+  text-align: center;
+  background: #102d24;
+}
+.coupon-card {
+  max-width: 520px;
+  margin: auto;
+  padding: 32px 22px;
+  border: 2px solid #d8b76a;
+  border-radius: 16px;
+  background: #183e31;
+  color: #f7f1e5;
+}
+.coupon-card h2 {
+  color: #d8b76a;
+  margin-top: 0;
+}
+.coupon-card p {
+  line-height: 1.6;
+}
+.coupon-discount {
+  font-size: 42px;
+  font-weight: bold;
+  color: #d8b76a;
+  margin: 15px 0;
+}
+.coupon-button {
+  display: inline-block;
+  padding: 14px 28px;
+  border: 0;
+  border-radius: 6px;
+  background: #d8b76a;
+  color: #102d24;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+.coupon-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+.coupon-result {
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+.coupon-code {
+  display: block;
+  margin: 12px auto;
+  padding: 14px;
+  max-width: 300px;
+  border: 1px dashed #d8b76a;
+  border-radius: 8px;
+  color: #d8b76a;
+  background: #102d24;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.coupon-copy {
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: 1px solid #d8b76a;
+  border-radius: 5px;
+  background: transparent;
+  color: #f7f1e5;
+  cursor: pointer;
+}
+</style>
 </head>
+
 <body>
 
 <div class="topline">
@@ -29,6 +102,7 @@ UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO
     <a href="#story">La Storia</a>
     <a href="#events">Eventi</a>
     <a href="#booking">Prenota</a>
+    <a href="#coupon">Coupon</a>
   </nav>
 
   <select id="language">
@@ -81,6 +155,26 @@ UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO
   <div>▦ Prenotazione Facile</div>
 </section>
 
+<!-- CUSTOMER COUPON BOX -->
+<section id="coupon" class="coupon-section">
+  <div class="coupon-card">
+    <h2>🎁 NABABI SPECIAL OFFER</h2>
+    <p>Un regalo speciale per te!</p>
+    <div class="coupon-discount">10% OFF</div>
+    <p>
+      Richiedi il tuo coupon esclusivo e mostralo
+      al nostro staff al ristorante.
+    </p>
+
+    <button id="get-coupon" class="coupon-button" type="button">
+      GET MY COUPON
+    </button>
+
+    <div id="coupon-result" class="coupon-result"
+         aria-live="polite"></div>
+  </div>
+</section>
+
 <section id="menu" class="section">
   <h2>Il Nostro Menu</h2>
   <div id="category-list"></div>
@@ -126,6 +220,100 @@ UNA SERATA SPECIALE TI ASPETTA — PRENOTA IL TUO TAVOLO
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/config.js"></script>
 <script src="assets/site.js"></script>
+
+<script>
+(function () {
+  const button = document.getElementById("get-coupon");
+  const result = document.getElementById("coupon-result");
+
+  if (!button || !result) return;
+
+  button.addEventListener("click", async function () {
+    if (!window.supabase || !window.supabase.createClient) {
+      result.textContent = "Servizio temporaneamente non disponibile. Riprova più tardi.";
+      return;
+    }
+
+    const config =
+      window.NABABI_CONFIG ||
+      window.SUPABASE_CONFIG ||
+      window.supabaseConfig;
+
+    if (!config || !config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+      result.textContent = "Configurazione del servizio non disponibile.";
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "GENERAZIONE IN CORSO...";
+    result.textContent = "";
+
+    try {
+      const client = window.supabase.createClient(
+        config.SUPABASE_URL,
+        config.SUPABASE_ANON_KEY
+      );
+
+      const { data, error } = await client.rpc("generate_nababi_coupon");
+
+      if (error) throw error;
+
+      const response = Array.isArray(data) ? data[0] : data;
+      const code = response && (
+        response.code ||
+        response.coupon_code ||
+        response.coupon ||
+        response.data?.code
+      );
+
+      if (!code) {
+        const message = response?.message || response?.error;
+        throw new Error(message || "Non è stato possibile creare il coupon.");
+      }
+
+      result.innerHTML = "";
+
+      const success = document.createElement("p");
+      success.textContent = "Complimenti! Il tuo coupon è pronto:";
+      result.appendChild(success);
+
+      const codeElement = document.createElement("span");
+      codeElement.className = "coupon-code";
+      codeElement.textContent = code;
+      result.appendChild(codeElement);
+
+      const copyButton = document.createElement("button");
+      copyButton.className = "coupon-copy";
+      copyButton.type = "button";
+      copyButton.textContent = "COPIA CODICE";
+
+      copyButton.addEventListener("click", async function () {
+        try {
+          await navigator.clipboard.writeText(code);
+          copyButton.textContent = "COPIATO!";
+        } catch (e) {
+          copyButton.textContent = "Seleziona e copia il codice";
+        }
+      });
+
+      result.appendChild(copyButton);
+
+      const note = document.createElement("p");
+      note.textContent =
+        "Mostra questo codice al personale del ristorante. Valido secondo le condizioni dell'offerta.";
+      result.appendChild(note);
+
+    } catch (error) {
+      console.error("Coupon generation error:", error);
+      result.textContent =
+        "Coupon non disponibile al momento. Controlla le date dell'offerta e riprova.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "GET MY COUPON";
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
