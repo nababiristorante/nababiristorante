@@ -198,7 +198,7 @@ function uploadPanel(kind){
  <div class="section-title"><h2>Carica ${kind==='logo'?'Logo':'immagini'}</h2></div>
  <div class="upload-box">
  <label class="field">Scegli foto dal telefono
- <input id="mediaFile" type="file" accept="image/*" capture="environment"></label>
+ <input id="mediaFile" type="file" accept="image/*" multiple>
  <button id="uploadBtn" class="gold-btn">Carica su Supabase</button>
  <p id="uploadStatus" class="help">Formato JPG, PNG o WebP. Bucket: ${esc(cfg.STORAGE_BUCKET||'nababi-media')}.</p>
  <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
