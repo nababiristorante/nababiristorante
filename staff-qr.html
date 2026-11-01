@@ -4,139 +4,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102d24">
-  <title>Nababi Ristorante | Staff QR Attendance</title>
-
+  <title>Nababi Staff Attendance</title>
   <style>
     * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 24px 16px;
-      background: #102d24;
-      color: #f7f1e5;
+      margin: 0; min-height: 100vh; padding: 24px;
+      display: grid; place-items: center;
+      background: #102d24; color: #f7f1e5;
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
-
     .panel {
-      width: 100%;
-      max-width: 440px;
-      padding: 26px;
+      width: 100%; max-width: 420px; padding: 28px;
+      border: 1px solid #d8b76a; border-radius: 18px;
       background: #183e31;
-      border: 1px solid #d8b76a;
-      border-radius: 16px;
-      text-align: center;
     }
-
-    h1 {
-      color: #d8b76a;
-      font-size: 25px;
-      margin: 0 0 8px;
-    }
-
-    .subtitle {
-      color: #e6dfcf;
-      margin-bottom: 24px;
-    }
-
-    #reader {
-      width: 100%;
-      overflow: hidden;
-      border-radius: 10px;
-      background: #fff;
-    }
-
-    input {
-      width: 100%;
-      padding: 15px;
-      margin: 14px 0;
-      border: 1px solid #d8b76a;
-      border-radius: 8px;
-      background: #102d24;
-      color: white;
-      font-size: 22px;
-      text-align: center;
-      letter-spacing: 8px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 12px;
-      border: 0;
-      border-radius: 8px;
-      background: #d8b76a;
-      color: #102d24;
+    h1 { color: #d8b76a; text-align: center; }
+    p { text-align: center; line-height: 1.5; }
+    label { display: block; margin: 20px 0 8px; }
+    select, input, button {
+      width: 100%; padding: 14px; border-radius: 9px;
       font-size: 16px;
+    }
+    select, input {
+      border: 1px solid #d8b76a; background: #f7f1e5;
+      color: #102d24;
+    }
+    button {
+      margin-top: 22px; border: 0; cursor: pointer;
+      background: #d8b76a; color: #102d24;
       font-weight: bold;
-      cursor: pointer;
     }
-
-    button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    #pinArea { display: none; }
-
+    button:disabled { opacity: .6; cursor: wait; }
     #message {
-      margin-top: 18px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
+      margin-top: 18px; padding: 12px; border-radius: 8px;
+      text-align: center; overflow-wrap: anywhere;
     }
-
-    .small {
-      color: #e6dfcf;
-      font-size: 13px;
-      margin-top: 18px;
-    }
+    .small { font-size: 13px; opacity: .8; }
   </style>
 </head>
-
 <body>
   <main class="panel">
     <h1>NABABI RISTORANTE</h1>
-    <div class="subtitle">Staff QR Attendance</div>
+    <p>Staff Attendance<br>Registro entrata e uscita</p>
 
-    <div id="reader"></div>
+    <label for="staffSelect">Select your name</label>
+    <select id="staffSelect">
+      <option value="">Loading staff...</option>
+    </select>
 
-    <button id="startButton">Start QR Scanner</button>
+    <label for="pin">Your 4-digit PIN</label>
+    <input id="pin" type="password" inputmode="numeric"
+      maxlength="4" pattern="[0-9]{4}" placeholder="Enter PIN"
+      autocomplete="off">
 
-    <section id="pinArea">
-      <p id="staffLabel">Staff QR detected</p>
-
-      <input
-        id="pinInput"
-        type="password"
-        inputmode="numeric"
-        pattern="[0-9]{4}"
-        maxlength="4"
-        placeholder="••••"
-        autocomplete="off"
-        aria-label="Four digit Staff PIN"
-      >
-
-      <button id="punchButton">Confirm Attendance</button>
-    </section>
-
-    <div id="message" role="status" aria-live="polite"></div>
-
-    <button id="resetButton" hidden>
-      Scan Next Staff
+    <button id="punchButton" type="button" disabled>
+      CHECK IN / CHECK OUT
     </button>
 
-    <div class="small">
-      Staff attendance system · Roma
-    </div>
+    <div id="message" role="status" aria-live="polite"></div>
+    <p class="small">Use your own name and PIN.</p>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/staff-qr.js"></script>
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/staff-qr.js"></script>
 </body>
 </html>
