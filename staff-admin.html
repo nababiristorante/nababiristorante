@@ -1,0 +1,633 @@
+
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nababi Staff Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="assets/js/config.js"></script>
+
+<style>
+:root{--green:#102d24;--gold:#d8b76a;--cream:#f7f1e5}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f1e9;color:#183e31;font:16px Arial}
+header{background:var(--green);color:var(--cream);padding:18px}
+header b{color:var(--gold);font-size:22px}
+.wrap{max-width:900px;margin:auto;padding:16px}
+.card{background:white;border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 2px 12px #0001}
+input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font:inherit}
+button{background:var(--green);color:white;border:0;font-weight:bold;cursor:pointer}
+button.alt{background:var(--gold);color:#17251e}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.staff{display:flex;align-items:center;gap:12px;border-bottom:1px solid #eee;padding:10px 0}
+.staff img{width:54px;height:54px;border-radius:50%;object-fit:cover;background:#eee}
+small,.muted{color:#68756d}
+#app{display:none}
+#qr{display:flex;justify-content:center;padding:12px}
+.staff-info{flex:1;min-width:0}
+.staff-actions{display:flex;gap:6px;flex-wrap:wrap}
+.staff-actions button{width:auto;padding:9px 14px}
+.preview{width:90px;height:90px;object-fit:cover;border-radius:10px;display:none;margin:8px 0}
+.message{min-height:20px;font-size:14px}
+@media(max-width:600px){
+ .row{grid-template-columns:1fr}
+ .staff{align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <b>NABABI RISTORANTE</b>
+ <div>Staff Management</div>
+</header>
+
+<div class="wrap">
+
+<section id="login" class="card">
+ <h2>Admin Login</h2>
+ <input id="email" type="email" placeholder="Admin email" autocomplete="username">
+ <input id="password" type="password" placeholder="Password" autocomplete="current-password">
+ <button id="loginBtn">Login</button>
+ <p id="loginMsg" class="muted message"></p>
+</section>
+
+<main id="app">
+
+ <div class="card">
+  <h2>Staff Portal QR</h2>
+  <p>কর্মীরা QR স্ক্যান করে Staff Portal খুলবেন। QR-এর মধ্যে কোনো PIN রাখা হয় না।</p>
+  <div id="qr"></div>
+  <p id="portalUrl" class="muted"></p>
+ </div>
+
+ <div class="card">
+  <h2>কর্মী যোগ / সম্পাদনা</h2>
+
+  <input id="staffId" type="hidden">
+
+  <input id="fullName" placeholder="কর্মীর পূর্ণ নাম">
+
+  <div class="row">
+   <input id="phone" placeholder="Phone" type="tel">
+   <input id="staffEmail" type="email" placeholder="Email">
+  </div>
+
+  <label>কর্মীর ছবি নির্বাচন করুন</label>
+  <input id="photoFile" type="file" accept="image/*">
+  <img id="photoPreview" class="preview" alt="Staff photo preview">
+  <p class="muted">ফোনের Photos / Gallery থেকে ছবি নির্বাচন করতে পারবেন।</p>
+
+  <select id="role">
+   <option value="Waiter">Waiter</option>
+   <option value="Chef">Chef</option>
+   <option value="Receptionist">Receptionist</option>
+   <option value="Cashier">Cashier</option>
+   <option value="Manager">Manager</option>
+   <option value="Other">Other</option>
+  </select>
+
+  <select id="active">
+   <option value="true">Active</option>
+   <option value="false">Inactive</option>
+  </select>
+
+  <button id="saveStaff">Save Staff</button>
+  <button id="cancelEdit" class="alt" type="button">Clear Form</button>
+  <p id="staffMsg" class="muted message"></p>
+ </div>
+
+ <div class="card">
+  <h2>কর্মীদের তালিকা</h2>
+  <div id="staffList"></div>
+ </div>
+
+ <div class="card">
+  <h2>কর্মীর PIN তৈরি / পরিবর্তন</h2>
+  <select id="pinStaff"></select>
+  <input id="newPin" inputmode="numeric" maxlength="6" placeholder="নতুন ৬ সংখ্যার PIN">
+  <button id="setPin">Set PIN</button>
+  <p id="pinMsg" class="muted message"></p>
+ </div>
+
+ <div class="card">
+  <h2>কাজের নির্দেশনা</h2>
+  <select id="taskStaff">
+   <option value="">সব কর্মী</option>
+  </select>
+  <input id="taskTitle" placeholder="Task title">
+  <textarea id="taskDescription" placeholder="বিস্তারিত নির্দেশনা"></textarea>
+  <input id="taskDue" type="datetime-local">
+  <button id="saveTask">Publish Task</button>
+  <p id="taskMsg" class="muted message"></p>
+ </div>
+
+ <div class="card">
+  <h2>Staff Announcement / Breaking News</h2>
+  <input id="noticeTitle" placeholder="শিরোনাম">
+  <textarea id="noticeMessage" placeholder="ঘোষণা বা জরুরি বার্তা"></textarea>
+
+  <div class="row">
+   <label>শুরু
+    <input id="noticeStart" type="datetime-local">
+   </label>
+   <label>শেষ
+    <input id="noticeEnd" type="datetime-local">
+   </label>
+  </div>
+
+  <button id="saveNotice">Publish Announcement</button>
+  <p id="noticeMsg" class="muted message"></p>
+ </div>
+
+ <button class="alt" id="logout">Logout</button>
+
+</main>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const cfg = window.NABABI_CONFIG || {};
+
+const SUPABASE_URL = cfg.SUPABASE_URL;
+const SUPABASE_ANON_KEY = cfg.SUPABASE_ANON_KEY;
+const STORAGE_BUCKET = cfg.STORAGE_BUCKET || "nababi-media";
+const PORTAL_URL = location.origin + "/staff-portal.html";
+
+const $ = id => document.getElementById(id);
+const say = (id, msg) => {
+ const el = $(id);
+ if (el) el.textContent = msg || "";
+};
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) {
+ say("loginMsg","Supabase configuration পাওয়া যায়নি। config.js পরীক্ষা করুন।");
+ return;
+}
+
+const db = window.supabase.createClient(
+ SUPABASE_URL,
+ SUPABASE_ANON_KEY
+);
+
+let currentUser = null;
+let selectedPhoto = null;
+let staffCache = [];
+
+function setBusy(buttonId, busy, busyText) {
+ const btn = $(buttonId);
+ if (!btn) return;
+
+ if (busy) {
+  btn.dataset.originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = busyText || "Please wait...";
+ } else {
+  btn.disabled = false;
+  btn.textContent = btn.dataset.originalText || btn.textContent;
+ }
+}
+
+async function isAdmin() {
+ const {data:userResult,error:userError} = await db.auth.getUser();
+
+ if (userError || !userResult.user) return false;
+
+ currentUser = userResult.user;
+
+ const {data,error} = await db
+  .from("admin_users")
+  .select("user_id")
+  .eq("user_id",currentUser.id)
+  .maybeSingle();
+
+ return !error && !!data;
+}
+
+async function enter() {
+ if (!(await isAdmin())) {
+  await db.auth.signOut();
+  currentUser = null;
+  $("login").style.display = "block";
+  $("app").style.display = "none";
+  say("loginMsg","এই অ্যাকাউন্টের Admin অনুমতি নেই।");
+  return;
+ }
+
+ $("login").style.display = "none";
+ $("app").style.display = "block";
+
+ $("portalUrl").textContent = PORTAL_URL;
+ $("qr").innerHTML = "";
+
+ if (window.QRCode) {
+  new QRCode($("qr"),{
+   text:PORTAL_URL,
+   width:190,
+   height:190
+  });
+ } else {
+  $("qr").textContent = "QR Code library load হয়নি।";
+ }
+
+ await loadStaff();
+}
+
+$("loginBtn").onclick = async () => {
+ const email = $("email").value.trim();
+ const password = $("password").value;
+
+ if (!email || !password) {
+  say("loginMsg","Email ও Password লিখুন।");
+  return;
+ }
+
+ setBusy("loginBtn",true,"Checking...");
+ say("loginMsg","Checking...");
+
+ try {
+  const {error} = await db.auth.signInWithPassword({
+   email,
+   password
+  });
+
+  if (error) {
+   say("loginMsg",error.message);
+   return;
+  }
+
+  await enter();
+
+ } catch (error) {
+  say("loginMsg",error.message || "Login failed.");
+ } finally {
+  setBusy("loginBtn",false);
+ }
+};
+
+$("logout").onclick = async () => {
+ await db.auth.signOut();
+ location.reload();
+};
+
+async function uploadStaffPhoto(file) {
+ if (!file) return null;
+
+ if (!file.type.startsWith("image/")) {
+  throw new Error("শুধু Image file নির্বাচন করুন।");
+ }
+
+ if (file.size > 5 * 1024 * 1024) {
+  throw new Error("ছবির সাইজ ৫ MB-এর কম হতে হবে।");
+ }
+
+ const extension = (file.name.split(".").pop() || "jpg")
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g,"");
+
+ const path = "staff/" + currentUser.id + "/" +
+  Date.now() + "-" + crypto.randomUUID() + "." + extension;
+
+ const {error} = await db.storage
+  .from(STORAGE_BUCKET)
+  .upload(path,file,{
+   cacheControl:"3600",
+   upsert:false,
+   contentType:file.type
+  });
+
+ if (error) throw error;
+
+ const {data} = db.storage
+  .from(STORAGE_BUCKET)
+  .getPublicUrl(path);
+
+ if (!data || !data.publicUrl) {
+  throw new Error("ছবির URL তৈরি করা যায়নি।");
+ }
+
+ return data.publicUrl;
+}
+
+$("photoFile").addEventListener("change",event => {
+ const file = event.target.files && event.target.files[0];
+ selectedPhoto = file || null;
+
+ const preview = $("photoPreview");
+
+ if (file) {
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+ } else {
+  preview.removeAttribute("src");
+  preview.style.display = "none";
+ }
+});
+
+function clearStaffForm() {
+ $("staffId").value = "";
+ $("fullName").value = "";
+ $("phone").value = "";
+ $("staffEmail").value = "";
+ $("role").value = "Waiter";
+ $("active").value = "true";
+ $("photoFile").value = "";
+ $("photoPreview").removeAttribute("src");
+ $("photoPreview").style.display = "none";
+ selectedPhoto = null;
+}
+
+$("cancelEdit").onclick = () => {
+ clearStaffForm();
+ say("staffMsg","ফর্ম পরিষ্কার করা হয়েছে।");
+};
+
+async function loadStaff() {
+ say("staffMsg","কর্মীদের তথ্য লোড হচ্ছে...");
+
+ const {data,error} = await db
+  .from("staff")
+  .select("*")
+  .order("full_name");
+
+ if (error) {
+  say("staffMsg",error.message);
+  return;
+ }
+
+ staffCache = data || [];
+
+ $("staffList").innerHTML = "";
+ $("pinStaff").innerHTML = "";
+ $("taskStaff").innerHTML = '<option value="">সব কর্মী</option>';
+
+ staffCache.forEach(s => {
+  const op = new Option(s.full_name || "Unnamed",s.id);
+  $("pinStaff").add(op);
+
+  $("taskStaff").add(
+   new Option(s.full_name || "Unnamed",s.id)
+  );
+
+  const div = document.createElement("div");
+  div.className = "staff";
+
+  const img = document.createElement("img");
+  img.alt = "Staff photo";
+  img.src = s.photo_url || "";
+
+  const info = document.createElement("div");
+  info.className = "staff-info";
+
+  const name = document.createElement("b");
+  name.textContent = s.full_name || "Unnamed";
+
+  const detail = document.createElement("div");
+  detail.className = "muted";
+  detail.textContent =
+   (s.role || "") +
+   (s.is_active ? " · Active" : " · Inactive");
+
+  const actions = document.createElement("div");
+  actions.className = "staff-actions";
+
+  const edit = document.createElement("button");
+  edit.type = "button";
+  edit.textContent = "Edit";
+  edit.onclick = () => editStaff(s);
+
+  actions.append(edit);
+  info.append(name,detail,actions);
+  div.append(img,info);
+
+  $("staffList").append(div);
+ });
+
+ say("staffMsg",staffCache.length + " জন কর্মী পাওয়া গেছে।");
+}
+
+function editStaff(s) {
+ $("staffId").value = s.id;
+ $("fullName").value = s.full_name || "";
+ $("phone").value = s.phone || "";
+ $("staffEmail").value = s.email || "";
+ $("role").value = s.role || "Waiter";
+ $("active").value = String(!!s.is_active);
+
+ $("photoFile").value = "";
+ selectedPhoto = null;
+
+ const preview = $("photoPreview");
+
+ if (s.photo_url) {
+  preview.src = s.photo_url;
+  preview.style.display = "block";
+ } else {
+  preview.removeAttribute("src");
+  preview.style.display = "none";
+ }
+
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+$("saveStaff").onclick = async () => {
+ if (!currentUser) {
+  say("staffMsg","Admin login প্রয়োজন।");
+  return;
+ }
+
+ const id = $("staffId").value;
+
+ const row = {
+  full_name:$("fullName").value.trim(),
+  phone:$("phone").value.trim(),
+  email:$("staffEmail").value.trim() || null,
+  role:$("role").value,
+  is_active:$("active").value === "true"
+ };
+
+ if (!row.full_name) {
+  say("staffMsg","কর্মীর নাম লিখুন।");
+  return;
+ }
+
+ setBusy("saveStaff",true,"Saving...");
+ say("staffMsg","Saving...");
+
+ try {
+  if (selectedPhoto) {
+   row.photo_url = await uploadStaffPhoto(selectedPhoto);
+  }
+
+  const result = id
+   ? await db.from("staff").update(row).eq("id",id)
+   : await db.from("staff").insert(row);
+
+  if (result.error) throw result.error;
+
+  clearStaffForm();
+  say("staffMsg","কর্মীর তথ্য সফলভাবে সংরক্ষণ হয়েছে।");
+
+  await loadStaff();
+
+ } catch (error) {
+  say("staffMsg",error.message || "Save failed.");
+ } finally {
+  setBusy("saveStaff",false);
+ }
+};
+
+$("setPin").onclick = async () => {
+ const staffId = $("pinStaff").value;
+ const pin = $("newPin").value.trim();
+
+ if (!staffId) {
+  say("pinMsg","প্রথমে একজন কর্মী নির্বাচন করুন।");
+  return;
+ }
+
+ if (!/^[0-9]{6}$/.test(pin)) {
+  say("pinMsg","৬ সংখ্যার PIN দিন।");
+  return;
+ }
+
+ setBusy("setPin",true,"Setting PIN...");
+
+ try {
+  const {error} = await db.rpc(
+   "nababi_admin_set_staff_pin",
+   {
+    p_staff_id:staffId,
+    p_pin:pin
+   }
+  );
+
+  if (error) throw error;
+
+  $("newPin").value = "";
+  say("pinMsg","PIN সেট হয়েছে। কর্মীকে নিরাপদে PIN দিন।");
+
+ } catch (error) {
+  say("pinMsg",error.message || "PIN সেট করা যায়নি।");
+ } finally {
+  setBusy("setPin",false);
+ }
+};
+
+$("saveTask").onclick = async () => {
+ const title = $("taskTitle").value.trim();
+
+ if (!title) {
+  say("taskMsg","Task title লিখুন।");
+  return;
+ }
+
+ const dueValue = $("taskDue").value;
+
+ const row = {
+  staff_id:$("taskStaff").value || null,
+  title,
+  description:$("taskDescription").value.trim() || null,
+  due_at:dueValue ? new Date(dueValue).toISOString() : null
+ };
+
+ setBusy("saveTask",true,"Publishing...");
+
+ try {
+  const {error} = await db
+   .from("staff_tasks")
+   .insert(row);
+
+  if (error) throw error;
+
+  $("taskTitle").value = "";
+  $("taskDescription").value = "";
+  $("taskDue").value = "";
+
+  say("taskMsg","Task প্রকাশ হয়েছে।");
+
+ } catch (error) {
+  say("taskMsg",error.message || "Task প্রকাশ করা যায়নি।");
+ } finally {
+  setBusy("saveTask",false);
+ }
+};
+
+$("saveNotice").onclick = async () => {
+ const title = $("noticeTitle").value.trim();
+ const message = $("noticeMessage").value.trim();
+
+ if (!title || !message) {
+  say("noticeMsg","শিরোনাম ও বার্তা লিখুন।");
+  return;
+ }
+
+ const startValue = $("noticeStart").value;
+ const endValue = $("noticeEnd").value;
+
+ const startsAt = startValue
+  ? new Date(startValue)
+  : new Date();
+
+ const endsAt = endValue
+  ? new Date(endValue)
+  : null;
+
+ if (endsAt && endsAt <= startsAt) {
+  say("noticeMsg","শেষের সময় শুরুর সময়ের পরে হতে হবে।");
+  return;
+ }
+
+ const row = {
+  title,
+  message,
+  starts_at:startsAt.toISOString(),
+  ends_at:endsAt ? endsAt.toISOString() : null,
+  is_active:true
+ };
+
+ setBusy("saveNotice",true,"Publishing...");
+
+ try {
+  const {error} = await db
+   .from("staff_announcements")
+   .insert(row);
+
+  if (error) throw error;
+
+  $("noticeTitle").value = "";
+  $("noticeMessage").value = "";
+  $("noticeStart").value = "";
+  $("noticeEnd").value = "";
+
+  say("noticeMsg","Announcement প্রকাশ হয়েছে।");
+
+ } catch (error) {
+  say("noticeMsg",error.message || "Announcement প্রকাশ করা যায়নি।");
+ } finally {
+  setBusy("saveNotice",false);
+ }
+};
+
+db.auth.getSession().then(async ({data,error}) => {
+ if (error) {
+  say("loginMsg",error.message);
+  return;
+ }
+
+ if (data.session) {
+  await enter();
+ }
+});
+
+})();
+</script>
+
+</body>
+</html>
