@@ -1,307 +1,719 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#070a0b">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102d24">
 
-  <title>Nababi Ristorante | Autentica cucina indiana a Roma</title>
+  <title>Nababi Ristorante | Indian Fine Dining Roma</title>
+  <meta name="description" content="Nababi Ristorante - Indian Fine Dining in Via Vespasiano, Roma. Discover our menu and reserve your table.">
 
   <link rel="stylesheet" href="assets/css/style.css">
 
-  <!-- Supabase Library -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      --nababi-green: #102d24;
+      --nababi-green-light: #183e31;
+      --nababi-gold: #d8b76a;
+      --nababi-cream: #f7f1e5;
+    }
 
-  <!-- Supabase Configuration -->
-  <script defer src="assets/js/config.js"></script>
+    body {
+      margin: 0;
+      background: #070a0b;
+      color: var(--nababi-cream);
+      font-family: Arial, sans-serif;
+    }
 
-  <!-- Website JavaScript -->
-  <script defer src="assets/js/site.js"></script>
+    a {
+      color: inherit;
+    }
+
+    .site-header {
+      background: var(--nababi-green);
+      border-bottom: 1px solid var(--nababi-gold);
+      padding: 16px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      color: var(--nababi-gold);
+      font-size: 25px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .site-nav a {
+      text-decoration: none;
+    }
+
+    .hero {
+      min-height: 440px;
+      padding: 70px 7%;
+      display: flex;
+      align-items: center;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.88), rgba(0,0,0,.25)),
+        url("assets/images/biryani.jpg") center/cover no-repeat;
+    }
+
+    .hero-content {
+      max-width: 650px;
+    }
+
+    .hero h1 {
+      color: var(--nababi-gold);
+      font-size: clamp(38px, 7vw, 68px);
+      margin: 12px 0;
+    }
+
+    .section {
+      padding: 55px 6%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section-title {
+      color: var(--nababi-gold);
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .section-intro {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .site-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .site-card {
+      background: #111c22;
+      border: 1px solid rgba(216,183,106,.35);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .site-card img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .site-card > div {
+      padding: 15px;
+    }
+
+    .site-button,
+    .booking-choice,
+    #booking-submit {
+      background: var(--nababi-gold);
+      color: #102016;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .booking-choices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px;
+      margin: 30px 0;
+    }
+
+    .booking-choice {
+      min-height: 120px;
+      text-align: left;
+      background: #183e31;
+      color: var(--nababi-cream);
+      border: 1px solid var(--nababi-gold);
+    }
+
+    .booking-choice strong {
+      display: block;
+      color: var(--nababi-gold);
+      font-size: 19px;
+      margin-bottom: 10px;
+    }
+
+    .booking-choice[aria-pressed="true"] {
+      background: var(--nababi-gold);
+      color: #102016;
+    }
+
+    .booking-choice[aria-pressed="true"] strong {
+      color: #102016;
+    }
+
+    #booking-form:not(.active) {
+      display: none;
+    }
+
+    #booking-form {
+      background: #111c22;
+      border: 1px solid var(--nababi-gold);
+      border-radius: 14px;
+      padding: 25px;
+      margin-top: 25px;
+    }
+
+    #booking-form h3 {
+      color: var(--nababi-gold);
+    }
+
+    .booking-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .booking-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .booking-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .booking-field input,
+    .booking-field select,
+    .booking-field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      border-radius: 7px;
+      border: 1px solid #718078;
+      background: #070a0b;
+      color: white;
+      font: inherit;
+    }
+
+    .booking-field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    #booking-table-area {
+      margin: 20px 0;
+      padding: 16px;
+      border: 1px solid rgba(216,183,106,.4);
+      border-radius: 10px;
+    }
+
+    #booking-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .booking-table {
+      background: #183e31;
+      color: white;
+      border: 1px solid var(--nababi-gold);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+    }
+
+    .booking-table.selected {
+      background: var(--nababi-gold);
+      color: #102016;
+    }
+
+    .booking-table:disabled {
+      background: #383838;
+      color: #aaa;
+      border-color: #666;
+      cursor: not-allowed;
+      opacity: .7;
+    }
+
+    .booking-message {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .booking-message.success {
+      background: #17472c;
+      color: white;
+    }
+
+    .booking-message.error {
+      background: #682828;
+      color: white;
+    }
+
+    .breaking-news-bar {
+      background: #183e31;
+      border-bottom: 1px solid var(--nababi-gold);
+      padding: 15px 5%;
+    }
+
+    .breaking-news-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .breaking-news-label {
+      color: var(--nababi-gold);
+      font-weight: bold;
+    }
+
+    .breaking-news-image {
+      max-width: 160px;
+      border-radius: 8px;
+    }
+
+    .breaking-news-video {
+      color: var(--nababi-gold);
+    }
+
+    .gallery-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.94);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 25px;
+    }
+
+    .gallery-lightbox[hidden] {
+      display: none;
+    }
+
+    .gallery-lightbox img {
+      max-width: 95%;
+      max-height: 85vh;
+      object-fit: contain;
+    }
+
+    .gallery-lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 36px;
+      background: none;
+      color: white;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .site-footer {
+      background: var(--nababi-green);
+      border-top: 1px solid var(--nababi-gold);
+      padding: 35px 6%;
+      text-align: center;
+    }
+
+    @media (max-width: 650px) {
+      .booking-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .booking-field.full {
+        grid-column: auto;
+      }
+
+      .hero {
+        min-height: 350px;
+      }
+
+      .site-header {
+        justify-content: center;
+      }
+
+      .site-nav {
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 
-<body class="site-body">
+<body>
 
-<header class="site-header">
-  <a class="site-logo" href="#home">
-    ♛ Nababi
-    <small>RISTORANTE</small>
+  <!-- HEADER -->
+  <header class="site-header">
+    <a class="brand" href="#home">N NABABI</a>
+
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#home">Home</a>
+      <a href="#menu">Menu</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#about">Chi siamo</a>
+      <a href="#booking">Prenota</a>
+      <a href="#contact">Contatti</a>
+
+      <select id="language-selector" aria-label="Language">
+        <option value="it">🇮🇹 IT</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="bn">🇧🇩 বাংলা</option>
+      </select>
+
+      <a href="/admin.html" aria-label="Admin Panel">Admin</a>
+    </nav>
+  </header>
+
+  <!-- BREAKING NEWS: site.js loads scheduled news here -->
+
+  <!-- HERO -->
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <p>INDIAN FINE DINING</p>
+        <h1>Tradizione.<br>Gusto regale.</h1>
+        <p>UN VIAGGIO NEI SAPORI</p>
+        <p>Scopri i sapori autentici della cucina indiana.</p>
+
+        <a class="site-button" href="#booking">
+          Prenota il tuo tavolo
+        </a>
+
+        <p>
+          <a href="tel:+393933805350">+39 393 3805350</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- MENU -->
+    <section class="section" id="menu">
+      <h2 class="section-title">Il nostro Menu</h2>
+      <p class="section-intro">
+        Un viaggio tra i sapori e le tradizioni dell'India.
+      </p>
+
+      <div class="site-grid">
+        <article class="site-card">
+          <img src="assets/images/indian-starters.jpg" alt="Antipasti indiani" loading="lazy">
+          <div>
+            <h3>Antipasti</h3>
+            <p>Una selezione di sapori per iniziare.</p>
+          </div>
+        </article>
+
+        <article class="site-card">
+          <img src="assets/images/indian-main-course.jpg" alt="Piatti principali indiani" loading="lazy">
+          <div>
+            <h3>Piatti principali</h3>
+            <p>Ricette tradizionali preparate con cura.</p>
+          </div>
+        </article>
+
+        <article class="site-card">
+          <img src="assets/images/biryani.jpg" alt="Biryani indiano" loading="lazy">
+          <div>
+            <h3>Riso & Biryani</h3>
+            <p>Profumi e spezie della cucina indiana.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="section" id="gallery">
+      <h2 class="section-title">Galleria</h2>
+      <p class="section-intro">
+        Scopri il nostro ristorante e i nostri piatti.
+      </p>
+
+      <div class="site-grid" id="publicGallery">
+        <p>Caricamento Gallery...</p>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="about">
+      <h2 class="section-title">La nostra storia</h2>
+      <p>
+        Benvenuti da Nababi Ristorante. Vi invitiamo a scoprire
+        la tradizione e i sapori della cucina indiana in un'atmosfera
+        accogliente e raffinata.
+      </p>
+    </section>
+
+    <!-- BOOKING -->
+    <section class="section" id="booking">
+      <h2 class="section-title">Prenota il tuo tavolo</h2>
+
+      <p class="section-intro">
+        Scegli il tipo di prenotazione per iniziare.
+      </p>
+
+      <div class="booking-choices">
+
+        <button
+          type="button"
+          class="booking-choice"
+          data-booking-choice="table"
+          aria-pressed="false">
+          <strong>🍽 Prenotazione Tavolo</strong>
+          Prenota un tavolo per la tua visita.
+        </button>
+
+        <button
+          type="button"
+          class="booking-choice"
+          data-booking-choice="birthday"
+          aria-pressed="false">
+          <strong>🎂 Compleanno</strong>
+          Organizza il tuo compleanno con noi.
+        </button>
+
+        <button
+          type="button"
+          class="booking-choice"
+          data-booking-choice="special_event"
+          aria-pressed="false">
+          <strong>🎉 Evento Speciale</strong>
+          Contattaci per il tuo evento.
+        </button>
+
+      </div>
+
+      <!-- The form appears after choosing a booking type -->
+      <form id="booking-form">
+
+        <h3 id="booking-form-title">
+          Richiesta prenotazione
+        </h3>
+
+        <input
+          type="hidden"
+          name="booking_type"
+          value="">
+
+        <input
+          type="hidden"
+          id="booking-table-number"
+          name="table_number"
+          value="">
+
+        <div class="booking-fields">
+
+          <div class="booking-field full">
+            <label for="booking-full-name">Nome e cognome *</label>
+            <input
+              type="text"
+              id="booking-full-name"
+              name="full_name"
+              autocomplete="name"
+              required
+              maxlength="120"
+              placeholder="Nome e cognome">
+          </div>
+
+          <div class="booking-field">
+            <label for="booking-phone">Telefono *</label>
+            <input
+              type="tel"
+              id="booking-phone"
+              name="phone"
+              autocomplete="tel"
+              placeholder="+39">
+          </div>
+
+          <div class="booking-field">
+            <label for="booking-email">Email *</label>
+            <input
+              type="email"
+              id="booking-email"
+              name="email"
+              autocomplete="email"
+              placeholder="nome@email.com">
+          </div>
+
+          <div class="booking-field">
+            <label for="booking-date">Data *</label>
+            <input
+              type="date"
+              id="booking-date"
+              name="booking_date"
+              required>
+          </div>
+
+          <div class="booking-field">
+            <label for="booking-time">Orario *</label>
+            <input
+              type="time"
+              id="booking-time"
+              name="booking_time"
+              required>
+          </div>
+
+          <div class="booking-field">
+            <label for="booking-guests">Numero di ospiti *</label>
+            <input
+              type="number"
+              id="booking-guests"
+              name="guests"
+              min="1"
+              max="30"
+              value="2"
+              required>
+          </div>
+
+          <div class="booking-field full">
+            <label for="booking-notes">Note (facoltativo)</label>
+            <textarea
+              id="booking-notes"
+              name="notes"
+              maxlength="1000"
+              placeholder="Richieste particolari..."></textarea>
+          </div>
+
+        </div>
+
+        <!-- Table map: only for normal table reservations -->
+        <div id="booking-table-area" hidden>
+          <h3>Seleziona un tavolo (facoltativo)</h3>
+
+          <p id="booking-map-message">
+            Scegli data e orario per controllare la disponibilità.
+          </p>
+
+          <div id="booking-map"></div>
+        </div>
+
+        <button
+          type="submit"
+          id="booking-submit">
+          Invia richiesta di prenotazione
+        </button>
+
+        <div
+          id="booking-message"
+          class="booking-message"
+          role="status"
+          aria-live="polite">
+        </div>
+
+      </form>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="section" id="reviews">
+      <h2 class="section-title">Recensioni</h2>
+      <p class="section-intro">
+        Le esperienze dei nostri ospiti.
+      </p>
+
+      <div class="site-grid">
+        <article class="site-card">
+          <div>
+            <h3>La tua opinione conta</h3>
+            <p>
+              Vieni a trovarci e condividi la tua esperienza.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="section" id="contact">
+      <h2 class="section-title">Contatti</h2>
+
+      <p>
+        <strong>Nababi Ristorante</strong>
+      </p>
+
+      <p>Via Vespasiano 73/75/77, Roma</p>
+
+      <p>
+        Telefono:
+        <a href="tel:+393933805350">+39 393 3805350</a>
+      </p>
+
+      <p>
+        WhatsApp:
+        <a
+          href="https://wa.me/393337687319"
+          target="_blank"
+          rel="noopener noreferrer">
+          +39 333 7687319
+        </a>
+      </p>
+
+      <a
+        class="site-button"
+        href="https://www.google.com/maps/search/?api=1&query=Via+Vespasiano+73+Roma"
+        target="_blank"
+        rel="noopener noreferrer">
+        Come raggiungerci
+      </a>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <h2>NABABI RISTORANTE</h2>
+    <p>INDIAN FINE DINING</p>
+    <p>Via Vespasiano 73/75/77, Roma</p>
+    <p>© <span id="current-year"></span> Nababi Ristorante</p>
+  </footer>
+
+  <!-- WhatsApp shortcut -->
+  <a
+    href="https://wa.me/393337687319"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Contattaci su WhatsApp"
+    style="
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:1000;
+      background:#25D366;
+      color:#fff;
+      padding:13px 17px;
+      border-radius:30px;
+      text-decoration:none;
+      font-weight:bold;">
+    WhatsApp
   </a>
 
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#menu">Menu</a>
-    <a href="#about">About Us</a>
-    <a href="#gallery">Gallery</a>
-    <a href="#reservation">Reservation</a>
-    <a href="#contact">Contact</a>
-  </nav>
+  <!-- Supabase client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <span class="site-phone">☎ +39 393 3805350</span>
-  <a class="gold-btn" href="admin.html">Admin</a>
-</header>
+  <!-- Public Supabase configuration -->
+  <script src="assets/js/config.js"></script>
 
-<!-- HERO -->
-<section class="site-hero" id="home">
-  <div>
-    <p class="eyebrow">BENVENUTI DA</p>
+  <!-- Website functionality -->
+  <script src="assets/js/site.js"></script>
 
-    <h1>Nababi Ristorante</h1>
-
-    <h2 style="font:italic 24px Georgia;color:#f5d37b">
-      Autentica cucina indiana nel cuore di Roma.
-    </h2>
-
-    <p>
-      Un viaggio di sapori, tradizione e passione. Scopri i nostri
-      piatti autentici, preparati con ingredienti selezionati e ricette originali.
-    </p>
-
-    <a class="gold-btn" href="#menu">♜ Scopri il Menu</a>
-    <a class="outline-btn" href="#reservation">Prenota un Tavolo</a>
-  </div>
-</section>
-
-<!-- MENU -->
-<section class="site-section" id="menu">
-  <h2>Il Nostro Menu</h2>
-
-  <p>
-    Scopri i nostri piatti speciali, preparati con amore e tradizione.
-  </p>
-
-  <div class="site-cards">
-
-    <article class="site-card">
-      <img
-        src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80"
-        alt="Antipasti">
-      <div>
-        <h3>Antipasti</h3>
-        <p>Sapori dall'India</p>
-      </div>
-    </article>
-
-    <article class="site-card">
-      <img
-        src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=700&q=80"
-        alt="Piatti principali">
-      <div>
-        <h3>Piatti Principali</h3>
-        <p>Piatti ricchi di gusto</p>
-      </div>
-    </article>
-
-    <article class="site-card">
-      <img
-        src="https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=700&q=80"
-        alt="Biryani">
-      <div>
-        <h3>Biryani</h3>
-        <p>Il nostro piatto speciale</p>
-      </div>
-    </article>
-
-    <article class="site-card">
-      <img
-        src="https://images.unsplash.com/photo-1571115177098-24ec42ed204d?auto=format&fit=crop&w=700&q=80"
-        alt="Dessert">
-      <div>
-        <h3>Dessert</h3>
-        <p>Dolci tradizionali</p>
-      </div>
-    </article>
-
-  </div>
-</section>
-
-<!-- GALLERY -->
-<section class="site-section" id="gallery">
-  <h2>La Nostra Gallery</h2>
-
-  <p>
-    Vivi l’atmosfera del nostro ristorante attraverso le immagini.
-  </p>
-
-  <div class="site-cards" id="publicGallery">
-    <p class="help">Caricamento foto...</p>
-  </div>
-</section>
-
-<!-- TABLE BOOKING -->
-<section class="site-section" id="reservation">
-  <h2>Prenota il Tuo Tavolo</h2>
-
-  <p>
-    Scegli data e orario e inviaci la tua richiesta.
-  </p>
-
-  <div class="site-cards">
-
-    <article class="site-card">
-      <div>
-        <h3>♜ Tavolo Normale</h3>
-        <p>Dine & Enjoy</p>
-      </div>
-    </article>
-
-    <article class="site-card">
-      <div>
-        <h3>♛ Compleanno</h3>
-        <p>Festeggia con noi</p>
-      </div>
-    </article>
-
-    <article class="site-card">
-      <div>
-        <h3>♙ Eventi Speciali</h3>
-        <p>Eventi su misura</p>
-      </div>
-    </article>
-
-  </div>
-
-  <!-- BOOKING FORM -->
-  <form
-    id="booking-form"
-    class="site-card"
-    style="max-width:600px;margin:24px auto;padding:24px;display:grid;gap:14px;">
-
-    <label>
-      Nome e Cognome
-      <input
-        type="text"
-        name="name"
-        placeholder="Il tuo nome"
-        required>
-    </label>
-
-    <label>
-      Telefono
-      <input
-        type="tel"
-        name="phone"
-        placeholder="+39..."
-        required>
-    </label>
-
-    <label>
-      Email
-      <input
-        type="email"
-        name="email"
-        placeholder="La tua email">
-    </label>
-
-    <label>
-      Data
-      <input
-        type="date"
-        name="booking_date"
-        required>
-    </label>
-
-    <label>
-      Orario
-      <input
-        type="time"
-        name="booking_time"
-        required>
-    </label>
-
-    <label>
-      Numero di persone
-      <select name="guests" required>
-        <option value="">Seleziona</option>
-        <option value="1">1 persona</option>
-        <option value="2">2 persone</option>
-        <option value="3">3 persone</option>
-        <option value="4">4 persone</option>
-        <option value="5">5 persone</option>
-        <option value="6">6 persone</option>
-        <option value="7">7 persone</option>
-        <option value="8">8 persone</option>
-      </select>
-    </label>
-
-    <label>
-      Note (facoltativo)
-      <textarea
-        name="notes"
-        placeholder="Richieste speciali..."></textarea>
-    </label>
-
-    <button type="submit" class="gold-btn">
-      Invia richiesta di prenotazione
-    </button>
-
-    <p id="booking-message" aria-live="polite"></p>
-
-  </form>
-
-  <p>
-    Oppure prenota direttamente su WhatsApp:
-  </p>
-
-  <p>
-    <a
-      class="gold-btn"
-      href="https://wa.me/393337687319"
-      target="_blank"
-      rel="noopener">
-      Prenota su WhatsApp
-    </a>
-  </p>
-
-</section>
-
-<!-- ABOUT -->
-<section class="site-section" id="about">
-  <h2>Chi Siamo</h2>
-
-  <p>
-    Nababi Ristorante porta a Roma i sapori autentici dell’India,
-    con piatti preparati secondo le ricette tradizionali e un tocco di modernità.
-  </p>
-</section>
-
-<!-- REVIEWS -->
-<section class="site-section">
-  <h2>Cosa Dicono di Noi</h2>
-
-  <p>
-    La soddisfazione dei nostri clienti è la nostra migliore ricompensa.
-  </p>
-
-  <p>★★★★★</p>
-</section>
-
-<!-- CONTACT -->
-<section class="site-section" id="contact">
-  <h2>Vieni a trovarci</h2>
-
-  <p>Via Vespasiano 73/75/77, Roma</p>
-
-  <p>
-    ☎ +39 393 3805350 · WhatsApp +39 333 7687319
-  </p>
-
-  <p>Aperti tutti i giorni: 12:00 – 23:00</p>
-</section>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-
-  <div class="site-logo">
-    ♛ Nababi
-    <small>RISTORANTE</small>
-  </div>
-
-  <p>© 2026 Nababi Ristorante. Tutti i diritti riservati.</p>
-
-  <p>Autentica cucina indiana nel cuore di Roma.</p>
-
-</footer>
+  <script>
+    document.getElementById("current-year").textContent =
+      new Date().getFullYear();
+  </script>
 
 </body>
 </html>
