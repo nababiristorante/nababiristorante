@@ -352,20 +352,156 @@ contact:'Informazioni di contatto del ristorante.',
 settings:'Impostazioni generali del sito.'
 };
 
+/* LOGO UPLOAD */
 function uploadPanel(kind){
+ if(kind==='gallery'){
+  return `<section class="section-card">
+   <div class="section-title"><h2>Gallery immagini</h2></div>
+   <div class="upload-box">
+    <label class="field">Scegli una o più foto
+     <input id="mediaFile" type="file" accept="image/*" multiple>
+    </label>
+    <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
+    <button id="uploadBtn" class="gold-btn" type="button">Carica foto</button>
+    <p id="uploadStatus" class="help" aria-live="polite">JPG, PNG o WebP. Massimo 8 MB per foto.</p>
+   </div>
+  </section>
+  <section class="section-card">
+   <div class="section-title">
+    <h2>Foto caricate</h2>
+    <button class="outline-btn" id="galleryRefresh" type="button">Aggiorna</button>
+   </div>
+   <div id="galleryAdminList" class="gallery-admin-grid">
+    <p class="help">Caricamento foto…</p>
+   </div>
+  </section>`;
+ }
+
  return `<section class="section-card">
- <div class="section-title"><h2>Carica ${kind==='logo'?'Logo':'immagini'}</h2></div>
+ <div class="section-title"><h2>Carica Logo</h2></div>
  <div class="upload-box">
  <label class="field">Scegli foto dal telefono
- <input id="mediaFile" type="file" accept="image/*" multiple>
+ <input id="mediaFile" type="file" accept="image/*">
  </label>
  <button id="uploadBtn" class="gold-btn" type="button">Carica su Supabase</button>
  <p id="uploadStatus" class="help">Formato JPG, PNG o WebP. Bucket: ${esc(cfg.STORAGE_BUCKET||'nababi-media')}.</p>
- <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
+ <img id="uploadPreview" class="preview-img" hidden alt="Anteprima logo">
  <div id="uploadedUrl"></div>
  </div></section>`;
 }
 
+/* GALLERY: LOAD IMAGES */
+async function galleryLoad(){
+ const box=$('#galleryAdminList');
+ if(!box)return;
+
+ box.innerHTML='<p class="help">Caricamento foto…</p>';
+
+ try{
+  const {data,error}=await db.from('gallery_items')
+   .select('id,image_url,sort_order,created_at')
+   .order('sort_order',{ascending:true})
+   .order('created_at',{ascending:false});
+
+  if(error)throw error;
+
+  if(!data?.length){
+   box.innerHTML='<div class="empty-state">Nessuna foto caricata.</div>';
+   return;
+  }
+
+  box.innerHTML=data.map(item=>`
+   <article class="gallery-admin-card">
+    <img src="${esc(item.image_url)}" alt="Foto Gallery" loading="lazy">
+    <button class="outline-btn danger-btn gallery-delete-btn"
+     type="button" data-gallery-delete="${esc(item.id)}">
+     Elimina
+    </button>
+   </article>
+  `).join('');
+
+ }catch(error){
+  box.innerHTML=`<div class="empty-state">
+   <span class="error-text">${esc(error.message)}</span>
+   <p class="help">Controlla i permessi SELECT della tabella gallery_items.</p>
+  </div>`;
+ }
+}
+
+/* EXTRACT STORAGE PATH FROM PUBLIC URL */
+function galleryStoragePath(url){
+ try{
+  const parsed=new URL(url);
+  const marker='/storage/v1/object/public/';
+  const position=parsed.pathname.indexOf(marker);
+
+  if(position===-1)return null;
+
+  const rest=parsed.pathname.slice(position+marker.length);
+  const slash=rest.indexOf('/');
+
+  if(slash===-1)return null;
+
+  const bucket=decodeURIComponent(rest.slice(0,slash));
+  const path=decodeURIComponent(rest.slice(slash+1));
+
+  if(bucket!==(cfg.STORAGE_BUCKET||'nababi-media'))return null;
+
+  return path;
+ }catch(error){
+  return null;
+ }
+}
+
+/* GALLERY: DELETE IMAGE AND DATABASE ROW */
+async function galleryDelete(event){
+ const button=event.target.closest('[data-gallery-delete]');
+ if(!button)return;
+
+ const id=button.dataset.galleryDelete;
+
+ if(!confirm('Vuoi eliminare definitivamente questa foto?'))return;
+
+ button.disabled=true;
+ button.textContent='Eliminazione…';
+
+ try{
+  const {data,error}=await db.from('gallery_items')
+   .select('id,image_url')
+   .eq('id',id)
+   .single();
+
+  if(error)throw error;
+  if(!data)throw new Error('Foto non trovata.');
+
+  const path=galleryStoragePath(data.image_url);
+
+  /* Delete Storage file first when it belongs to our bucket */
+  if(path){
+   const {error:storageError}=await db.storage
+    .from(cfg.STORAGE_BUCKET||'nababi-media')
+    .remove([path]);
+
+   if(storageError)throw storageError;
+  }
+
+  const {error:rowError}=await db.from('gallery_items')
+   .delete().eq('id',id);
+
+  if(rowError){
+   throw new Error('File eliminato, ma il record non è stato eliminato: '+rowError.message);
+  }
+
+  await galleryLoad();
+
+ }catch(error){
+  alert('Errore durante l’eliminazione: '+error.message);
+  button.disabled=false;
+  button.textContent='Elimina';
+ }
+}
+
+/* UPLOAD HANDLER */
 async function uploadHandler(){
  const input=$('#mediaFile');
  const btn=$('#uploadBtn');
@@ -415,8 +551,7 @@ async function uploadHandler(){
     .getPublicUrl(data.path).data.publicUrl;
 
    if(current==='gallery'){
-    const {error:dbError}=await db
-     .from('gallery_items')
+    const {error:dbError}=await db.from('gallery_items')
      .insert({
       image_url:pub,
       is_active:true,
@@ -427,6 +562,19 @@ async function uploadHandler(){
    }
 
    uploaded.push(pub);
+  }
+
+  input.value='';
+
+  if(current==='gallery'){
+   status.textContent=`${uploaded.length} foto Gallery-তে যোগ হয়েছে।`;
+   const preview=$('#uploadPreview');
+   if(preview){
+    preview.hidden=true;
+    preview.removeAttribute('src');
+   }
+   await galleryLoad();
+   return;
   }
 
   $('#uploadedUrl').innerHTML=uploaded.map((url,index)=>`
@@ -449,11 +597,8 @@ async function uploadHandler(){
    };
   });
 
-  status.textContent=current==='gallery'
-   ?`${uploaded.length} foto caricate e aggiunte alla Gallery.`
-   :'Caricamento completato. URL pronto da copiare.';
+  status.textContent='Caricamento completato. URL pronto da copiare.';
 
-  input.value='';
  }catch(e){
   status.innerHTML=`<span class="error-text">${esc(e.message)}. Verifica bucket, tabella gallery_items e policy Supabase.</span>`;
  }finally{
@@ -670,7 +815,12 @@ async function genericTable(id){
 async function render(id){
  current=id;nav();$('#pageTitle').textContent=moduleInfo(id);
  const host=$('#pageContent');host.innerHTML='<div class="empty-state">Caricamento…</div>';
- if(id==='dashboard'){host.innerHTML=await dashboard();loadRecent();return;}
+
+ if(id==='dashboard'){
+  host.innerHTML=await dashboard();
+  loadRecent();
+  return;
+ }
 
  if(id==='bookings'){
   host.innerHTML=bookingsPage();
@@ -686,101 +836,196 @@ async function render(id){
   $('#newsCancelBtn').onclick=resetNewsForm;
   $('#newsRefreshBtn').onclick=newsLoad;
   $('#newsList').onclick=newsAction;
-  newsLoad();return;
+  newsLoad();
+  return;
  }
- if(id==='logo'||id==='gallery'){
-  host.innerHTML=uploadPanel(id);
+
+ /* GALLERY PAGE */
+ if(id==='gallery'){
+  host.innerHTML=uploadPanel('gallery');
+
   $('#mediaFile').onchange=()=>{
-   const f=$('#mediaFile').files[0];
-   if(f){const img=$('#uploadPreview');img.src=URL.createObjectURL(f);img.hidden=false;}
+   const files=Array.from($('#mediaFile').files||[]);
+   const preview=$('#uploadPreview');
+
+   if(!files.length){
+    preview.hidden=true;
+    preview.removeAttribute('src');
+    return;
+   }
+
+   if(files.length===1){
+    preview.src=URL.createObjectURL(files[0]);
+    preview.hidden=false;
+   }else{
+    preview.hidden=true;
+    preview.removeAttribute('src');
+   }
   };
-  $('#uploadBtn').onclick=uploadHandler;return;
+
+  $('#uploadBtn').onclick=uploadHandler;
+  $('#galleryRefresh').onclick=galleryLoad;
+  $('#galleryAdminList').addEventListener('click',galleryDelete);
+
+  await galleryLoad();
+  return;
  }
- if(id==='categories'){
-  host.innerHTML=categoryPage();categoryLoad();
-  $('#categoryForm').onsubmit=async e=>{
-   e.preventDefault();const name=new FormData(e.target).get('name');
-   const {error}=await db.from('categories').insert({name});
-   if(error)alert(error.message);else{e.target.reset();categoryLoad();}
+
+ /* LOGO PAGE */
+ if(id==='logo'){
+  host.innerHTML=uploadPanel('logo');
+
+  $('#mediaFile').onchange=()=>{
+   const file=$('#mediaFile').files[0];
+   if(file){
+    const img=$('#uploadPreview');
+    img.src=URL.createObjectURL(file);
+    img.hidden=false;
+   }
   };
+
+  $('#uploadBtn').onclick=uploadHandler;
+  return;
+ }
+
+ if(id==='categories'){
+  host.innerHTML=categoryPage();
+  categoryLoad();
+
+  $('#categoryForm').onsubmit=async e=>{
+   e.preventDefault();
+   const name=new FormData(e.target).get('name');
+   const {error}=await db.from('categories').insert({name});
+   if(error)alert(error.message);
+   else{
+    e.target.reset();
+    categoryLoad();
+   }
+  };
+
   host.onclick=async e=>{
    const id=e.target.dataset.deleteCategory;
    if(id&&confirm('Eliminare questa categoria?')){
     const {error}=await db.from('categories').delete().eq('id',id);
-    if(error)alert(error.message);else categoryLoad();
+    if(error)alert(error.message);
+    else categoryLoad();
    }
-  };return;
+  };
+  return;
  }
+
  if(id==='menu_manager'){
-  host.innerHTML=menuPage();dishLoad();
+  host.innerHTML=menuPage();
+  dishLoad();
+
   $('#dishForm').onsubmit=async e=>{
-   e.preventDefault();const fd=new FormData(e.target);let image_url=null;
+   e.preventDefault();
+   const fd=new FormData(e.target);
+   let image_url=null;
    const file=fd.get('image');
+
    try{
     if(file?.size){
      const ext=file.name.split('.').pop();
      const path=`menu/${Date.now()}.${ext}`;
-     const {data,error}=await db.storage.from(cfg.STORAGE_BUCKET||'nababi-media')
+     const {data,error}=await db.storage
+      .from(cfg.STORAGE_BUCKET||'nababi-media')
       .upload(path,file,{contentType:file.type});
+
      if(error)throw error;
-     image_url=db.storage.from(cfg.STORAGE_BUCKET||'nababi-media').getPublicUrl(data.path).data.publicUrl;
+
+     image_url=db.storage.from(cfg.STORAGE_BUCKET||'nababi-media')
+      .getPublicUrl(data.path).data.publicUrl;
     }
+
     const payload={
-     name:fd.get('name'),price:Number(fd.get('price')),
-     category:fd.get('category')||null,description:fd.get('description')||null,
+     name:fd.get('name'),
+     price:Number(fd.get('price')),
+     category:fd.get('category')||null,
+     description:fd.get('description')||null,
      is_available:fd.get('is_available')==='true'
     };
+
     if(image_url)payload.image_url=image_url;
+
     const {error}=await db.from('menu_items').insert(payload);
     if(error)throw error;
+
     $('#dishStatus').textContent='Piatto salvato.';
-    e.target.reset();dishLoad();
-   }catch(err){$('#dishStatus').innerHTML=`<span class="error-text">${esc(err.message)}</span>`;}
-  };return;
+    e.target.reset();
+    dishLoad();
+
+   }catch(err){
+    $('#dishStatus').innerHTML=`<span class="error-text">${esc(err.message)}</span>`;
+   }
+  };
+  return;
  }
+
  const body=await genericTable(id);
+
  host.innerHTML=`<section class="section-card">
  <div class="section-title"><h2>${esc(moduleInfo(id))}</h2>
  <span class="help">${esc(descriptions[id]||'Gestione Nababi')}</span></div>${body}</section>
  ${['secret','menu_public','social','hours','contact','settings','reports','performance','attendance','activity','tables','delivery','customers','coupons','staff','reviews'].includes(id)?
  `<section class="section-card"><h2>Gestione e configurazione</h2>
  <p class="help">Il pannello legge la tabella disponibile. Per attivare aggiunta/modifica completa bisogna verificare le colonne reali della tabella Supabase.</p>
- ${id==='secret'?uploadPanel('gallery'):''}</section>`:''}`;
- if(id==='secret'){const b=$('#uploadBtn');if(b)b.onclick=uploadHandler;}
+ ${id==='secret'?uploadPanel('logo'):''}</section>`:''}`;
+
+ if(id==='secret'){
+  const b=$('#uploadBtn');
+  if(b)b.onclick=uploadHandler;
+ }
 }
 
 $('#loginForm').addEventListener('submit',signIn);
+
 $('#sideNav').addEventListener('click',e=>{
- const b=e.target.closest('[data-page]');if(b)render(b.dataset.page);
+ const b=e.target.closest('[data-page]');
+ if(b)render(b.dataset.page);
 });
+
 $('#pageContent').addEventListener('click',e=>{
- const b=e.target.closest('[data-page]');if(b)render(b.dataset.page);
+ const b=e.target.closest('[data-page]');
+ if(b)render(b.dataset.page);
 });
+
 $('#menuToggle').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#mobileMore').onclick=()=>$('#sidebar').classList.toggle('open');
+
 $('#mobileNav').addEventListener('click',e=>{
- const b=e.target.closest('[data-page]');if(b)render(b.dataset.page);
+ const b=e.target.closest('[data-page]');
+ if(b)render(b.dataset.page);
 });
+
 $('#logoutBtn').onclick=async()=>{
- try{await db?.auth.signOut();}
- finally{
-  $('#adminApp').hidden=true;$('#loginScreen').hidden=false;
+ try{
+  await db?.auth.signOut();
+ }finally{
+  $('#adminApp').hidden=true;
+  $('#loginScreen').hidden=false;
   $('#password').value='';
  }
 };
 
 (async()=>{
  if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY){
-  $('#loginMessage').textContent='Supabase config non disponibile.';return;
+  $('#loginMessage').textContent='Supabase config non disponibile.';
+  return;
  }
+
  db=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+
  try{
   const {data,error}=await db.auth.getSession();
   if(error)throw error;
+
   if(data.session){
    await verifyAdmin(data.session.user);
    openApp(data.session.user.email);
   }
- }catch(e){$('#loginMessage').textContent=e.message;}
+ }catch(e){
+  $('#loginMessage').textContent=e.message;
+ }
 })();
 })();
