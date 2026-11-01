@@ -195,3 +195,58 @@
     transform: none;
   }
 }
+
+
+/* Nababi Ristorante — responsive premium refinements */
+:root {
+  color-scheme: dark;
+  --bg: #070a0b;
+  --panel: #0d1418;
+  --panel2: #111c22;
+  --gold: #e8bd55;
+  --gold2: #f6d77d;
+  --line: #3b3322;
+  --text: #f7f3e9;
+  --muted: #a9a69d;
+  --green: #0e382d;
+  --radius: 16px;
+}
+[hidden] { display: none !important; }
+.admin-body { background: var(--bg); color: var(--text); }
+.admin-login-screen { min-height: 100dvh; padding: 22px; }
+.login-card, .section-card, .stat-card, .hero-card {
+  border: 1px solid rgba(232,189,85,.16);
+  border-radius: var(--radius);
+}
+.login-card {
+  width: min(100%, 440px);
+  background: linear-gradient(145deg,#111b1d,#090e10);
+  box-shadow: 0 24px 70px rgba(0,0,0,.42);
+}
+.brand-mark, .site-logo { color: var(--gold2); letter-spacing: .04em; }
+.gold-btn {
+  background: linear-gradient(135deg,var(--gold2),var(--gold));
+  color: #17150e; border: 0; font-weight: 800;
+}
+.gold-btn:focus-visible, .outline-btn:focus-visible, .nav-btn:focus-visible,
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--gold2); outline-offset: 3px;
+}
+.section-card, .stat-card { background: linear-gradient(145deg,var(--panel2),var(--panel)); }
+.stat-card strong { color: var(--gold2); }
+.nav-btn.active { color: var(--gold2); border-color: rgba(232,189,85,.35); }
+.admin-email { overflow-wrap: anywhere; }
+.table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.data-table { min-width: 560px; }
+#pageContent img { max-width: 100%; }
+@media (max-width: 760px) {
+  .admin-page-content, .content { padding: 16px 14px 104px; }
+  .topbar { padding-inline: 12px; gap: 10px; }
+  .top-brand { font-size: 15px; }
+  .admin-email { max-width: 42vw; font-size: 11px; }
+  .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  .two-col { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .section-card { padding: 15px; }
+  .mobile-nav { padding-bottom: env(safe-area-inset-bottom); }
+}
