@@ -9,7 +9,7 @@
   const MODULES = [
     ['secret', 'Secret Coupon Box'], ['menu_manager', 'Menu Manager'],
     ['categories', 'Categories'], ['bookings', 'Bookings'],
-    ['customers', 'Customers'], ['coupons', 'Coupons'],
+['coupons', 'Coupons'],
     ['performance', 'Staff Performance'], ['attendance', 'Staff Attendance'],
     ['activity', 'Staff Activity Log'], ['tables', 'Tables'],
     ['gallery', 'Gallery'], ['delivery', 'Food Delivery'],
@@ -21,7 +21,7 @@
 
   const TABLE_PERMISSION = {
     secret: ['coupons'], menu_manager: ['menu_items'], categories: ['categories'],
-    bookings: ['bookings'], customers: ['customers'], coupons: ['coupons'],
+    bookings: ['bookings'], coupons: ['coupons'],
     performance: ['staff_activity_logs'], attendance: ['staff_attendance'],
     activity: ['staff_activity_logs'], tables: ['restaurant_tables'],
     gallery: ['gallery_items'], delivery: ['delivery_orders'], social: ['social_links'],
