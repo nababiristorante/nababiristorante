@@ -1,20 +1,14 @@
 
 (() => {
-  "use strict";
-
   const config = window.NABABI_CONFIG;
 
-  const message = document.getElementById("message");
-  const startButton = document.getElementById("startButton");
+  const staffSelect = document.getElementById("staffSelect");
+  const pinInput = document.getElementById("pin");
   const punchButton = document.getElementById("punchButton");
-  const resetButton = document.getElementById("resetButton");
-  const pinArea = document.getElementById("pinArea");
-  const pinInput = document.getElementById("pinInput");
-  const staffLabel = document.getElementById("staffLabel");
+  const message = document.getElementById("message");
 
   if (!config || !window.supabase) {
     message.textContent = "Configuration error. Please contact Admin.";
-    startButton.disabled = true;
     return;
   }
 
@@ -23,163 +17,96 @@
     config.SUPABASE_ANON_KEY
   );
 
-  let scanner = null;
-  let staffId = null;
-  let busy = false;
-
-  const uuidPattern =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
   function showMessage(text, success = false) {
     message.textContent = text;
-    message.style.color = success ? "#d8b76a" : "#ffd0c8";
+    message.style.background = success ? "#d8b76a" : "#f7f1e5";
+    message.style.color = "#102d24";
   }
 
-  async function stopScanner() {
-    if (!scanner) return;
+  async function loadStaff() {
+    punchButton.disabled = true;
+    staffSelect.innerHTML = '<option value="">Loading...</option>';
 
-    try {
-      if (scanner.isScanning) {
-        await scanner.stop();
-      }
-    } catch (error) {
-      console.warn("Scanner stop:", error);
-    }
-  }
+    const { data, error } = await db.rpc("nababi_staff_active_list");
 
-  async function startScanner() {
-    if (busy) return;
-
-    if (!navigator.mediaDevices?.getUserMedia) {
-      showMessage("Camera requires HTTPS and browser permission.");
+    if (error) {
+      staffSelect.innerHTML = '<option value="">Unable to load staff</option>';
+      showMessage("Could not load staff list. Contact Admin.");
+      console.error(error);
       return;
     }
 
-    try {
-      showMessage("Opening camera...");
-      startButton.disabled = true;
+    const staff = (Array.isArray(data) ? data : []).map((item) => ({
+      id: item.staff_id ?? item.id,
+      name: item.full_name ?? item.staff_name ?? item.name
+    })).filter((item) => item.id && item.name);
 
-      scanner = new Html5Qrcode("reader");
+    staffSelect.innerHTML = '<option value="">Select your name</option>';
 
-      await scanner.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 240, height: 240 }
-        },
-        async (decodedText) => {
-          if (busy) return;
+    staff.forEach((person) => {
+      const option = document.createElement("option");
+      option.value = person.id;
+      option.textContent = person.name;
+      staffSelect.appendChild(option);
+    });
 
-          const scannedValue = decodedText.trim();
-
-          if (!uuidPattern.test(scannedValue)) {
-            showMessage("Invalid Staff QR Code.");
-            return;
-          }
-
-          busy = true;
-          staffId = scannedValue;
-
-          await stopScanner();
-
-          staffLabel.textContent = "Staff QR detected";
-          pinArea.style.display = "block";
-          startButton.hidden = true;
-          pinInput.value = "";
-          pinInput.focus();
-
-          showMessage("Enter your 4-digit Staff PIN.", true);
-        },
-        () => {}
-      );
-
-      showMessage("Camera ready. Scan your Staff QR Code.", true);
-
-    } catch (error) {
-      console.error(error);
-      showMessage(
-        "Camera could not start. Check camera permission and HTTPS."
-      );
-      startButton.disabled = false;
+    if (!staff.length) {
+      showMessage("No active staff found. Contact Admin.");
+      return;
     }
+
+    punchButton.disabled = false;
+    showMessage("Select your name and enter your PIN.", true);
   }
 
-  async function submitPunch() {
-    if (!staffId || busy === false) {
-      // A scanned Staff ID is required.
-      if (!staffId) return;
-    }
-
+  punchButton.addEventListener("click", async () => {
+    const staffId = staffSelect.value;
     const pin = pinInput.value.trim();
 
-    if (!/^[0-9]{4}$/.test(pin)) {
-      showMessage("Enter exactly 4 digits.");
+    if (!staffId) {
+      showMessage("Please select your name.");
+      return;
+    }
+
+    if (!/^\d{4}$/.test(pin)) {
+      showMessage("Please enter your 4-digit PIN.");
+      pinInput.focus();
       return;
     }
 
     punchButton.disabled = true;
-    showMessage("Verifying PIN...");
+    punchButton.textContent = "PLEASE WAIT...";
+    showMessage("Checking attendance...");
 
     try {
-      const { data, error } = await db.rpc(
-        "staff_qr_punch",
-        {
-          p_staff_id: staffId,
-          p_pin: pin
-        }
-      );
+      const { data, error } = await db.rpc("staff_qr_punch", {
+        p_staff_id: staffId,
+        p_pin: pin
+      });
 
-      pinInput.value = "";
+      if (error) throw error;
 
-      if (error) {
-        console.error(error);
-        showMessage("Attendance could not be recorded.");
-        return;
+      const result = Array.isArray(data) ? data[0] : data;
+
+      if (result && (result.success === false || result.ok === false)) {
+        throw new Error(result.message || "Attendance was not recorded.");
       }
-
-      if (!data || data.ok !== true) {
-        showMessage(data?.message || "PIN verification failed.");
-        return;
-      }
-
-      const action =
-        data.event === "check_in" ? "CHECK-IN" : "CHECK-OUT";
 
       showMessage(
-        `${action} successful. Welcome ${data.staff_name || "Staff"}.`,
+        result?.message || "Attendance request completed. Please check with Admin if unsure.",
         true
       );
 
-      pinArea.style.display = "none";
-      resetButton.hidden = false;
-
+      pinInput.value = "";
     } catch (error) {
       console.error(error);
-      showMessage("Unexpected error. Please contact Admin.");
+      showMessage(error.message || "Attendance failed. Please try again.");
+      pinInput.value = "";
     } finally {
       punchButton.disabled = false;
+      punchButton.textContent = "CHECK IN / CHECK OUT";
     }
-  }
-
-  async function resetScanner() {
-    staffId = null;
-    busy = false;
-
-    pinInput.value = "";
-    pinArea.style.display = "none";
-    resetButton.hidden = true;
-    startButton.hidden = false;
-    startButton.disabled = false;
-
-    showMessage("Ready for next Staff QR Scan.", true);
-  }
-
-  startButton.addEventListener("click", startScanner);
-  punchButton.addEventListener("click", submitPunch);
-  resetButton.addEventListener("click", resetScanner);
-
-  pinInput.addEventListener("input", () => {
-    pinInput.value = pinInput.value.replace(/\D/g, "").slice(0, 4);
   });
 
+  loadStaff();
 })();
