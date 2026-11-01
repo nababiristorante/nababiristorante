@@ -1,119 +1,286 @@
-/* Nababi Ristorante — Staff Permissions
- * Client-side helper for the admin dashboard.
- * IMPORTANT: UI checks are convenience only. Enforce the same permissions with
- * Supabase Row Level Security policies and trusted server-side functions.
+
+/**
+ * Nababi Ristorante
+ * Staff Permissions Manager
+ *
+ * IMPORTANT:
+ * This module controls the Admin Panel UI only.
+ * Real security must always be enforced by Supabase RLS
+ * and secure server-side / Edge Function checks.
  */
+
 (function (global) {
-  'use strict';
+  "use strict";
 
   const MODULES = [
-    ['secret', 'Secret Coupon Box'], ['menu_manager', 'Menu Manager'],
-    ['categories', 'Categories'], ['bookings', 'Bookings'],
-    ['customers', 'Customers'], ['coupons', 'Coupons'],
-    ['performance', 'Staff Performance'], ['attendance', 'Staff Attendance'],
-    ['activity', 'Staff Activity Log'], ['tables', 'Tables'],
-    ['gallery', 'Gallery'], ['delivery', 'Food Delivery'],
-    ['social', 'Social'], ['menu_public', 'Public Menu'],
-    ['news', 'Breaking News'], ['reviews', 'Reviews'],
-    ['hours', 'Opening Hours'], ['logo', 'Logo Management'],
-    ['reports', 'Reports'], ['contact', 'Contact'], ['settings', 'Settings']
+    "dashboard",
+    "secret",
+    "menu_manager",
+    "categories",
+    "bookings",
+    "customers",
+    "coupons",
+    "staff",
+    "performance",
+    "attendance",
+    "activity",
+    "tables",
+    "gallery",
+    "delivery",
+    "social",
+    "menu_public",
+    "news",
+    "reviews",
+    "hours",
+    "logo",
+    "reports",
+    "contact",
+    "settings"
   ];
 
   const TABLE_PERMISSION = {
-    secret: ['coupons'], menu_manager: ['menu_items'], categories: ['categories'],
-    bookings: ['bookings'], customers: ['customers'], coupons: ['coupons'],
-    performance: ['staff_activity_logs'], attendance: ['staff_attendance'],
-    activity: ['staff_activity_logs'], tables: ['restaurant_tables'],
-    gallery: ['gallery_items'], delivery: ['delivery_orders'], social: ['social_links'],
-    menu_public: ['menu_items'], news: ['breaking_news'], reviews: ['reviews'],
-    hours: ['opening_hours'], logo: ['site_settings'],
-    reports: ['staff_attendance', 'staff_activity_logs'],
-    contact: ['contact_messages'], settings: ['site_settings']
+    categories: "categories",
+    bookings: "bookings",
+    customers: "customers",
+    coupons: "coupons",
+    staff: "staff",
+    performance: "staff_activity_logs",
+    activity: "staff_activity_logs",
+    attendance: "staff_attendance",
+    tables: "restaurant_tables",
+    gallery: "gallery_items",
+    delivery: "delivery_orders",
+    menu_manager: "menu_items",
+    menu_public: "menu_items",
+    news: "breaking_news",
+    reviews: "reviews",
+    hours: "opening_hours",
+    secret: "secret_coupon_boxes",
+    social: "social_links",
+    contact: "contact_messages",
+    logo: "site_settings",
+    settings: "site_settings"
   };
 
-  const state = { role: 'guest', userId: null, permissions: [] };
+  const state = {
+    role: "guest",
+    user: null,
+    staff: null,
+    permissions: {},
+    loaded: false
+  };
 
-  function setSession(role, userId, permissions) {
-    state.role = role === 'admin' ? 'admin' : 'staff';
-    state.userId = userId || null;
-    state.permissions = state.role === 'admin'
-      ? MODULES.map(([id]) => id)
-      : [...new Set(Array.isArray(permissions) ? permissions.filter(p => MODULES.some(([id]) => id === p)) : [])];
+  function normalizePermissions(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return {};
+    }
+
+    const result = {};
+
+    MODULES.forEach(function (moduleName) {
+      result[moduleName] = value[moduleName] === true;
+    });
+
+    return result;
+  }
+
+  function setSession(data) {
+    data = data || {};
+
+    state.role = data.role === "admin"
+      ? "admin"
+      : data.role === "staff"
+        ? "staff"
+        : "guest";
+
+    state.user = data.user || null;
+    state.staff = data.staff || null;
+    state.permissions = normalizePermissions(data.permissions);
+    state.loaded = true;
+
     return getSession();
   }
 
   function clearSession() {
-    state.role = 'guest'; state.userId = null; state.permissions = [];
-  }
-
-  function canAccess(moduleId) {
-    if (moduleId === 'dashboard') return state.role === 'admin' || state.role === 'staff';
-    return state.role === 'admin' || (state.role === 'staff' && state.permissions.includes(moduleId));
-  }
-
-  function visibleModules() {
-    return MODULES.filter(([id]) => canAccess(id));
+    state.role = "guest";
+    state.user = null;
+    state.staff = null;
+    state.permissions = {};
+    state.loaded = false;
   }
 
   function getSession() {
-    return Object.freeze({ role: state.role, userId: state.userId, permissions: [...state.permissions] });
+    return {
+      role: state.role,
+      user: state.user,
+      staff: state.staff,
+      permissions: Object.assign({}, state.permissions),
+      loaded: state.loaded
+    };
   }
 
-  async function loadCurrentUser(supabase) {
-    if (!supabase) throw new Error('Supabase client is required.');
-    const { data: authData, error: authError } = await supabase.auth.getUser();
-    if (authError) throw authError;
-    const user = authData && authData.user;
-    if (!user) { clearSession(); throw new Error('No authenticated user.'); }
+  function canAccess(moduleName) {
+    if (!moduleName) return false;
 
-    const { data: admin, error: adminError } = await supabase
-      .from('admin_users').select('user_id').eq('user_id', user.id).maybeSingle();
-    if (adminError) throw adminError;
-    if (admin) return setSession('admin', user.id, []);
-
-    const { data: staff, error: staffError } = await supabase
-      .from('staff').select('auth_user_id, permissions, is_active')
-      .eq('auth_user_id', user.id).maybeSingle();
-    if (staffError) throw staffError;
-    if (!staff || staff.is_active !== true) {
-      clearSession();
-      throw new Error('Staff account is not enabled. Contact the Super Admin.');
+    if (state.role === "admin") {
+      return true;
     }
-    return setSession('staff', user.id, staff.permissions);
+
+    if (state.role !== "staff") {
+      return false;
+    }
+
+    return state.permissions[moduleName] === true;
   }
 
-  async function saveStaffPermissions(supabase, staffId, permissions, active) {
-    if (state.role !== 'admin') throw new Error('Only Super Admin can change staff permissions.');
-    if (!supabase || !staffId) throw new Error('Supabase client and staff ID are required.');
-    const allowed = new Set(MODULES.map(([id]) => id));
-    const clean = [...new Set((permissions || []).filter(id => allowed.has(id)))];
-    const { data, error } = await supabase.from('staff')
-      .update({ permissions: clean, is_active: active !== false })
-      .eq('id', staffId)
-      .select('id, auth_user_id, permissions, is_active')
+  function visibleModules() {
+    if (state.role === "admin") {
+      return MODULES.slice();
+    }
+
+    if (state.role !== "staff") {
+      return [];
+    }
+
+    return MODULES.filter(function (moduleName) {
+      return canAccess(moduleName);
+    });
+  }
+
+  async function loadCurrentUser(db) {
+    if (!db || !db.auth || !db.from) {
+      clearSession();
+      return getSession();
+    }
+
+    try {
+      const authResult = await db.auth.getUser();
+
+      if (authResult.error || !authResult.data || !authResult.data.user) {
+        clearSession();
+        return getSession();
+      }
+
+      const user = authResult.data.user;
+
+      const adminResult = await db
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (adminResult.error) {
+        throw adminResult.error;
+      }
+
+      if (adminResult.data) {
+        return setSession({
+          role: "admin",
+          user: user,
+          permissions: {}
+        });
+      }
+
+      const staffResult = await db
+        .from("staff")
+        .select("id, full_name, email, role, permissions, is_active, auth_user_id")
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+
+      if (staffResult.error) {
+        throw staffResult.error;
+      }
+
+      const staff = staffResult.data;
+
+      if (!staff || staff.is_active !== true) {
+        clearSession();
+        return getSession();
+      }
+
+      return setSession({
+        role: "staff",
+        user: user,
+        staff: staff,
+        permissions: staff.permissions
+      });
+
+    } catch (error) {
+      console.error("Nababi permissions: user loading failed.", error);
+      clearSession();
+
+      return {
+        ...getSession(),
+        error: error.message || "Could not load user permissions."
+      };
+    }
+  }
+
+  async function saveStaffPermissions(db, staffId, permissions) {
+    if (state.role !== "admin") {
+      throw new Error("Only an administrator can change staff permissions.");
+    }
+
+    if (!db || !staffId) {
+      throw new Error("Database connection or staff ID is missing.");
+    }
+
+    const safePermissions = normalizePermissions(permissions);
+
+    const result = await db
+      .from("staff")
+      .update({
+        permissions: safePermissions
+      })
+      .eq("id", staffId)
+      .select("id, permissions")
       .single();
-    if (error) throw error;
-    return data;
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    return result.data;
   }
 
-  async function linkStaffAuthUser(supabase, staffId, authUserId, permissions, active) {
-    if (state.role !== 'admin') throw new Error('Only Super Admin can link staff accounts.');
-    if (!supabase || !staffId || !authUserId) throw new Error('Missing required staff account details.');
-    const allowed = new Set(MODULES.map(([id]) => id));
-    const clean = [...new Set((permissions || []).filter(id => allowed.has(id)))];
-    const { data, error } = await supabase.from('staff')
-      .update({ auth_user_id: authUserId, permissions: clean, is_active: active !== false })
-      .eq('id', staffId)
-      .select('id, auth_user_id, permissions, is_active')
+  async function linkStaffAuthUser(db, staffId, authUserId) {
+    if (state.role !== "admin") {
+      throw new Error("Only an administrator can link a staff account.");
+    }
+
+    if (!db || !staffId || !authUserId) {
+      throw new Error("Database connection, staff ID, or user ID is missing.");
+    }
+
+    const result = await db
+      .from("staff")
+      .update({
+        auth_user_id: authUserId
+      })
+      .eq("id", staffId)
+      .select("id, auth_user_id")
       .single();
-    if (error) throw error;
-    return data;
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    return result.data;
   }
 
-  global.NababiStaffPermissions = Object.freeze({
-    modules: MODULES.map(([id, label]) => ({ id, label })),
-    tablePermission: TABLE_PERMISSION,
-    setSession, clearSession, canAccess, visibleModules, getSession,
-    loadCurrentUser, saveStaffPermissions, linkStaffAuthUser
-  });
+  global.NababiStaffPermissions = {
+    modules: MODULES.slice(),
+    tablePermission: Object.assign({}, TABLE_PERMISSION),
+
+    setSession: setSession,
+    clearSession: clearSession,
+    getSession: getSession,
+    canAccess: canAccess,
+    visibleModules: visibleModules,
+
+    loadCurrentUser: loadCurrentUser,
+    saveStaffPermissions: saveStaffPermissions,
+    linkStaffAuthUser: linkStaffAuthUser
+  };
+
 })(window);
