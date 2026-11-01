@@ -4,8 +4,13 @@
 
 const cfg = window.NABABI_CONFIG || {};
 const $ = s => document.querySelector(s);
+
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
 }[c]));
 
 const menu = [
@@ -84,6 +89,7 @@ const descriptions = {
 };
 
 const MODULES = menu.filter(([id]) => !['dashboard','staff'].includes(id));
+
 let db = null;
 let current = 'dashboard';
 let sessionUser = null;
@@ -102,6 +108,7 @@ function moduleInfo(id) {
 
 function nav() {
   const visible = menu.filter(([id]) => canSee(id));
+
   $('#sideNav').innerHTML = visible.map(([id,ico,label]) =>
     `<button class="nav-btn ${id===current?'active':''}" data-page="${id}">
       <span class="ico">${ico}</span>${esc(label)}
@@ -149,9 +156,7 @@ async function verifyAdmin(user) {
   if (error) throw new Error('Verifica Staff: ' + error.message);
 
   if (!staff || staff.is_active !== true) {
-    throw new Error(
-      'Questo account non è autorizzato. Chiedi al Super Admin di attivare il tuo accesso.'
-    );
+    throw new Error('Questo account non è autorizzato. Contatta il Super Admin.');
   }
 
   userRole = 'staff';
@@ -170,7 +175,7 @@ async function signIn(e) {
   out.textContent = '';
 
   if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
-    out.textContent = 'Configurazione Supabase mancante. Controlla assets/js/config.js.';
+    out.textContent = 'Configurazione Supabase mancante.';
     return;
   }
 
@@ -178,14 +183,11 @@ async function signIn(e) {
   btn.textContent = 'Accesso in corso…';
 
   try {
-    db = window.supabase.createClient(
-      cfg.SUPABASE_URL,
-      cfg.SUPABASE_ANON_KEY
-    );
+    db = window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
 
     const {data,error} = await db.auth.signInWithPassword({
-      email: $('#email').value.trim(),
-      password: $('#password').value
+      email:$('#email').value.trim(),
+      password:$('#password').value
     });
 
     if (error) throw error;
@@ -210,25 +212,21 @@ function statCard(icon,label,value) {
 
 async function count(table) {
   try {
-    const {count,error} = await db
-      .from(table)
-      .select('*',{count:'exact',head:true});
+    const {count,error} = await db.from(table).select('*',{count:'exact',head:true});
     if (error) throw error;
     return count ?? 0;
-  } catch (e) {
+  } catch (_) {
     return '—';
   }
 }
 
 async function dashboard() {
-  // Staff dashboard: no global statistics or queries across unrelated modules.
   if (userRole === 'staff') {
     const shortcuts = menu
       .filter(([id]) => id !== 'dashboard' && canSee(id))
       .map(([id,ico,label]) =>
         `<button class="quick-btn" data-page="${id}">
-          ${ico} ${esc(label)}
-          <small>Apri modulo</small>
+          ${ico} ${esc(label)}<small>Apri modulo</small>
         </button>`
       ).join('');
 
@@ -243,22 +241,21 @@ async function dashboard() {
     <section class="section-card">
       <div class="section-title"><h2>I tuoi moduli</h2></div>
       <div class="quick-grid">
-        ${shortcuts || '<p class="help">Nessun modulo assegnato. Contatta il Super Admin.</p>'}
+        ${shortcuts || '<p class="help">Nessun modulo assegnato.</p>'}
       </div>
     </section>`;
   }
 
-  const [
-    visits,clicks,gallery,coupons,bookings,reviews,staff
-  ] = await Promise.all([
-    count('site_visits'),
-    count('menu_clicks'),
-    count('gallery_items'),
-    count('coupon_redemptions'),
-    count('bookings'),
-    count('reviews'),
-    count('staff')
-  ]);
+  const [visits,clicks,gallery,coupons,bookings,reviews,staff] =
+    await Promise.all([
+      count('site_visits'),
+      count('menu_clicks'),
+      count('gallery_items'),
+      count('coupon_redemptions'),
+      count('bookings'),
+      count('reviews'),
+      count('staff')
+    ]);
 
   return `<section class="hero-card">
     <div>
@@ -302,7 +299,7 @@ async function dashboard() {
     </section>
     <section class="section-card">
       <div class="section-title"><h2>♟ Recent Activity</h2></div>
-      <p class="help">Le attività recenti saranno mostrate quando la tabella activity è configurata.</p>
+      <p class="help">Le attività recenti saranno mostrate quando configurate.</p>
     </section>
   </div>`;
 }
@@ -311,11 +308,8 @@ async function loadRecent() {
   if (userRole !== 'admin') return;
 
   try {
-    const {data,error} = await db
-      .from('bookings')
-      .select('*')
-      .order('created_at',{ascending:false})
-      .limit(5);
+    const {data,error} = await db.from('bookings')
+      .select('*').order('created_at',{ascending:false}).limit(5);
 
     if (error) throw error;
 
@@ -350,7 +344,7 @@ function uploadPanel(kind) {
       </label>
       <button id="uploadBtn" class="gold-btn">Carica su Supabase</button>
       <p id="uploadStatus" class="help">
-        Formato consigliato: JPG, PNG o WebP. Bucket:
+        Formato JPG, PNG o WebP. Bucket:
         ${esc(cfg.STORAGE_BUCKET || 'nababi-media')}.
       </p>
       <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
@@ -370,13 +364,8 @@ async function uploadHandler() {
     return;
   }
 
-  if (!file.type.startsWith('image/')) {
-    status.textContent = 'Seleziona un file immagine.';
-    return;
-  }
-
-  if (file.size > 8 * 1024 * 1024) {
-    status.textContent = 'La foto deve essere inferiore a 8 MB.';
+  if (!file.type.startsWith('image/') || file.size > 8*1024*1024) {
+    status.textContent = 'Seleziona un’immagine inferiore a 8 MB.';
     return;
   }
 
@@ -408,14 +397,11 @@ async function uploadHandler() {
       <input class="search-input" readonly value="${esc(pub.publicUrl)}">
       <button class="outline-btn" id="copyUrl">Copia URL</button>`;
 
-    $('#copyUrl').onclick = () =>
-      navigator.clipboard?.writeText(pub.publicUrl);
-
-    status.textContent = 'Foto salvata. URL pronto da copiare.';
+    $('#copyUrl').onclick = () => navigator.clipboard?.writeText(pub.publicUrl);
+    status.textContent = 'Foto salvata.';
 
   } catch (e) {
-    status.innerHTML = `<span class="error-text">${esc(e.message)}.
-      Verifica bucket e policy Storage.</span>`;
+    status.textContent = e.message || 'Upload non riuscito.';
   } finally {
     btn.disabled = false;
   }
@@ -428,9 +414,7 @@ function categoryPage() {
       <label class="field">Nome categoria
         <input name="name" required placeholder="Antipasti">
       </label>
-      <div style="align-self:end">
-        <button class="gold-btn">Salva categoria</button>
-      </div>
+      <div style="align-self:end"><button class="gold-btn">Salva categoria</button></div>
     </form>
     <div id="categoryList" class="help">Caricamento…</div>
   </section>`;
@@ -438,9 +422,7 @@ function categoryPage() {
 
 async function categoryLoad() {
   try {
-    const {data,error} = await db
-      .from('categories').select('*').order('name');
-
+    const {data,error} = await db.from('categories').select('*').order('name');
     if (error) throw error;
 
     $('#categoryList').innerHTML = data?.length
@@ -448,10 +430,8 @@ async function categoryLoad() {
           <button class="outline-btn" data-delete-category="${esc(x.id)}">Elimina</button>
         </p>`).join('')
       : 'Nessuna categoria.';
-
   } catch (e) {
-    $('#categoryList').innerHTML =
-      `<span class="error-text">${esc(e.message)}</span>`;
+    $('#categoryList').innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
   }
 }
 
@@ -460,14 +440,10 @@ function menuPage() {
     <div class="section-title"><h2>Aggiungi piatto</h2></div>
     <form id="dishForm" class="form-grid">
       <label class="field">Nome<input name="name" required></label>
-      <label class="field">Prezzo (€)
-        <input name="price" type="number" min="0" step="0.01" required>
-      </label>
+      <label class="field">Prezzo (€)<input name="price" type="number" min="0" step="0.01" required></label>
       <label class="field">Categoria<input name="category"></label>
       <label class="field">Descrizione<textarea name="description"></textarea></label>
-      <label class="field">Foto del piatto
-        <input name="image" type="file" accept="image/*">
-      </label>
+      <label class="field">Foto del piatto<input name="image" type="file" accept="image/*"></label>
       <label class="field">Disponibile
         <select name="is_available">
           <option value="true">Sì</option>
@@ -479,36 +455,27 @@ function menuPage() {
     <p id="dishStatus" class="help"></p>
   </section>
   <section class="section-card">
-    <h2>Menu Items</h2>
-    <div id="dishList" class="help">Caricamento…</div>
+    <h2>Menu Items</h2><div id="dishList" class="help">Caricamento…</div>
   </section>`;
 }
 
 async function dishLoad() {
   try {
-    const {data,error} = await db
-      .from('menu_items')
-      .select('*')
-      .order('created_at',{ascending:false})
-      .limit(100);
-
+    const {data,error} = await db.from('menu_items')
+      .select('*').order('created_at',{ascending:false}).limit(100);
     if (error) throw error;
 
     $('#dishList').innerHTML = data?.length
       ? `<div class="table-scroll"><table class="data-table">
           <thead><tr><th>Nome</th><th>Prezzo</th><th>Categoria</th><th>Disponibile</th></tr></thead>
           <tbody>${data.map(x => `<tr>
-            <td>${esc(x.name)}</td>
-            <td>€${esc(x.price)}</td>
-            <td>${esc(x.category)}</td>
-            <td>${x.is_available?'Sì':'No'}</td>
+            <td>${esc(x.name)}</td><td>€${esc(x.price)}</td>
+            <td>${esc(x.category)}</td><td>${x.is_available?'Sì':'No'}</td>
           </tr>`).join('')}</tbody>
         </table></div>`
       : 'Nessun piatto inserito.';
-
   } catch (e) {
-    $('#dishList').innerHTML =
-      `<span class="error-text">${esc(e.message)}</span>`;
+    $('#dishList').innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
   }
 }
 
@@ -525,37 +492,36 @@ async function genericTable(id) {
     }
 
     const cols = Object.keys(data[0]).slice(0,5);
-
     return `<div class="table-scroll"><table class="data-table">
       <thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
-      <tbody>${data.map(row => `<tr>
-        ${cols.map(c => `<td>${esc(row[c])}</td>`).join('')}
-      </tr>`).join('')}</tbody>
+      <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${esc(row[c])}</td>`).join('')}</tr>`).join('')}</tbody>
     </table></div>`;
-
   } catch (e) {
     return `<div class="empty-state">
       <span class="error-text">${esc(e.message)}</span>
-      <p class="help">La tabella “${esc(table)}” o le relative colonne potrebbero non essere presenti. Nessun dato è stato modificato.</p>
+      <p class="help">La tabella ${esc(table)} potrebbe non essere disponibile.</p>
     </div>`;
   }
 }
 
-/* ---------------- STAFF MANAGEMENT ---------------- */
+/* STAFF MANAGEMENT */
 
-function staffPage() {
-  const opts = MODULES.map(([id,,label]) => `
+function permissionOptions(selected = []) {
+  return MODULES.map(([id,,label]) => `
     <label class="field" style="display:flex;gap:8px;align-items:center">
-      <input type="checkbox" name="perm" value="${esc(id)}" style="width:auto">
+      <input type="checkbox" name="perm" value="${esc(id)}"
+        ${selected.includes(id)?'checked':''} style="width:auto">
       ${esc(label)}
     </label>
   `).join('');
+}
 
+function staffPage() {
   return `<section class="section-card">
     <div class="section-title"><h2>Nuovo Staff Account</h2></div>
     <p class="help">
-      Inserisci il nome e l'email del collaboratore. Supabase invierà
-      un invito email. Seleziona soltanto i moduli che potrà utilizzare.
+      Inserisci nome, email e password. La password sarà impostata
+      direttamente tramite Supabase Auth.
     </p>
     <form id="staffForm" class="form-grid">
       <label class="field">Staff Name
@@ -567,13 +533,15 @@ function staffPage() {
       <label class="field">Phone
         <input name="phone" type="tel">
       </label>
+      <label class="field">Password (minimo 10 caratteri)
+        <input name="password" type="password" minlength="10"
+          autocomplete="new-password" required>
+      </label>
       <div class="field" style="grid-column:1/-1">
         <b>Permessi dei moduli</b>
-        <div class="form-grid">${opts}</div>
+        <div class="form-grid">${permissionOptions()}</div>
       </div>
-      <div>
-        <button id="createStaffBtn" class="gold-btn">Create Staff Account</button>
-      </div>
+      <div><button id="createStaffBtn" class="gold-btn">Create Staff Account</button></div>
     </form>
     <p id="staffStatus" class="help" aria-live="polite"></p>
   </section>
@@ -588,8 +556,7 @@ async function staffLoad() {
   if (!host) return;
 
   try {
-    const {data,error} = await db
-      .from('staff')
+    const {data,error} = await db.from('staff')
       .select('id,full_name,email,phone,role,auth_user_id,permissions,is_active')
       .order('created_at',{ascending:false});
 
@@ -597,16 +564,12 @@ async function staffLoad() {
 
     host.innerHTML = data?.length
       ? data.map(x => {
-          const permissions = Array.isArray(x.permissions)
-            ? x.permissions : [];
-
+          const permissions = Array.isArray(x.permissions) ? x.permissions : [];
           const checks = MODULES.map(([id,,label]) => `
             <label class="field" style="display:flex;gap:8px;align-items:center">
-              <input type="checkbox"
-                data-edit-perm="${esc(id)}"
+              <input type="checkbox" data-edit-perm="${esc(id)}"
                 data-staff-id="${esc(x.id)}"
-                ${permissions.includes(id)?'checked':''}
-                style="width:auto">
+                ${permissions.includes(id)?'checked':''} style="width:auto">
               ${esc(label)}
             </label>
           `).join('');
@@ -621,17 +584,25 @@ async function staffLoad() {
             <details>
               <summary>Manage module permissions</summary>
               <div class="form-grid">${checks}</div>
-              <button class="gold-btn" data-save-perms="${esc(x.id)}">
-                Save Permissions
-              </button>
+              <button class="gold-btn" data-save-perms="${esc(x.id)}">Save Permissions</button>
             </details>
 
-            <p class="help">
-              Current permissions: ${esc(permissions.join(', ') || 'None')}
-            </p>
+            <details>
+              <summary>Reset Staff Password</summary>
+              ${x.auth_user_id ? `
+                <label class="field">New Password (minimum 10 characters)
+                  <input type="password" minlength="10" autocomplete="new-password"
+                    data-reset-password="${esc(x.id)}">
+                </label>
+                <button class="gold-btn" data-reset-staff="${esc(x.id)}">
+                  Update Password
+                </button>
+              ` : '<p class="help">No linked Auth account.</p>'}
+            </details>
 
-            <button class="outline-btn"
-              data-toggle-staff="${esc(x.id)}"
+            <p class="help">Current permissions: ${esc(permissions.join(', ') || 'None')}</p>
+
+            <button class="outline-btn" data-toggle-staff="${esc(x.id)}"
               data-active="${x.is_active===true?'true':'false'}">
               ${x.is_active===true?'Disable':'Enable'}
             </button>
@@ -651,9 +622,7 @@ async function staffLoad() {
 async function createStaff(e) {
   e.preventDefault();
 
-  if (userRole !== 'admin') {
-    throw new Error('Only Super Admin can create Staff accounts.');
-  }
+  if (userRole !== 'admin') throw new Error('Only Super Admin can create Staff accounts.');
 
   const form = e.target;
   const btn = $('#createStaffBtn');
@@ -663,49 +632,63 @@ async function createStaff(e) {
   const full_name = String(fd.get('full_name') || '').trim();
   const email = String(fd.get('email') || '').trim().toLowerCase();
   const phone = String(fd.get('phone') || '').trim();
-  const permissions = fd.getAll('perm').filter(p =>
-    MODULES.some(m => m[0] === p)
-  );
+  const password = String(fd.get('password') || '');
+  const permissions = fd.getAll('perm').filter(p => MODULES.some(m => m[0] === p));
 
-  if (!full_name || !email) {
-    status.textContent = 'Nome ed email sono obbligatori.';
+  if (!full_name || !email || password.length < 10) {
+    status.textContent = 'Name, email and a password of at least 10 characters are required.';
     return;
   }
 
   btn.disabled = true;
   btn.textContent = 'Creating account…';
-  status.textContent = 'Invio invito in corso…';
+  status.textContent = 'Creating Staff account…';
 
   try {
-    const {data,error} = await db.functions.invoke(
-      'create-staff-account',
-      {
-        body: {
-          full_name,
-          email,
-          phone: phone || null,
-          permissions
-        }
-      }
-    );
+    const {data,error} = await db.functions.invoke('create-staff-account', {
+      body:{full_name,email,phone:phone||null,password,permissions}
+    });
 
     if (error) throw error;
-
     if (data?.error) throw new Error(data.error);
 
-    status.textContent =
-      data?.message || 'Staff account creato. Controlla l’email di invito.';
-
+    status.textContent = data?.message || 'Staff account created successfully.';
     form.reset();
     await staffLoad();
 
   } catch (err) {
-    status.textContent =
-      err.message || 'Creazione account non riuscita.';
+    status.textContent = err.message || 'Creation failed.';
   } finally {
     btn.disabled = false;
     btn.textContent = 'Create Staff Account';
   }
+}
+
+async function resetStaffPassword(id) {
+  if (userRole !== 'admin') throw new Error('Only Super Admin can reset passwords.');
+
+  const input = document.querySelector(
+    `[data-reset-password="${CSS.escape(String(id))}"]`
+  );
+
+  const password = input?.value || '';
+
+  if (password.length < 10) {
+    alert('Password must be at least 10 characters.');
+    return;
+  }
+
+  if (!confirm('Change this Staff account password?')) return;
+
+  const {data,error} = await db.functions.invoke('reset-staff-password', {
+    body:{staff_id:id,password}
+  });
+
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  input.value = '';
+  alert(data?.message || 'Password updated successfully.');
 }
 
 async function savePermissions(staffId) {
@@ -713,15 +696,9 @@ async function savePermissions(staffId) {
     `[data-staff-id="${CSS.escape(String(staffId))}"][data-edit-perm]`
   );
 
-  const permissions = [...boxes]
-    .filter(b => b.checked)
-    .map(b => b.dataset.editPerm);
+  const permissions = [...boxes].filter(b => b.checked).map(b => b.dataset.editPerm);
 
-  const {error} = await db
-    .from('staff')
-    .update({permissions})
-    .eq('id',staffId);
-
+  const {error} = await db.from('staff').update({permissions}).eq('id',staffId);
   if (error) throw error;
 
   await staffLoad();
@@ -729,38 +706,26 @@ async function savePermissions(staffId) {
 }
 
 async function toggleStaff(id,currentlyActive) {
-  const {error} = await db
-    .from('staff')
-    .update({is_active: currentlyActive !== true})
-    .eq('id',id);
-
+  const {error} = await db.from('staff')
+    .update({is_active:currentlyActive !== true}).eq('id',id);
   if (error) throw error;
-
   await staffLoad();
 }
 
 async function removeStaffLink(id) {
-  const confirmed = confirm(
-    'Remove this Staff link? The Auth user itself will not be deleted.'
-  );
+  if (!confirm('Remove this Staff link? The Auth user itself will not be deleted.')) return;
 
-  if (!confirmed) return;
-
-  const {error} = await db
-    .from('staff')
-    .update({
-      auth_user_id:null,
-      permissions:[],
-      is_active:false
-    })
-    .eq('id',id);
+  const {error} = await db.from('staff').update({
+    auth_user_id:null,
+    permissions:[],
+    is_active:false
+  }).eq('id',id);
 
   if (error) throw error;
-
   await staffLoad();
 }
 
-/* ---------------- MODULE RENDERING ---------------- */
+/* MODULE RENDERING */
 
 async function render(id) {
   if (!canSee(id)) {
@@ -770,7 +735,6 @@ async function render(id) {
 
   current = id;
   nav();
-
   $('#pageTitle').textContent = moduleInfo(id);
 
   const host = $('#pageContent');
@@ -792,19 +756,14 @@ async function render(id) {
     await staffLoad();
 
     $('#staffForm').onsubmit = async e => {
-      try {
-        await createStaff(e);
-      } catch (err) {
-        $('#staffStatus').textContent = err.message;
-      }
+      try { await createStaff(e); }
+      catch (err) { $('#staffStatus').textContent = err.message; }
     };
-
     return;
   }
 
   if (id === 'logo' || id === 'gallery') {
     host.innerHTML = uploadPanel(id);
-
     $('#mediaFile').onchange = () => {
       const f = $('#mediaFile').files[0];
       if (f) {
@@ -813,7 +772,6 @@ async function render(id) {
         img.hidden = false;
       }
     };
-
     $('#uploadBtn').onclick = uploadHandler;
     return;
   }
@@ -825,30 +783,19 @@ async function render(id) {
     $('#categoryForm').onsubmit = async e => {
       e.preventDefault();
       const name = new FormData(e.target).get('name');
-
       const {error} = await db.from('categories').insert({name});
-
       if (error) alert(error.message);
-      else {
-        e.target.reset();
-        categoryLoad();
-      }
+      else { e.target.reset(); categoryLoad(); }
     };
 
     host.onclick = async e => {
       const categoryId = e.target.dataset.deleteCategory;
-
       if (categoryId && confirm('Eliminare questa categoria?')) {
-        const {error} = await db
-          .from('categories')
-          .delete()
-          .eq('id',categoryId);
-
+        const {error} = await db.from('categories').delete().eq('id',categoryId);
         if (error) alert(error.message);
         else categoryLoad();
       }
     };
-
     return;
   }
 
@@ -858,7 +805,6 @@ async function render(id) {
 
     $('#dishForm').onsubmit = async e => {
       e.preventDefault();
-
       const fd = new FormData(e.target);
       let image_url = null;
       const file = fd.get('image');
@@ -868,14 +814,11 @@ async function render(id) {
           const ext = file.name.split('.').pop();
           const path = `menu/${Date.now()}.${ext}`;
 
-          const {data,error} = await db.storage
-            .from(cfg.STORAGE_BUCKET || 'nababi-media')
+          const {data,error} = await db.storage.from(cfg.STORAGE_BUCKET || 'nababi-media')
             .upload(path,file,{contentType:file.type});
-
           if (error) throw error;
 
-          image_url = db.storage
-            .from(cfg.STORAGE_BUCKET || 'nababi-media')
+          image_url = db.storage.from(cfg.STORAGE_BUCKET || 'nababi-media')
             .getPublicUrl(data.path).data.publicUrl;
         }
 
@@ -886,7 +829,6 @@ async function render(id) {
           description:fd.get('description') || null,
           is_available:fd.get('is_available') === 'true'
         };
-
         if (image_url) payload.image_url = image_url;
 
         const {error} = await db.from('menu_items').insert(payload);
@@ -897,11 +839,9 @@ async function render(id) {
         dishLoad();
 
       } catch (err) {
-        $('#dishStatus').innerHTML =
-          `<span class="error-text">${esc(err.message)}</span>`;
+        $('#dishStatus').textContent = err.message;
       }
     };
-
     return;
   }
 
@@ -921,11 +861,7 @@ async function render(id) {
   ].includes(id) ? `
     <section class="section-card">
       <h2>Gestione e configurazione</h2>
-      <p class="help">
-        Il pannello mostra i dati disponibili. Per aggiungere o modificare
-        completamente questo modulo bisogna verificare le colonne reali
-        della tabella Supabase.
-      </p>
+      <p class="help">Per aggiungere o modificare completamente questo modulo bisogna verificare le colonne reali della tabella Supabase.</p>
       ${id==='secret' || id==='news' ? uploadPanel('gallery') : ''}
     </section>` : ''}`;
 
@@ -935,7 +871,7 @@ async function render(id) {
   }
 }
 
-/* ---------------- EVENT LISTENERS ---------------- */
+/* EVENT LISTENERS */
 
 $('#loginForm').addEventListener('submit',signIn);
 
@@ -970,6 +906,12 @@ $('#pageContent').addEventListener('click',async e => {
     const removeButton = e.target.closest('[data-remove-staff]');
     if (removeButton) {
       await removeStaffLink(removeButton.dataset.removeStaff);
+      return;
+    }
+
+    const resetButton = e.target.closest('[data-reset-staff]');
+    if (resetButton) {
+      await resetStaffPassword(resetButton.dataset.resetStaff);
     }
 
   } catch (err) {
@@ -977,11 +919,8 @@ $('#pageContent').addEventListener('click',async e => {
   }
 });
 
-$('#menuToggle').onclick = () =>
-  $('#sidebar').classList.toggle('open');
-
-$('#mobileMore').onclick = () =>
-  $('#sidebar').classList.toggle('open');
+$('#menuToggle').onclick = () => $('#sidebar').classList.toggle('open');
+$('#mobileMore').onclick = () => $('#sidebar').classList.toggle('open');
 
 $('#mobileNav').addEventListener('click',e => {
   const b = e.target.closest('[data-page]');
@@ -989,9 +928,8 @@ $('#mobileNav').addEventListener('click',e => {
 });
 
 $('#logoutBtn').onclick = async () => {
-  try {
-    await db?.auth.signOut();
-  } finally {
+  try { await db?.auth.signOut(); }
+  finally {
     userRole = 'guest';
     staffPermissions = [];
     sessionUser = null;
@@ -1001,19 +939,15 @@ $('#logoutBtn').onclick = async () => {
   }
 };
 
-/* ---------------- SESSION RESTORE ---------------- */
+/* SESSION RESTORE */
 
 (async () => {
   if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
-    $('#loginMessage').textContent =
-      'Supabase config non disponibile.';
+    $('#loginMessage').textContent = 'Supabase config non disponibile.';
     return;
   }
 
-  db = window.supabase.createClient(
-    cfg.SUPABASE_URL,
-    cfg.SUPABASE_ANON_KEY
-  );
+  db = window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
 
   try {
     const {data,error} = await db.auth.getSession();
@@ -1023,12 +957,9 @@ $('#logoutBtn').onclick = async () => {
       await verifyAdmin(data.session.user);
       openApp(data.session.user.email);
     }
-
   } catch (e) {
     $('#loginMessage').textContent = e.message;
-    try {
-      await db.auth.signOut();
-    } catch (_) {}
+    try { await db.auth.signOut(); } catch (_) {}
   }
 })();
 
