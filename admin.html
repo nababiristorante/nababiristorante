@@ -1,19 +1,272 @@
+
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080b0b"><title>Nababi Ristorante | Admin</title>
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/config.js"></script><script defer src="assets/js/admin.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070a0b">
+
+  <title>Nababi Ristorante | Admin Panel</title>
+
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script defer src="assets/js/config.js"></script>
+  <script defer src="assets/js/staff-permissions.js"></script>
+  <script defer src="assets/js/admin.js"></script>
 </head>
+
 <body class="admin-body">
-<div id="loginScreen" class="login-screen"><form id="loginForm" class="login-card"><div class="brand-mark">♛ <span>Nababi<small>RISTORANTE</small></span></div><p class="eyebrow">AREA RISERVATA</p><h1>Admin Login</h1><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="gold-btn full" id="loginBtn">Accedi</button><p id="loginMessage" class="notice" aria-live="polite"></p><a href="index.html" class="muted-link">← Torna al sito</a></form></div>
-<div id="adminApp" class="admin-shell" hidden>
-<aside class="sidebar" id="sidebar"><div class="side-brand"><div class="crown">♛</div><div>Nababi<small>Ristorante</small></div></div><div class="side-label">GESTIONE</div><nav id="sideNav"></nav><div class="side-footer">Nababi Ristorante<br><small>Admin Panel • Mobile ready</small></div></aside>
-<div class="main-wrap"><header class="topbar"><button id="menuToggle" class="icon-btn" aria-label="Apri menu">☰</button><div class="top-brand">♛ Nababi <span>Admin</span></div><div class="top-actions"><span id="adminEmail" class="admin-email"></span><button id="logoutBtn" class="outline-btn">Esci</button></div></header>
-<main class="content"><div class="page-heading"><div><p class="eyebrow">NABABI RISTORANTE</p><h1 id="pageTitle">Dashboard</h1></div><span class="live-pill">● ONLINE</span></div><section id="pageContent"></section></main>
-<footer class="admin-footer">Good Food <b>•</b> Good Mood <b>•</b> Nababi Ristorante</footer></div>
-<nav class="mobile-nav" id="mobileNav"><button data-page="dashboard">⌂<small>Home</small></button><button data-page="bookings">▦<small>Prenotazioni</small></button><button data-page="coupons">◇<small>Coupon</small></button><button id="mobileMore">•••<small>Altro</small></button></nav>
-</div>
-</body></html>
+
+  <!-- ADMIN LOGIN -->
+  <section id="loginScreen" class="admin-login-screen">
+
+    <div class="login-card">
+
+      <div class="site-logo">
+        ♛ Nababi
+        <small>RISTORANTE</small>
+      </div>
+
+      <h1>Admin Login</h1>
+
+      <p>Accedi al pannello di amministrazione</p>
+
+      <form id="loginForm">
+
+        <div class="form-group">
+          <label for="email">Email</label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="admin@example.com"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Inserisci la password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="gold-btn"
+          id="loginBtn"
+        >
+          Accedi
+        </button>
+
+        <p
+          id="loginMessage"
+          role="status"
+          aria-live="polite"
+        ></p>
+
+      </form>
+
+      <a href="index.html" class="back-home">
+        ← Torna al sito
+      </a>
+
+    </div>
+
+  </section>
+
+
+  <!-- ADMIN APPLICATION -->
+  <div id="adminApp" class="admin-app" hidden>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="admin-sidebar">
+
+      <div class="admin-brand">
+        <a class="site-logo" href="index.html">
+          ♛ Nababi
+          <small>RISTORANTE</small>
+        </a>
+      </div>
+
+      <nav id="sideNav" class="admin-side-nav">
+
+        <a href="#dashboard" data-page="dashboard">
+          <span>⌂</span> Dashboard
+        </a>
+
+        <a href="#menu" data-page="menu_manager">
+          <span>♨</span> Menu Manager
+        </a>
+
+        <a href="#categories" data-page="categories">
+          <span>▤</span> Categories
+        </a>
+
+        <a href="#bookings" data-page="bookings">
+          <span>▣</span> Bookings
+        </a>
+
+        <a href="#customers" data-page="customers">
+          <span>♙</span> Customers
+        </a>
+
+        <a href="#coupons" data-page="coupons">
+          <span>◇</span> Coupons
+        </a>
+
+        <a href="#secret" data-page="secret">
+          <span>♛</span> Secret Coupon Box
+        </a>
+
+        <a href="#staff" data-page="staff">
+          <span>♟</span> Staff Management
+        </a>
+
+        <a href="#performance" data-page="performance">
+          <span>◷</span> Staff Performance
+        </a>
+
+        <a href="#attendance" data-page="attendance">
+          <span>◴</span> Attendance
+        </a>
+
+        <a href="#activity" data-page="activity">
+          <span>☷</span> Activity Log
+        </a>
+
+        <a href="#tables" data-page="tables">
+          <span>▦</span> Restaurant Tables
+        </a>
+
+        <a href="#gallery" data-page="gallery">
+          <span>▧</span> Gallery Manager
+        </a>
+
+        <a href="#delivery" data-page="delivery">
+          <span>♧</span> Delivery
+        </a>
+
+        <a href="#social" data-page="social">
+          <span>◎</span> Social Links
+        </a>
+
+        <a href="#news" data-page="news">
+          <span>▤</span> Breaking News
+        </a>
+
+        <a href="#reviews" data-page="reviews">
+          <span>★</span> Customer Reviews
+        </a>
+
+        <a href="#hours" data-page="hours">
+          <span>◷</span> Opening Hours
+        </a>
+
+        <a href="#logo" data-page="logo">
+          <span>♛</span> Logo Management
+        </a>
+
+        <a href="#reports" data-page="reports">
+          <span>▥</span> Reports
+        </a>
+
+        <a href="#contact" data-page="contact">
+          <span>☎</span> Contact Messages
+        </a>
+
+        <a href="#settings" data-page="settings">
+          <span>⚙</span> Settings
+        </a>
+
+      </nav>
+
+      <button id="logoutBtn" class="outline-btn" type="button">
+        Logout
+      </button>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="admin-main">
+
+      <!-- TOPBAR -->
+      <header class="admin-topbar">
+
+        <button
+          id="menuToggle"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+        >
+          ☰
+        </button>
+
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+
+        <div class="admin-user">
+          <span id="adminEmail">Admin</span>
+        </div>
+
+      </header>
+
+
+      <!-- PAGE CONTENT -->
+      <section id="pageContent" class="admin-page-content">
+
+        <div class="admin-loading">
+          Loading dashboard...
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- MOBILE NAVIGATION -->
+  <nav id="mobileNav" class="admin-mobile-nav">
+
+    <a href="#dashboard" data-page="dashboard">
+      <span>⌂</span>
+      Dashboard
+    </a>
+
+    <a href="#bookings" data-page="bookings">
+      <span>▣</span>
+      Bookings
+    </a>
+
+    <a href="#gallery" data-page="gallery">
+      <span>▧</span>
+      Gallery
+    </a>
+
+    <button
+      id="mobileMore"
+      type="button"
+      aria-label="More options"
+    >
+      <span>•••</span>
+      More
+    </button>
+
+  </nav>
+
+
+</body>
+</html>
