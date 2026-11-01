@@ -431,6 +431,81 @@
   }
 
   /* =========================
+     GALLERY LIGHTBOX
+  ========================= */
+
+  function setupGalleryLightbox() {
+    const gallery = $('#publicGallery');
+
+    if (!gallery || gallery.dataset.lightboxReady === 'true') {
+      return;
+    }
+
+    gallery.dataset.lightboxReady = 'true';
+
+    const lightbox = makeElement('div', 'gallery-lightbox');
+    lightbox.hidden = true;
+    lightbox.setAttribute('role', 'dialog');
+    lightbox.setAttribute('aria-modal', 'true');
+    lightbox.setAttribute('aria-label', 'Gallery image preview');
+
+    const closeButton = makeElement(
+      'button',
+      'gallery-lightbox-close',
+      '×'
+    );
+
+    closeButton.type = 'button';
+    closeButton.setAttribute('aria-label', 'Close image');
+
+    const largeImage = makeElement('img');
+    largeImage.alt = '';
+
+    lightbox.append(closeButton, largeImage);
+    document.body.append(lightbox);
+
+    function closeLightbox() {
+      lightbox.hidden = true;
+      largeImage.removeAttribute('src');
+      document.body.style.overflow = '';
+    }
+
+    function openLightbox(image) {
+      largeImage.src = image.currentSrc || image.src;
+      largeImage.alt = image.alt || 'Nababi Ristorante Gallery image';
+
+      lightbox.hidden = false;
+      document.body.style.overflow = 'hidden';
+
+      closeButton.focus();
+    }
+
+    gallery.addEventListener('click', event => {
+      const image = event.target.closest('img');
+
+      if (!image || !gallery.contains(image)) return;
+
+      openLightbox(image);
+    });
+
+    closeButton.addEventListener('click', closeLightbox);
+
+    lightbox.addEventListener('click', event => {
+      if (event.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    largeImage.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !lightbox.hidden) {
+        closeLightbox();
+      }
+    });
+  }
+
+  /* =========================
      PUBLIC GALLERY
   ========================= */
 
@@ -530,6 +605,7 @@
 
   async function startSite() {
     setupBookingForm();
+    setupGalleryLightbox();
 
     try {
       getClient();
