@@ -1,145 +1,19 @@
-
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b0b">
-  <title>Nababi Ristorante | Admin</title>
-
-  <link rel="stylesheet" href="assets/css/style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/admin.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080b0b"><title>Nababi Ristorante | Admin</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script><script defer src="assets/js/admin.js"></script>
 </head>
-
 <body class="admin-body">
-
-  <!-- Admin Login -->
-  <div id="loginScreen" class="login-screen">
-    <form id="loginForm" class="login-card">
-      <div class="brand-mark">
-        ♛
-        <span>Nababi<small>RISTORANTE</small></span>
-      </div>
-
-      <p class="eyebrow">AREA RISERVATA</p>
-      <h1>Admin Login</h1>
-
-      <label>
-        Email
-        <input
-          id="email"
-          type="email"
-          autocomplete="username"
-          required
-        >
-      </label>
-
-      <label>
-        Password
-        <input
-          id="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        >
-      </label>
-
-      <button class="gold-btn full" id="loginBtn" type="submit">
-        Accedi
-      </button>
-
-      <p id="loginMessage" class="notice" aria-live="polite"></p>
-
-      <a href="index.html" class="muted-link">
-        ← Torna al sito
-      </a>
-    </form>
-  </div>
-
-  <!-- Admin Dashboard -->
-  <div id="adminApp" class="admin-shell" hidden>
-
-    <aside class="sidebar" id="sidebar">
-      <div class="side-brand">
-        <div class="crown">♛</div>
-        <div>
-          Nababi
-          <small>Ristorante</small>
-        </div>
-      </div>
-
-      <div class="side-label">GESTIONE</div>
-      <nav id="sideNav"></nav>
-
-      <div class="side-footer">
-        Nababi Ristorante
-        <br>
-        <small>Admin Panel • Mobile ready</small>
-      </div>
-    </aside>
-
-    <div class="main-wrap">
-
-      <header class="topbar">
-        <button
-          id="menuToggle"
-          class="icon-btn"
-          type="button"
-          aria-label="Apri menu"
-        >☰</button>
-
-        <div class="top-brand">
-          ♛ Nababi <span>Admin</span>
-        </div>
-
-        <div class="top-actions">
-          <span id="adminEmail" class="admin-email"></span>
-          <button id="logoutBtn" class="outline-btn" type="button">
-            Esci
-          </button>
-        </div>
-      </header>
-
-      <main class="content">
-        <div class="page-heading">
-          <div>
-            <p class="eyebrow">NABABI RISTORANTE</p>
-            <h1 id="pageTitle">Dashboard</h1>
-          </div>
-          <span class="live-pill">● ONLINE</span>
-        </div>
-
-        <section id="pageContent"></section>
-      </main>
-
-      <footer class="admin-footer">
-        Good Food <b>•</b> Good Mood <b>•</b> Nababi Ristorante
-      </footer>
-    </div>
-
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav" id="mobileNav">
-      <button type="button" data-page="dashboard">
-        ⌂<small>Home</small>
-      </button>
-
-      <button type="button" data-page="bookings">
-        ▦<small>Prenotazioni</small>
-      </button>
-
-      <button type="button" data-page="coupons">
-        ◇<small>Coupon</small>
-      </button>
-
-      <button type="button" id="mobileMore">
-        •••<small>Altro</small>
-      </button>
-    </nav>
-
-  </div>
-
-</body>
-</html>
+<div id="loginScreen" class="login-screen"><form id="loginForm" class="login-card"><div class="brand-mark">♛ <span>Nababi<small>RISTORANTE</small></span></div><p class="eyebrow">AREA RISERVATA</p><h1>Admin Login</h1><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="gold-btn full" id="loginBtn">Accedi</button><p id="loginMessage" class="notice" aria-live="polite"></p><a href="index.html" class="muted-link">← Torna al sito</a></form></div>
+<div id="adminApp" class="admin-shell" hidden>
+<aside class="sidebar" id="sidebar"><div class="side-brand"><div class="crown">♛</div><div>Nababi<small>Ristorante</small></div></div><div class="side-label">GESTIONE</div><nav id="sideNav"></nav><div class="side-footer">Nababi Ristorante<br><small>Admin Panel • Mobile ready</small></div></aside>
+<div class="main-wrap"><header class="topbar"><button id="menuToggle" class="icon-btn" aria-label="Apri menu">☰</button><div class="top-brand">♛ Nababi <span>Admin</span></div><div class="top-actions"><span id="adminEmail" class="admin-email"></span><button id="logoutBtn" class="outline-btn">Esci</button></div></header>
+<main class="content"><div class="page-heading"><div><p class="eyebrow">NABABI RISTORANTE</p><h1 id="pageTitle">Dashboard</h1></div><span class="live-pill">● ONLINE</span></div><section id="pageContent"></section></main>
+<footer class="admin-footer">Good Food <b>•</b> Good Mood <b>•</b> Nababi Ristorante</footer></div>
+<nav class="mobile-nav" id="mobileNav"><button data-page="dashboard">⌂<small>Home</small></button><button data-page="bookings">▦<small>Prenotazioni</small></button><button data-page="coupons">◇<small>Coupon</small></button><button id="mobileMore">•••<small>Altro</small></button></nav>
+</div>
+</body></html>
