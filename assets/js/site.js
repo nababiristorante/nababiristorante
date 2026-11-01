@@ -1,3 +1,4 @@
+
 (() => {
   "use strict";
 
@@ -9,8 +10,6 @@
   const GALLERY_TABLE = "gallery_items";
   const REFRESH_MS = 30000;
 
-  document.documentElement.lang = "it";
-
   let db = null;
 
   function getClient() {
@@ -21,7 +20,9 @@
       !cfg.SUPABASE_URL ||
       !cfg.SUPABASE_ANON_KEY
     ) {
-      throw new Error("Configurazione Supabase mancante.");
+      throw new Error(
+        "Supabase URL অথবা Anon Key পাওয়া যায়নি।"
+      );
     }
 
     db = window.supabase.createClient(
@@ -35,7 +36,6 @@
   function safeUrl(value) {
     try {
       const url = new URL(String(value || ""));
-
       return ["https:", "http:"].includes(url.protocol)
         ? url.href
         : "";
@@ -44,17 +44,15 @@
     }
   }
 
-  function makeElement(tag, className, text) {
+  function element(tag, className, text) {
     const el = document.createElement(tag);
-
     if (className) el.className = className;
     if (text !== undefined) el.textContent = text;
-
     return el;
   }
 
   /* =========================
-     BOOKING FORM
+     BOOKING
   ========================= */
 
   function setupBookingForm() {
@@ -79,40 +77,40 @@
       ...document.querySelectorAll("[data-booking-choice]")
     ];
 
-    let selectedTable = "";
-
     if (
       !dateInput ||
       !timeInput ||
       !typeInput ||
       !phoneInput ||
-      !emailInput
+      !emailInput ||
+      !submitButton ||
+      !message
     ) {
-      console.error("Booking form fields mancanti.");
+      console.error("Booking form elements missing.");
       return;
     }
 
+    let selectedTable = "";
+
     function todayString() {
-      const date = new Date();
+      const d = new Date();
 
       return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, "0"),
-        String(date.getDate()).padStart(2, "0")
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, "0"),
+        String(d.getDate()).padStart(2, "0")
       ].join("-");
     }
 
     dateInput.min = todayString();
 
     function showMessage(text, type = "") {
-      if (!message) return;
-
       message.textContent = text;
       message.className =
         "booking-message" + (type ? " " + type : "");
     }
 
-    function isFutureDateTime() {
+    function validFutureDateTime() {
       if (!dateInput.value || !timeInput.value) {
         return false;
       }
@@ -128,26 +126,29 @@
     }
 
     function updateContactRequirements() {
+      const type = typeInput.value;
       const special =
-        typeInput.value === "birthday" ||
-        typeInput.value === "special_event";
+        type === "birthday" ||
+        type === "special_event";
 
       phoneInput.required = special;
       emailInput.required = special;
-
-      phoneInput.setCustomValidity("");
-      emailInput.setCustomValidity("");
     }
 
     function selectBookingType(type) {
+      if (
+        !["table", "birthday", "special_event"].includes(type)
+      ) return;
+
       typeInput.value = type;
-
       selectedTable = "";
-      tableInput.value = "";
 
-      map.replaceChildren();
+      if (tableInput) tableInput.value = "";
+      if (map) map.replaceChildren();
 
-      tableArea.hidden = type !== "table";
+      if (tableArea) {
+        tableArea.hidden = type !== "table";
+      }
 
       const titles = {
         table: "Richiesta prenotazione tavolo",
@@ -155,7 +156,9 @@
         special_event: "Richiesta per evento speciale"
       };
 
-      formTitle.textContent = titles[type];
+      if (formTitle) {
+        formTitle.textContent = titles[type];
+      }
 
       choiceButtons.forEach(button => {
         button.setAttribute(
@@ -165,12 +168,13 @@
       });
 
       form.classList.add("active");
-
-      mapMessage.textContent =
-        "Scegli data e orario per controllare la disponibilità.";
-
-      showMessage("");
       updateContactRequirements();
+      showMessage("");
+
+      if (mapMessage) {
+        mapMessage.textContent =
+          "Scegli data e orario per controllare la disponibilità.";
+      }
 
       form.scrollIntoView({
         behavior: "smooth",
@@ -184,15 +188,15 @@
       });
     });
 
-    /* =========================
-       TABLE AVAILABILITY
-    ========================= */
+    /* TABLE AVAILABILITY */
 
     async function loadTableAvailability() {
       if (typeInput.value !== "table") return;
+      if (!map || !mapMessage) return;
 
       selectedTable = "";
-      tableInput.value = "";
+      if (tableInput) tableInput.value = "";
+
       map.replaceChildren();
 
       if (!dateInput.value || !timeInput.value) {
@@ -201,7 +205,7 @@
         return;
       }
 
-      if (!isFutureDateTime()) {
+      if (!validFutureDateTime()) {
         mapMessage.textContent =
           "Seleziona una data e un orario futuri.";
         return;
@@ -212,30 +216,32 @@
       try {
         const client = getClient();
 
-        const [
-          { data: floorMaps, error: floorError },
-          { data: unavailable, error: availabilityError }
-        ] = await Promise.all([
-          client
+        const { data: floorMaps, error: floorError } =
+          await client
             .from("restaurant_floor_maps")
             .select("id,name")
             .eq("is_active", true)
-            .order("created_at", { ascending: true })
-            .limit(1),
-
-          client.rpc("get_unavailable_booking_tables", {
-            p_booking_date: dateInput.value,
-            p_booking_time: `${timeInput.value}:00`
-          })
-        ]);
+            .limit(1);
 
         if (floorError) throw floorError;
-        if (availabilityError) throw availabilityError;
 
         if (!floorMaps || !floorMaps.length) {
           mapMessage.textContent =
             "La mappa dei tavoli non è ancora configurata.";
           return;
+        }
+
+        const { data: unavailable, error: availabilityError } =
+          await client.rpc(
+            "get_unavailable_booking_tables",
+            {
+              p_booking_date: dateInput.value,
+              p_booking_time: `${timeInput.value}:00`
+            }
+          );
+
+        if (availabilityError) {
+          throw availabilityError;
         }
 
         const { data: tables, error: tablesError } =
@@ -261,38 +267,34 @@
         );
 
         mapMessage.textContent =
-          "Tavoli disponibili selezionabili. I tavoli occupati non sono selezionabili. La scelta è facoltativa.";
+          "Seleziona un tavolo disponibile. La scelta è facoltativa.";
 
         tables.forEach(table => {
           const number = String(table.table_number);
-          const unavailableNow = blocked.has(number);
+          const isUnavailable = blocked.has(number);
 
-          const button = makeElement(
+          const button = element(
             "button",
             "booking-table",
             `Tavolo ${number} · ${table.seat_count} posti` +
-              (unavailableNow ? " · Occupato" : "")
+              (isUnavailable ? " · Occupato" : "")
           );
 
           button.type = "button";
-          button.disabled = unavailableNow;
-
-          button.setAttribute(
-            "aria-label",
-            unavailableNow
-              ? `Tavolo ${number} non disponibile`
-              : `Seleziona tavolo ${number}`
-          );
+          button.disabled = isUnavailable;
 
           button.addEventListener("click", () => {
             selectedTable =
               selectedTable === number ? "" : number;
 
-            tableInput.value = selectedTable;
+            if (tableInput) {
+              tableInput.value = selectedTable;
+            }
 
-            map
-              .querySelectorAll(".booking-table")
-              .forEach(item => item.classList.remove("selected"));
+            map.querySelectorAll(".booking-table")
+              .forEach(item =>
+                item.classList.remove("selected")
+              );
 
             if (selectedTable) {
               button.classList.add("selected");
@@ -303,10 +305,10 @@
         });
 
       } catch (error) {
-        console.error("Table availability:", error);
+        console.error("TABLE AVAILABILITY ERROR:", error);
 
         mapMessage.textContent =
-          "Non è stato possibile verificare i tavoli. Puoi inviare la richiesta senza scegliere un tavolo.";
+          "Impossibile verificare i tavoli. Puoi inviare la richiesta senza scegliere un tavolo.";
       }
     }
 
@@ -320,9 +322,7 @@
       loadTableAvailability
     );
 
-    /* =========================
-       SUBMIT BOOKING
-    ========================= */
+    /* SUBMIT */
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
@@ -334,17 +334,6 @@
 
       const data = new FormData(form);
 
-      const bookingDate =
-        String(data.get("booking_date") || "");
-
-      const bookingTime =
-        String(data.get("booking_time") || "");
-
-      const guests = Number(data.get("guests"));
-
-      const bookingType =
-        String(data.get("booking_type") || "");
-
       const fullName =
         String(data.get("full_name") || "").trim();
 
@@ -354,10 +343,23 @@
       const email =
         String(data.get("email") || "").trim();
 
-      if (
-        bookingDate < todayString() ||
-        !isFutureDateTime()
-      ) {
+      const bookingDate =
+        String(data.get("booking_date") || "");
+
+      const bookingTime =
+        String(data.get("booking_time") || "");
+
+      const bookingType =
+        String(data.get("booking_type") || "");
+
+      const guests = Number(data.get("guests"));
+
+      if (!fullName) {
+        showMessage("Inserisci nome e cognome.", "error");
+        return;
+      }
+
+      if (!validFutureDateTime()) {
         showMessage(
           "Seleziona una data e un orario futuri.",
           "error"
@@ -377,14 +379,6 @@
         return;
       }
 
-      if (!fullName) {
-        showMessage(
-          "Inserisci nome e cognome.",
-          "error"
-        );
-        return;
-      }
-
       if (
         !["table", "birthday", "special_event"]
           .includes(bookingType)
@@ -398,7 +392,7 @@
 
       if (bookingType === "table" && !phone && !email) {
         showMessage(
-          "Inserisci almeno un numero di telefono oppure un indirizzo email.",
+          "Inserisci almeno telefono oppure email.",
           "error"
         );
         return;
@@ -409,7 +403,7 @@
         (!phone || !email)
       ) {
         showMessage(
-          "Per compleanni ed eventi speciali sono obbligatori telefono ed email.",
+          "Telefono ed email sono obbligatori per eventi e compleanni.",
           "error"
         );
         return;
@@ -438,7 +432,7 @@
           email: email || null,
           booking_date: bookingDate,
           booking_time: bookingTime,
-          guests,
+          guests: guests,
           booking_type: bookingType,
           notes:
             String(data.get("notes") || "").trim() || null,
@@ -449,35 +443,33 @@
               : null
         };
 
-        const { data: inserted, error } = await client
+        /*
+         * Insert only.
+         * Avoid SELECT on bookings for anonymous visitors.
+         * The database trigger can generate the confirmation code.
+         */
+
+        const { error } = await client
           .from(BOOKING_TABLE)
-          .insert(payload)
-          .select("confirmation_code")
-          .single();
+          .insert(payload);
 
         if (error) throw error;
-
-        const code = inserted?.confirmation_code;
 
         form.reset();
         form.classList.remove("active");
 
-        map.replaceChildren();
-
         selectedTable = "";
-        tableInput.value = "";
+
+        if (tableInput) tableInput.value = "";
+        if (map) map.replaceChildren();
+        if (tableArea) tableArea.hidden = true;
 
         choiceButtons.forEach(button => {
           button.setAttribute("aria-pressed", "false");
         });
 
-        mapMessage.textContent =
-          "Scegli data e orario per controllare la disponibilità.";
-
         showMessage(
-          code
-            ? `Richiesta inviata! Il codice della tua prenotazione è ${code}. La richiesta è in attesa di conferma del ristorante.`
-            : "Richiesta inviata! La prenotazione è in attesa di conferma del ristorante.",
+          "Richiesta inviata con successo! La tua prenotazione è in attesa di conferma del ristorante.",
           "success"
         );
 
@@ -487,10 +479,16 @@
         });
 
       } catch (error) {
-        console.error("Booking error:", error);
+        console.error("BOOKING ERROR:", error);
+
+        const detail =
+          error?.message ||
+          error?.details ||
+          error?.hint ||
+          "Errore sconosciuto";
 
         showMessage(
-          "Non è stato possibile inviare la richiesta. Riprova o contattaci su WhatsApp.",
+          "Booking Error: " + detail,
           "error"
         );
 
@@ -510,11 +508,7 @@
     let bar = $("#breakingNewsBar");
 
     if (!bar) {
-      bar = makeElement(
-        "section",
-        "breaking-news-bar"
-      );
-
+      bar = element("section", "breaking-news-bar");
       bar.id = "breakingNewsBar";
       bar.setAttribute("aria-live", "polite");
 
@@ -557,24 +551,24 @@
     bar.hidden = false;
 
     active.forEach(item => {
-      const article = makeElement(
+      const article = element(
         "article",
         "breaking-news-item"
       );
 
-      const content = makeElement(
+      const content = element(
         "div",
         "breaking-news-content"
       );
 
       content.append(
-        makeElement(
+        element(
           "span",
           "breaking-news-label",
           "ULTIME NOTIZIE"
         ),
-        makeElement("h2", "", item.title || ""),
-        makeElement("p", "", item.body || "")
+        element("h2", "", item.title || ""),
+        element("p", "", item.body || "")
       );
 
       article.append(content);
@@ -582,7 +576,7 @@
       const imageUrl = safeUrl(item.image_url);
 
       if (imageUrl) {
-        const image = makeElement(
+        const image = element(
           "img",
           "breaking-news-image"
         );
@@ -597,7 +591,7 @@
       const videoUrl = safeUrl(item.youtube_url);
 
       if (videoUrl) {
-        const link = makeElement(
+        const link = element(
           "a",
           "breaking-news-video",
           "Guarda il video"
@@ -634,11 +628,7 @@
       renderNews(data || []);
 
     } catch (error) {
-      console.error(
-        "Breaking News:",
-        error.message
-      );
-
+      console.error("BREAKING NEWS ERROR:", error);
       createNewsBar().hidden = true;
     }
   }
@@ -653,13 +643,11 @@
     if (
       !gallery ||
       gallery.dataset.lightboxReady === "true"
-    ) {
-      return;
-    }
+    ) return;
 
     gallery.dataset.lightboxReady = "true";
 
-    const lightbox = makeElement(
+    const lightbox = element(
       "div",
       "gallery-lightbox"
     );
@@ -667,24 +655,16 @@
     lightbox.hidden = true;
     lightbox.setAttribute("role", "dialog");
     lightbox.setAttribute("aria-modal", "true");
-    lightbox.setAttribute(
-      "aria-label",
-      "Gallery image preview"
-    );
 
-    const closeButton = makeElement(
+    const closeButton = element(
       "button",
       "gallery-lightbox-close",
       "×"
     );
 
     closeButton.type = "button";
-    closeButton.setAttribute(
-      "aria-label",
-      "Close image"
-    );
 
-    const largeImage = makeElement("img");
+    const largeImage = element("img");
     largeImage.alt = "";
 
     lightbox.append(closeButton, largeImage);
@@ -696,27 +676,17 @@
       document.body.style.overflow = "";
     }
 
-    function openLightbox(image) {
-      largeImage.src =
-        image.currentSrc || image.src;
-
-      largeImage.alt =
-        image.alt || "Nababi Ristorante Gallery image";
-
-      lightbox.hidden = false;
-      document.body.style.overflow = "hidden";
-
-      closeButton.focus();
-    }
-
     gallery.addEventListener("click", event => {
       const image = event.target.closest("img");
 
-      if (!image || !gallery.contains(image)) {
-        return;
-      }
+      if (!image || !gallery.contains(image)) return;
 
-      openLightbox(image);
+      largeImage.src = image.currentSrc || image.src;
+      largeImage.alt = image.alt || "Gallery image";
+
+      lightbox.hidden = false;
+      document.body.style.overflow = "hidden";
+      closeButton.focus();
     });
 
     closeButton.addEventListener(
@@ -730,11 +700,6 @@
       }
     });
 
-    largeImage.addEventListener(
-      "click",
-      closeLightbox
-    );
-
     document.addEventListener("keydown", event => {
       if (
         event.key === "Escape" &&
@@ -746,12 +711,11 @@
   }
 
   /* =========================
-     PUBLIC GALLERY
+     GALLERY
   ========================= */
 
   async function loadGallery() {
     const gallery = $("#publicGallery");
-
     if (!gallery) return;
 
     try {
@@ -770,17 +734,12 @@
 
       if (!data || !data.length) {
         gallery.append(
-          makeElement(
-            "p",
-            "help",
-            "Nessuna foto disponibile."
-          )
+          element("p", "help", "Nessuna foto disponibile.")
         );
-
         return;
       }
 
-      let shown = 0;
+      let count = 0;
 
       data.forEach(item => {
         const imageUrl = safeUrl(
@@ -789,53 +748,41 @@
 
         if (!imageUrl) return;
 
-        const card = makeElement(
-          "article",
-          "site-card"
-        );
-
-        const image = makeElement("img");
+        const card = element("article", "site-card");
+        const image = element("img");
 
         image.src = imageUrl;
-        image.alt =
-          item.title || "Nababi Ristorante Gallery";
-
+        image.alt = item.title || "Nababi Ristorante";
         image.loading = "lazy";
 
         card.append(image);
 
         if (item.title) {
-          const content = makeElement("div");
-
+          const content = element("div");
           content.append(
-            makeElement("h3", "", item.title)
+            element("h3", "", item.title)
           );
-
           card.append(content);
         }
 
         gallery.append(card);
-        shown++;
+        count++;
       });
 
-      if (!shown) {
+      if (!count) {
         gallery.append(
-          makeElement(
-            "p",
-            "help",
-            "Nessuna foto disponibile."
-          )
+          element("p", "help", "Nessuna foto disponibile.")
         );
       }
 
     } catch (error) {
-      console.error("Gallery error:", error);
+      console.error("GALLERY ERROR:", error);
 
       gallery.replaceChildren(
-        makeElement(
+        element(
           "p",
           "help",
-          "Impossibile caricare le foto della Gallery."
+          "Impossibile caricare la Gallery."
         )
       );
     }
@@ -873,10 +820,7 @@
       );
 
     } catch (error) {
-      console.error(
-        "Nababi site:",
-        error.message
-      );
+      console.error("NABABI SITE ERROR:", error);
     }
   }
 
