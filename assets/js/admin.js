@@ -17,7 +17,6 @@ const menu = [
   ['menu_manager','🍛','Menu Manager'],
   ['categories','▦','Categories'],
   ['bookings','▣','Bookings'],
-  ['customers','♙','Customers'],
   ['coupons','◇','Coupons'],
   ['staff','♟','Staff Management'],
   ['performance','▥','Staff Performance'],
@@ -40,7 +39,6 @@ const menu = [
 const tableMap = {
   categories:'categories',
   bookings:'bookings',
-  customers:'customers',
   coupons:'coupons',
   staff:'staff',
   performance:'staff_activity_logs',
@@ -66,7 +64,6 @@ const descriptions = {
   menu_manager:'Aggiungi e modifica piatti, descrizioni, prezzi e immagini.',
   categories:'Organizza le categorie del menu.',
   bookings:'Consulta le prenotazioni dei tavoli.',
-  customers:'Archivio clienti.',
   coupons:'Crea e gestisci codici sconto.',
   staff:'Gestisci profili e ruoli del personale.',
   performance:'Consulta le attività e le prestazioni del personale.',
@@ -976,6 +973,9 @@ async function genericTable(id) {
 /* MODULE RENDERING */
 
 async function render(id) {
+  if (!menu.some(item => item[0] === id)) {
+    id = 'dashboard';
+  }
   if (!canSee(id)) {
     alert('Questa funzione non è autorizzata per il tuo account.');
     return;
@@ -1075,7 +1075,7 @@ async function render(id) {
   ${[
     'secret','menu_public','social','hours','contact','settings',
     'reports','performance','attendance','activity','tables',
-    'delivery','bookings','customers','coupons','news','reviews'
+    'delivery','bookings','coupons','news','reviews'
   ].includes(id) ? `
     <section class="section-card">
       <h2>Gestione e configurazione</h2>
@@ -1093,7 +1093,11 @@ $('#loginForm')?.addEventListener('submit',signIn);
 
 $('#sideNav')?.addEventListener('click',e => {
   const b = e.target.closest('[data-page]');
-  if (b) render(b.dataset.page);
+  if (b) {
+    render(b.dataset.page);
+    $('#sidebar')?.classList.remove('open');
+    $('#menuToggle')?.setAttribute('aria-expanded','false');
+  }
 });
 
 $('#pageContent')?.addEventListener('click',async e => {
