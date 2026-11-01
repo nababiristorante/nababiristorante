@@ -15,30 +15,18 @@
   function getClient() {
     if (db) return db;
 
-    if (
-      !window.supabase ||
-      !cfg.SUPABASE_URL ||
-      !cfg.SUPABASE_ANON_KEY
-    ) {
-      throw new Error(
-        "Supabase URL অথবা Anon Key পাওয়া যায়নি।"
-      );
+    if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+      throw new Error("Supabase URL oppure Anon Key পাওয়া যায়নি।");
     }
 
-    db = window.supabase.createClient(
-      cfg.SUPABASE_URL,
-      cfg.SUPABASE_ANON_KEY
-    );
-
+    db = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
     return db;
   }
 
   function safeUrl(value) {
     try {
       const url = new URL(String(value || ""));
-      return ["https:", "http:"].includes(url.protocol)
-        ? url.href
-        : "";
+      return ["https:", "http:"].includes(url.protocol) ? url.href : "";
     } catch {
       return "";
     }
@@ -49,6 +37,16 @@
     if (className) el.className = className;
     if (text !== undefined) el.textContent = text;
     return el;
+  }
+
+  function createBookingCode() {
+    if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+      const bytes = new Uint8Array(5);
+      window.crypto.getRandomValues(bytes);
+      return "NAB-" + Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+    }
+
+    throw new Error("Questo browser non supporta la generazione sicura del codice. Riprova con un browser aggiornato.");
   }
 
   /* =========================
@@ -73,19 +71,15 @@
     const tableInput = $("#booking-table-number");
     const formTitle = $("#booking-form-title");
 
-    const choiceButtons = [
-      ...document.querySelectorAll("[data-booking-choice]")
-    ];
+    const confirmation = $("#booking-confirmation");
+    const confirmationCode = $("#booking-confirmation-code");
+    const copyButton = $("#copy-booking-code");
+    const copyStatus = $("#booking-copy-status");
+    const newRequestButton = $("#booking-new-request");
 
-    if (
-      !dateInput ||
-      !timeInput ||
-      !typeInput ||
-      !phoneInput ||
-      !emailInput ||
-      !submitButton ||
-      !message
-    ) {
+    const choiceButtons = [...document.querySelectorAll("[data-booking-choice]")];
+
+    if (!dateInput || !timeInput || !typeInput || !phoneInput || !emailInput || !submitButton || !message) {
       console.error("Booking form elements missing.");
       return;
     }
@@ -94,7 +88,6 @@
 
     function todayString() {
       const d = new Date();
-
       return [
         d.getFullYear(),
         String(d.getMonth() + 1).padStart(2, "0"),
@@ -106,49 +99,32 @@
 
     function showMessage(text, type = "") {
       message.textContent = text;
-      message.className =
-        "booking-message" + (type ? " " + type : "");
+      message.className = "booking-message" + (type ? " " + type : "");
     }
 
     function validFutureDateTime() {
-      if (!dateInput.value || !timeInput.value) {
-        return false;
-      }
-
-      const selected = new Date(
-        `${dateInput.value}T${timeInput.value}:00`
-      );
-
-      return (
-        Number.isFinite(selected.getTime()) &&
-        selected.getTime() > Date.now()
-      );
+      if (!dateInput.value || !timeInput.value) return false;
+      const selected = new Date(`${dateInput.value}T${timeInput.value}:00`);
+      return Number.isFinite(selected.getTime()) && selected.getTime() > Date.now();
     }
 
     function updateContactRequirements() {
-      const type = typeInput.value;
-      const special =
-        type === "birthday" ||
-        type === "special_event";
-
+      const special = typeInput.value === "birthday" || typeInput.value === "special_event";
       phoneInput.required = special;
       emailInput.required = special;
+      phoneInput.setAttribute("aria-required", String(special));
+      emailInput.setAttribute("aria-required", String(special));
     }
 
     function selectBookingType(type) {
-      if (
-        !["table", "birthday", "special_event"].includes(type)
-      ) return;
+      if (!["table", "birthday", "special_event"].includes(type)) return;
 
       typeInput.value = type;
       selectedTable = "";
 
       if (tableInput) tableInput.value = "";
       if (map) map.replaceChildren();
-
-      if (tableArea) {
-        tableArea.hidden = type !== "table";
-      }
+      if (tableArea) tableArea.hidden = type !== "table";
 
       const titles = {
         table: "Richiesta prenotazione tavolo",
@@ -156,58 +132,48 @@
         special_event: "Richiesta per evento speciale"
       };
 
-      if (formTitle) {
-        formTitle.textContent = titles[type];
-      }
+      if (formTitle) formTitle.textContent = titles[type];
 
       choiceButtons.forEach(button => {
-        button.setAttribute(
-          "aria-pressed",
-          String(button.dataset.bookingChoice === type)
-        );
+        button.setAttribute("aria-pressed", String(button.dataset.bookingChoice === type));
       });
 
       form.classList.add("active");
+      if (confirmation) confirmation.hidden = true;
       updateContactRequirements();
       showMessage("");
 
       if (mapMessage) {
-        mapMessage.textContent =
-          "Scegli data e orario per controllare la disponibilità.";
+        mapMessage.textContent = "Scegli data e orario per controllare la disponibilità.";
       }
 
-      form.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+      if (type === "table" && dateInput.value && timeInput.value) {
+        loadTableAvailability();
+      }
+
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     choiceButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        selectBookingType(button.dataset.bookingChoice);
-      });
+      button.addEventListener("click", () => selectBookingType(button.dataset.bookingChoice));
     });
 
     /* TABLE AVAILABILITY */
 
     async function loadTableAvailability() {
-      if (typeInput.value !== "table") return;
-      if (!map || !mapMessage) return;
+      if (typeInput.value !== "table" || !map || !mapMessage) return;
 
       selectedTable = "";
       if (tableInput) tableInput.value = "";
-
       map.replaceChildren();
 
       if (!dateInput.value || !timeInput.value) {
-        mapMessage.textContent =
-          "Scegli data e orario per controllare la disponibilità.";
+        mapMessage.textContent = "Scegli data e orario per controllare la disponibilità.";
         return;
       }
 
       if (!validFutureDateTime()) {
-        mapMessage.textContent =
-          "Seleziona una data e un orario futuri.";
+        mapMessage.textContent = "Seleziona una data e un orario futuri.";
         return;
       }
 
@@ -216,111 +182,118 @@
       try {
         const client = getClient();
 
-        const { data: floorMaps, error: floorError } =
-          await client
-            .from("restaurant_floor_maps")
-            .select("id,name")
-            .eq("is_active", true)
-            .limit(1);
+        const { data: floorMaps, error: floorError } = await client
+          .from("restaurant_floor_maps")
+          .select("id,name")
+          .eq("is_active", true)
+          .limit(1);
 
         if (floorError) throw floorError;
 
         if (!floorMaps || !floorMaps.length) {
-          mapMessage.textContent =
-            "La mappa dei tavoli non è ancora configurata.";
+          mapMessage.textContent = "La mappa dei tavoli non è ancora configurata.";
           return;
         }
 
-        const { data: unavailable, error: availabilityError } =
-          await client.rpc(
-            "get_unavailable_booking_tables",
-            {
-              p_booking_date: dateInput.value,
-              p_booking_time: `${timeInput.value}:00`
-            }
-          );
+        const { data: unavailable, error: availabilityError } = await client.rpc(
+          "get_unavailable_booking_tables",
+          {
+            p_booking_date: dateInput.value,
+            p_booking_time: `${timeInput.value}:00`
+          }
+        );
 
-        if (availabilityError) {
-          throw availabilityError;
-        }
+        if (availabilityError) throw availabilityError;
 
-        const { data: tables, error: tablesError } =
-          await client
-            .from("restaurant_map_tables")
-            .select("table_number,seat_count,is_active")
-            .eq("floor_map_id", floorMaps[0].id)
-            .eq("is_active", true)
-            .order("table_number");
+        const { data: tables, error: tablesError } = await client
+          .from("restaurant_map_tables")
+          .select("table_number,seat_count,is_active")
+          .eq("floor_map_id", floorMaps[0].id)
+          .eq("is_active", true)
+          .order("table_number");
 
         if (tablesError) throw tablesError;
 
         if (!tables || !tables.length) {
-          mapMessage.textContent =
-            "Nessun tavolo attivo configurato.";
+          mapMessage.textContent = "Nessun tavolo attivo configurato.";
           return;
         }
 
-        const blocked = new Set(
-          (unavailable || []).map(row =>
-            String(row.table_number)
-          )
-        );
+        const blocked = new Set((unavailable || []).map(row => String(row.table_number)));
 
-        mapMessage.textContent =
-          "Seleziona un tavolo disponibile. La scelta è facoltativa.";
+        mapMessage.textContent = "Seleziona un tavolo disponibile. La scelta è facoltativa.";
 
         tables.forEach(table => {
           const number = String(table.table_number);
           const isUnavailable = blocked.has(number);
-
           const button = element(
             "button",
             "booking-table",
-            `Tavolo ${number} · ${table.seat_count} posti` +
-              (isUnavailable ? " · Occupato" : "")
+            `Tavolo ${number} · ${table.seat_count} posti` + (isUnavailable ? " · Occupato" : "")
           );
 
           button.type = "button";
           button.disabled = isUnavailable;
 
           button.addEventListener("click", () => {
-            selectedTable =
-              selectedTable === number ? "" : number;
+            selectedTable = selectedTable === number ? "" : number;
+            if (tableInput) tableInput.value = selectedTable;
 
-            if (tableInput) {
-              tableInput.value = selectedTable;
-            }
-
-            map.querySelectorAll(".booking-table")
-              .forEach(item =>
-                item.classList.remove("selected")
-              );
-
-            if (selectedTable) {
-              button.classList.add("selected");
-            }
+            map.querySelectorAll(".booking-table").forEach(item => item.classList.remove("selected"));
+            if (selectedTable) button.classList.add("selected");
           });
 
           map.append(button);
         });
-
       } catch (error) {
         console.error("TABLE AVAILABILITY ERROR:", error);
-
-        mapMessage.textContent =
-          "Impossibile verificare i tavoli. Puoi inviare la richiesta senza scegliere un tavolo.";
+        mapMessage.textContent = "Impossibile verificare i tavoli. Puoi inviare la richiesta senza scegliere un tavolo.";
       }
     }
 
-    dateInput.addEventListener(
-      "change",
-      loadTableAvailability
-    );
+    dateInput.addEventListener("change", loadTableAvailability);
+    timeInput.addEventListener("change", loadTableAvailability);
 
-    timeInput.addEventListener(
-      "change",
-      loadTableAvailability
-    );
+    /* COPY BOOKING CODE */
+
+    if (copyButton) {
+      copyButton.addEventListener("click", async () => {
+        const code = confirmationCode ? confirmationCode.textContent.trim() : "";
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code);
+          if (copyStatus) copyStatus.textContent = "Codice copiato!";
+        } catch {
+          if (copyStatus) copyStatus.textContent = "Seleziona e copia manualmente il codice qui sopra.";
+        }
+      });
+    }
+
+    /* NEW BOOKING */
+
+    if (newRequestButton) {
+      newRequestButton.addEventListener("click", () => {
+        form.reset();
+        form.hidden = false;
+        form.classList.remove("active");
+        if (confirmation) confirmation.hidden = true;
+        if (confirmationCode) confirmationCode.textContent = "";
+        if (copyStatus) copyStatus.textContent = "";
+        selectedTable = "";
+        if (tableInput) tableInput.value = "";
+        if (map) map.replaceChildren();
+        if (tableArea) tableArea.hidden = true;
+
+        choiceButtons.forEach(button => button.setAttribute("aria-pressed", "false"));
+        phoneInput.required = false;
+        emailInput.required = false;
+        showMessage("");
+        dateInput.min = todayString();
+
+        $("#booking")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
 
     /* SUBMIT */
 
@@ -333,25 +306,12 @@
       if (!form.reportValidity()) return;
 
       const data = new FormData(form);
-
-      const fullName =
-        String(data.get("full_name") || "").trim();
-
-      const phone =
-        String(data.get("phone") || "").trim();
-
-      const email =
-        String(data.get("email") || "").trim();
-
-      const bookingDate =
-        String(data.get("booking_date") || "");
-
-      const bookingTime =
-        String(data.get("booking_time") || "");
-
-      const bookingType =
-        String(data.get("booking_type") || "");
-
+      const fullName = String(data.get("full_name") || "").trim();
+      const phone = String(data.get("phone") || "").trim();
+      const email = String(data.get("email") || "").trim();
+      const bookingDate = String(data.get("booking_date") || "");
+      const bookingTime = String(data.get("booking_time") || "");
+      const bookingType = String(data.get("booking_type") || "");
       const guests = Number(data.get("guests"));
 
       if (!fullName) {
@@ -360,63 +320,41 @@
       }
 
       if (!validFutureDateTime()) {
-        showMessage(
-          "Seleziona una data e un orario futuri.",
-          "error"
-        );
+        showMessage("Seleziona una data e un orario futuri.", "error");
         return;
       }
 
-      if (
-        !Number.isInteger(guests) ||
-        guests < 1 ||
-        guests > 30
-      ) {
-        showMessage(
-          "Numero di ospiti non valido.",
-          "error"
-        );
+      if (!Number.isInteger(guests) || guests < 1 || guests > 30) {
+        showMessage("Numero di ospiti non valido.", "error");
         return;
       }
 
-      if (
-        !["table", "birthday", "special_event"]
-          .includes(bookingType)
-      ) {
-        showMessage(
-          "Tipo di prenotazione non valido.",
-          "error"
-        );
+      if (!["table", "birthday", "special_event"].includes(bookingType)) {
+        showMessage("Tipo di prenotazione non valido.", "error");
         return;
       }
 
       if (bookingType === "table" && !phone && !email) {
-        showMessage(
-          "Inserisci almeno telefono oppure email.",
-          "error"
-        );
+        showMessage("Inserisci almeno telefono oppure email.", "error");
         return;
       }
 
-      if (
-        bookingType !== "table" &&
-        (!phone || !email)
-      ) {
-        showMessage(
-          "Telefono ed email sono obbligatori per eventi e compleanni.",
-          "error"
-        );
+      if (bookingType !== "table" && (!phone || !email)) {
+        showMessage("Telefono ed email sono obbligatori per eventi e compleanni.", "error");
         return;
       }
 
-      if (
-        email &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-      ) {
-        showMessage(
-          "Inserisci un indirizzo email valido.",
-          "error"
-        );
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMessage("Inserisci un indirizzo email valido.", "error");
+        return;
+      }
+
+      let code;
+
+      try {
+        code = createBookingCode();
+      } catch (error) {
+        showMessage(error.message, "error");
         return;
       }
 
@@ -432,70 +370,41 @@
           email: email || null,
           booking_date: bookingDate,
           booking_time: bookingTime,
-          guests: guests,
+          guests,
           booking_type: bookingType,
-          notes:
-            String(data.get("notes") || "").trim() || null,
+          notes: String(data.get("notes") || "").trim() || null,
           status: "pending",
-          table_number:
-            bookingType === "table"
-              ? selectedTable || null
-              : null
+          table_number: bookingType === "table" ? selectedTable || null : null,
+          confirmation_code: code
         };
 
-        /*
-         * Insert only.
-         * Avoid SELECT on bookings for anonymous visitors.
-         * The database trigger can generate the confirmation code.
-         */
-
-        const { error } = await client
-          .from(BOOKING_TABLE)
-          .insert(payload);
-
+        const { error } = await client.from(BOOKING_TABLE).insert(payload);
         if (error) throw error;
 
-        form.reset();
+        form.hidden = true;
         form.classList.remove("active");
 
-        selectedTable = "";
+        if (confirmationCode) confirmationCode.textContent = code;
+        if (confirmation) confirmation.hidden = false;
+        if (copyStatus) copyStatus.textContent = "";
 
+        selectedTable = "";
         if (tableInput) tableInput.value = "";
         if (map) map.replaceChildren();
         if (tableArea) tableArea.hidden = true;
 
-        choiceButtons.forEach(button => {
-          button.setAttribute("aria-pressed", "false");
-        });
+        choiceButtons.forEach(button => button.setAttribute("aria-pressed", "false"));
 
-        showMessage(
-          "Richiesta inviata con successo! La tua prenotazione è in attesa di conferma del ristorante.",
-          "success"
-        );
-
-        message.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
+        confirmation?.scrollIntoView({ behavior: "smooth", block: "center" });
 
       } catch (error) {
         console.error("BOOKING ERROR:", error);
 
-        const detail =
-          error?.message ||
-          error?.details ||
-          error?.hint ||
-          "Errore sconosciuto";
-
-        showMessage(
-          "Booking Error: " + detail,
-          "error"
-        );
-
+        const detail = error?.message || error?.details || error?.hint || "Errore sconosciuto";
+        showMessage("Booking Error: " + detail, "error");
       } finally {
         submitButton.disabled = false;
-        submitButton.textContent =
-          "Invia richiesta di prenotazione";
+        submitButton.textContent = "Invia richiesta di prenotazione";
       }
     });
   }
@@ -513,12 +422,8 @@
       bar.setAttribute("aria-live", "polite");
 
       const header = $(".site-header");
-
-      if (header) {
-        header.insertAdjacentElement("afterend", bar);
-      } else {
-        document.body.prepend(bar);
-      }
+      if (header) header.insertAdjacentElement("afterend", bar);
+      else document.body.prepend(bar);
     }
 
     return bar;
@@ -531,14 +436,7 @@
     const active = (items || []).filter(item => {
       const start = Date.parse(item.starts_at);
       const end = Date.parse(item.ends_at);
-
-      return (
-        item.is_active === true &&
-        Number.isFinite(start) &&
-        Number.isFinite(end) &&
-        start <= now &&
-        now < end
-      );
+      return item.is_active === true && Number.isFinite(start) && Number.isFinite(end) && start <= now && now < end;
     });
 
     bar.replaceChildren();
@@ -551,22 +449,11 @@
     bar.hidden = false;
 
     active.forEach(item => {
-      const article = element(
-        "article",
-        "breaking-news-item"
-      );
-
-      const content = element(
-        "div",
-        "breaking-news-content"
-      );
+      const article = element("article", "breaking-news-item");
+      const content = element("div", "breaking-news-content");
 
       content.append(
-        element(
-          "span",
-          "breaking-news-label",
-          "ULTIME NOTIZIE"
-        ),
+        element("span", "breaking-news-label", "ULTIME NOTIZIE"),
         element("h2", "", item.title || ""),
         element("p", "", item.body || "")
       );
@@ -574,33 +461,20 @@
       article.append(content);
 
       const imageUrl = safeUrl(item.image_url);
-
       if (imageUrl) {
-        const image = element(
-          "img",
-          "breaking-news-image"
-        );
-
+        const image = element("img", "breaking-news-image");
         image.src = imageUrl;
         image.alt = "";
         image.loading = "lazy";
-
         article.append(image);
       }
 
       const videoUrl = safeUrl(item.youtube_url);
-
       if (videoUrl) {
-        const link = element(
-          "a",
-          "breaking-news-video",
-          "Guarda il video"
-        );
-
+        const link = element("a", "breaking-news-video", "Guarda il video");
         link.href = videoUrl;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-
         content.append(link);
       }
 
@@ -615,18 +489,14 @@
 
       const { data, error } = await client
         .from(NEWS_TABLE)
-        .select(
-          "id,title,body,image_url,youtube_url,starts_at,ends_at,is_active"
-        )
+        .select("id,title,body,image_url,youtube_url,starts_at,ends_at,is_active")
         .eq("is_active", true)
         .lte("starts_at", now)
         .gt("ends_at", now)
         .order("starts_at", { ascending: true });
 
       if (error) throw error;
-
       renderNews(data || []);
-
     } catch (error) {
       console.error("BREAKING NEWS ERROR:", error);
       createNewsBar().hidden = true;
@@ -639,29 +509,16 @@
 
   function setupGalleryLightbox() {
     const gallery = $("#publicGallery");
-
-    if (
-      !gallery ||
-      gallery.dataset.lightboxReady === "true"
-    ) return;
+    if (!gallery || gallery.dataset.lightboxReady === "true") return;
 
     gallery.dataset.lightboxReady = "true";
 
-    const lightbox = element(
-      "div",
-      "gallery-lightbox"
-    );
-
+    const lightbox = element("div", "gallery-lightbox");
     lightbox.hidden = true;
     lightbox.setAttribute("role", "dialog");
     lightbox.setAttribute("aria-modal", "true");
 
-    const closeButton = element(
-      "button",
-      "gallery-lightbox-close",
-      "×"
-    );
-
+    const closeButton = element("button", "gallery-lightbox-close", "×");
     closeButton.type = "button";
 
     const largeImage = element("img");
@@ -678,35 +535,23 @@
 
     gallery.addEventListener("click", event => {
       const image = event.target.closest("img");
-
       if (!image || !gallery.contains(image)) return;
 
       largeImage.src = image.currentSrc || image.src;
       largeImage.alt = image.alt || "Gallery image";
-
       lightbox.hidden = false;
       document.body.style.overflow = "hidden";
       closeButton.focus();
     });
 
-    closeButton.addEventListener(
-      "click",
-      closeLightbox
-    );
+    closeButton.addEventListener("click", closeLightbox);
 
     lightbox.addEventListener("click", event => {
-      if (event.target === lightbox) {
-        closeLightbox();
-      }
+      if (event.target === lightbox) closeLightbox();
     });
 
     document.addEventListener("keydown", event => {
-      if (
-        event.key === "Escape" &&
-        !lightbox.hidden
-      ) {
-        closeLightbox();
-      }
+      if (event.key === "Escape" && !lightbox.hidden) closeLightbox();
     });
   }
 
@@ -733,19 +578,14 @@
       gallery.replaceChildren();
 
       if (!data || !data.length) {
-        gallery.append(
-          element("p", "help", "Nessuna foto disponibile.")
-        );
+        gallery.append(element("p", "help", "Nessuna foto disponibile."));
         return;
       }
 
       let count = 0;
 
       data.forEach(item => {
-        const imageUrl = safeUrl(
-          item.image_url || item.public_url
-        );
-
+        const imageUrl = safeUrl(item.image_url || item.public_url);
         if (!imageUrl) return;
 
         const card = element("article", "site-card");
@@ -759,9 +599,7 @@
 
         if (item.title) {
           const content = element("div");
-          content.append(
-            element("h3", "", item.title)
-          );
+          content.append(element("h3", "", item.title));
           card.append(content);
         }
 
@@ -769,22 +607,10 @@
         count++;
       });
 
-      if (!count) {
-        gallery.append(
-          element("p", "help", "Nessuna foto disponibile.")
-        );
-      }
-
+      if (!count) gallery.append(element("p", "help", "Nessuna foto disponibile."));
     } catch (error) {
       console.error("GALLERY ERROR:", error);
-
-      gallery.replaceChildren(
-        element(
-          "p",
-          "help",
-          "Impossibile caricare la Gallery."
-        )
-      );
+      gallery.replaceChildren(element("p", "help", "Impossibile caricare la Gallery."));
     }
   }
 
@@ -799,36 +625,23 @@
     try {
       getClient();
 
-      await Promise.allSettled([
-        loadBreakingNews(),
-        loadGallery()
-      ]);
+      await Promise.allSettled([loadBreakingNews(), loadGallery()]);
 
-      window.setInterval(
-        loadBreakingNews,
-        REFRESH_MS
-      );
+      window.setInterval(loadBreakingNews, REFRESH_MS);
 
-      document.addEventListener(
-        "visibilitychange",
-        () => {
-          if (!document.hidden) {
-            loadBreakingNews();
-            loadGallery();
-          }
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          loadBreakingNews();
+          loadGallery();
         }
-      );
-
+      });
     } catch (error) {
       console.error("NABABI SITE ERROR:", error);
     }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      startSite
-    );
+    document.addEventListener("DOMContentLoaded", startSite);
   } else {
     startSite();
   }
