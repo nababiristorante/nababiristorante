@@ -33,6 +33,7 @@ reviews:'reviews',hours:'opening_hours',secret:'coupons'
 };
 
 let db=null,current='dashboard',newsRows=[],bookingRows=[];
+let activeFloorMap=null,floorMapRows=[],selectedMapPosition=null;
 
 function nav(){
  const html=menu.map(([id,ico,label])=>
@@ -338,7 +339,7 @@ staff:'Gestisci profili e ruoli del personale.',
 performance:'Consulta le attività e le prestazioni del personale.',
 attendance:'Presenze e turni del personale.',
 activity:'Registro delle attività degli utenti staff.',
-tables:'Gestisci tavoli, posti e disponibilità.',
+tables:'Gestisci la piantina, i tavoli e i posti disponibili.',
 gallery:'Carica e gestisci le foto del ristorante.',
 delivery:'Consulta gli ordini Food Delivery.',
 social:'Gestisci i collegamenti ai social network.',
@@ -428,7 +429,6 @@ async function galleryLoad(){
  }
 }
 
-/* EXTRACT STORAGE PATH FROM PUBLIC URL */
 function galleryStoragePath(url){
  try{
   const parsed=new URL(url);
@@ -453,7 +453,6 @@ function galleryStoragePath(url){
  }
 }
 
-/* GALLERY: DELETE IMAGE AND DATABASE ROW */
 async function galleryDelete(event){
  const button=event.target.closest('[data-gallery-delete]');
  if(!button)return;
@@ -476,7 +475,6 @@ async function galleryDelete(event){
 
   const path=galleryStoragePath(data.image_url);
 
-  /* Delete Storage file first when it belongs to our bucket */
   if(path){
    const {error:storageError}=await db.storage
     .from(cfg.STORAGE_BUCKET||'nababi-media')
@@ -606,6 +604,7 @@ async function uploadHandler(){
  }
 }
 
+/* CATEGORIES */
 function categoryPage(){
  return `<section class="section-card"><div class="section-title"><h2>Nuova categoria</h2></div>
  <form id="categoryForm" class="form-grid">
@@ -624,6 +623,7 @@ async function categoryLoad(){
  }catch(e){$('#categoryList').innerHTML=`<span class="error-text">${esc(e.message)}</span>`;}
 }
 
+/* MENU */
 function menuPage(){
  return `<section class="section-card"><div class="section-title"><h2>Aggiungi piatto</h2></div>
  <form id="dishForm" class="form-grid">
@@ -795,8 +795,360 @@ async function newsAction(e){
  }
 }
 
+/* FLOOR MAP MANAGEMENT */
+
+function tablesPage(){
+ return `
+ <section class="section-card">
+  <div class="section-title"><h2>Floor Map del ristorante</h2></div>
+  <p class="help">Carica la piantina del ristorante. Poi tocca la mappa per scegliere dove posizionare ogni tavolo.</p>
+  <label class="field">Nome della mappa
+   <input id="floorMapName" value="Sala principale">
+  </label>
+  <label class="field">Carica la piantina
+   <input id="floorMapFile" type="file" accept="image/*">
+  </label>
+  <button class="gold-btn" id="floorMapUpload" type="button">Carica Floor Map</button>
+  <p id="floorMapStatus" class="help" aria-live="polite"></p>
+ </section>
+
+ <section class="section-card">
+  <h2>Posizione dei tavoli</h2>
+  <p class="help">Tocca un punto della mappa per selezionare la posizione.</p>
+  <div id="floorMapCanvas" style="position:relative;width:100%;min-height:180px;border:1px solid #d8b76a;border-radius:12px;overflow:hidden;background:#eee;">
+   <p class="help" style="padding:20px">Caricamento mappa…</p>
+  </div>
+  <p id="mapPositionStatus" class="help">Nessuna posizione selezionata.</p>
+ </section>
+
+ <section class="section-card">
+  <h2>Aggiungi un tavolo</h2>
+  <form id="mapTableForm" class="form-grid">
+   <label class="field">Numero tavolo
+    <input name="table_number" required placeholder="T1">
+   </label>
+   <label class="field">Numero posti
+    <input name="seat_count" type="number" min="1" max="30" value="2" required>
+   </label>
+   <button class="gold-btn" type="submit">Salva tavolo</button>
+  </form>
+  <p id="mapTableStatus" class="help" aria-live="polite"></p>
+ </section>
+
+ <section class="section-card">
+  <div class="section-title">
+   <h2>Tavoli salvati</h2>
+   <button class="outline-btn" id="mapTableRefresh" type="button">Aggiorna</button>
+  </div>
+  <div id="mapTableList" class="help">Caricamento…</div>
+ </section>`;
+}
+
+function renderFloorMap(){
+ const canvas=$('#floorMapCanvas');
+ if(!canvas)return;
+
+ if(!activeFloorMap){
+  canvas.innerHTML='<p class="help" style="padding:20px">Nessuna mappa caricata.</p>';
+  return;
+ }
+
+ canvas.innerHTML=`
+  <img src="${esc(activeFloorMap.image_url)}"
+   alt="Floor Map"
+   id="floorMapImage"
+   style="display:block;width:100%;height:auto;cursor:crosshair">
+  <div id="floorMapMarkers" style="position:absolute;inset:0;pointer-events:none"></div>
+ `;
+
+ const image=$('#floorMapImage');
+
+ image.onclick=event=>{
+  const rect=image.getBoundingClientRect();
+  selectedMapPosition={
+   x:Math.max(0,Math.min(100,(event.clientX-rect.left)/rect.width*100)),
+   y:Math.max(0,Math.min(100,(event.clientY-rect.top)/rect.height*100))
+  };
+
+  $('#mapPositionStatus').textContent=
+   `Posizione selezionata: X ${selectedMapPosition.x.toFixed(1)}%, Y ${selectedMapPosition.y.toFixed(1)}%.`;
+ };
+
+ renderFloorMarkers();
+}
+
+function renderFloorMarkers(){
+ const image=$('#floorMapImage');
+ const markers=$('#floorMapMarkers');
+ if(!image||!markers||!activeFloorMap)return;
+
+ markers.innerHTML=floorMapRows
+  .filter(t=>t.is_active)
+  .map(t=>`
+   <span style="
+    position:absolute;
+    left:${Number(t.x_percent)}%;
+    top:${Number(t.y_percent)}%;
+    transform:translate(-50%,-50%);
+    background:#183e31;color:#fff;
+    border:2px solid #d8b76a;
+    border-radius:50%;
+    min-width:34px;height:34px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:bold;
+   ">${esc(t.table_number)}</span>
+  `).join('');
+}
+
+async function floorMapLoad(){
+ const status=$('#floorMapStatus');
+
+ try{
+  const {data,error}=await db
+   .from('restaurant_floor_maps')
+   .select('*')
+   .eq('is_active',true)
+   .order('created_at',{ascending:false})
+   .limit(1);
+
+  if(error)throw error;
+
+  activeFloorMap=data?.[0]||null;
+  selectedMapPosition=null;
+
+  renderFloorMap();
+  await mapTablesLoad();
+
+ }catch(error){
+  if(status)status.textContent='Errore: '+error.message;
+ }
+}
+
+async function mapTablesLoad(){
+ const box=$('#mapTableList');
+ if(!box)return;
+
+ if(!activeFloorMap){
+  box.innerHTML='<p class="help">Carica prima una Floor Map.</p>';
+  floorMapRows=[];
+  return;
+ }
+
+ box.textContent='Caricamento tavoli…';
+
+ try{
+  const {data,error}=await db
+   .from('restaurant_map_tables')
+   .select('*')
+   .eq('floor_map_id',activeFloorMap.id)
+   .order('table_number');
+
+  if(error)throw error;
+
+  floorMapRows=data||[];
+
+  box.innerHTML=floorMapRows.length
+   ?`<div class="table-scroll"><table class="data-table">
+     <thead><tr><th>Tavolo</th><th>Posti</th><th>Stato</th><th>Azioni</th></tr></thead>
+     <tbody>${floorMapRows.map(t=>`
+      <tr>
+       <td>${esc(t.table_number)}</td>
+       <td>${esc(t.seat_count)}</td>
+       <td>${t.is_active?'Attivo':'Non attivo'}</td>
+       <td>
+        <button class="outline-btn"
+         data-map-toggle="${esc(t.id)}"
+         data-active="${t.is_active?'true':'false'}">
+         ${t.is_active?'Disattiva':'Attiva'}
+        </button>
+        <button class="outline-btn danger-btn"
+         data-map-delete="${esc(t.id)}">Elimina</button>
+       </td>
+      </tr>
+     `).join('')}</tbody>
+    </table></div>`
+   :'<p class="help">Nessun tavolo inserito.</p>';
+
+  renderFloorMarkers();
+
+ }catch(error){
+  box.innerHTML=`<span class="error-text">${esc(error.message)}</span>`;
+ }
+}
+
+async function floorMapUpload(){
+ const file=$('#floorMapFile')?.files?.[0];
+ const status=$('#floorMapStatus');
+ const button=$('#floorMapUpload');
+
+ if(!file){
+  status.textContent='Seleziona prima una piantina.';
+  return;
+ }
+
+ if(!file.type.startsWith('image/')||file.size>8*1024*1024){
+  status.textContent='Seleziona un’immagine valida inferiore a 8 MB.';
+  return;
+ }
+
+ button.disabled=true;
+ status.textContent='Caricamento in corso…';
+
+ let uploadedPath=null;
+
+ try{
+  const bucket=cfg.STORAGE_BUCKET||'nababi-media';
+  const ext=(file.name.split('.').pop()||'jpg')
+   .toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+
+  const path=`floor-map/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+
+  const {data,error}=await db.storage
+   .from(bucket)
+   .upload(path,file,{
+    upsert:false,
+    contentType:file.type,
+    cacheControl:'3600'
+   });
+
+  if(error)throw error;
+  uploadedPath=data.path;
+
+  const imageUrl=db.storage
+   .from(bucket)
+   .getPublicUrl(data.path).data.publicUrl;
+
+  const {error:deactivateError}=await db
+   .from('restaurant_floor_maps')
+   .update({is_active:false})
+   .eq('is_active',true);
+
+  if(deactivateError)throw deactivateError;
+
+  const {data:saved,error:saveError}=await db
+   .from('restaurant_floor_maps')
+   .insert({
+    name:$('#floorMapName').value.trim()||'Sala principale',
+    image_url:imageUrl,
+    is_active:true
+   })
+   .select()
+   .single();
+
+  if(saveError)throw saveError;
+
+  activeFloorMap=saved;
+  status.textContent='Floor Map caricata con successo.';
+  $('#floorMapFile').value='';
+  await floorMapLoad();
+
+ }catch(error){
+  status.textContent='Errore: '+error.message;
+  if(uploadedPath){
+   status.textContent+=' Il file potrebbe essere già stato caricato nello Storage.';
+  }
+ }finally{
+  button.disabled=false;
+ }
+}
+
+async function mapTableSave(event){
+ event.preventDefault();
+
+ const status=$('#mapTableStatus');
+
+ if(!activeFloorMap){
+  status.textContent='Carica prima la Floor Map.';
+  return;
+ }
+
+ if(!selectedMapPosition){
+  status.textContent='Tocca prima la posizione sulla mappa.';
+  return;
+ }
+
+ const fd=new FormData(event.currentTarget);
+ const payload={
+  floor_map_id:activeFloorMap.id,
+  table_number:String(fd.get('table_number')).trim(),
+  seat_count:Number(fd.get('seat_count')),
+  x_percent:Number(selectedMapPosition.x.toFixed(2)),
+  y_percent:Number(selectedMapPosition.y.toFixed(2)),
+  is_active:true
+ };
+
+ if(!payload.table_number||!Number.isInteger(payload.seat_count)||
+    payload.seat_count<1||payload.seat_count>30){
+  status.textContent='Controlla numero tavolo e posti.';
+  return;
+ }
+
+ const button=event.currentTarget.querySelector('button[type="submit"]');
+ button.disabled=true;
+ status.textContent='Salvataggio…';
+
+ try{
+  const {error}=await db
+   .from('restaurant_map_tables')
+   .insert(payload);
+
+  if(error)throw error;
+
+  status.textContent='Tavolo salvato.';
+  event.currentTarget.reset();
+  selectedMapPosition=null;
+  $('#mapPositionStatus').textContent='Nessuna posizione selezionata.';
+
+  await mapTablesLoad();
+
+ }catch(error){
+  status.textContent='Errore: '+error.message;
+ }finally{
+  button.disabled=false;
+ }
+}
+
+async function mapTableAction(event){
+ const toggle=event.target.closest('[data-map-toggle]');
+ const del=event.target.closest('[data-map-delete]');
+
+ try{
+  if(toggle){
+   toggle.disabled=true;
+   const active=toggle.dataset.active!=='true';
+
+   const {error}=await db
+    .from('restaurant_map_tables')
+    .update({is_active:active})
+    .eq('id',toggle.dataset.mapToggle);
+
+   if(error)throw error;
+   await mapTablesLoad();
+  }
+
+  if(del){
+   if(!confirm('Eliminare questo tavolo?'))return;
+   del.disabled=true;
+
+   const {error}=await db
+    .from('restaurant_map_tables')
+    .delete()
+    .eq('id',del.dataset.mapDelete);
+
+   if(error)throw error;
+   await mapTablesLoad();
+  }
+
+ }catch(error){
+  alert('Errore: '+error.message);
+  await mapTablesLoad();
+ }
+}
+
+/* GENERIC TABLE */
 async function genericTable(id){
- const table=tableMap[id];if(!table)return '<div class="empty-state">Modulo pronto per configurazione.</div>';
+ const table=tableMap[id];
+ if(!table)return '<div class="empty-state">Modulo pronto per configurazione.</div>';
  try{
   const {data,error}=await db.from(table).select('*').limit(50);
   if(error)throw error;
@@ -812,9 +1164,13 @@ async function genericTable(id){
  }
 }
 
+/* PAGE RENDERER */
 async function render(id){
- current=id;nav();$('#pageTitle').textContent=moduleInfo(id);
- const host=$('#pageContent');host.innerHTML='<div class="empty-state">Caricamento…</div>';
+ current=id;
+ nav();
+ $('#pageTitle').textContent=moduleInfo(id);
+ const host=$('#pageContent');
+ host.innerHTML='<div class="empty-state">Caricamento…</div>';
 
  if(id==='dashboard'){
   host.innerHTML=await dashboard();
@@ -830,6 +1186,16 @@ async function render(id){
   return;
  }
 
+ if(id==='tables'){
+  host.innerHTML=tablesPage();
+  $('#floorMapUpload').onclick=floorMapUpload;
+  $('#mapTableForm').onsubmit=mapTableSave;
+  $('#mapTableRefresh').onclick=mapTablesLoad;
+  $('#mapTableList').addEventListener('click',mapTableAction);
+  await floorMapLoad();
+  return;
+ }
+
  if(id==='news'){
   host.innerHTML=newsPage();
   $('#newsForm').onsubmit=newsSave;
@@ -840,7 +1206,6 @@ async function render(id){
   return;
  }
 
- /* GALLERY PAGE */
  if(id==='gallery'){
   host.innerHTML=uploadPanel('gallery');
 
@@ -871,7 +1236,6 @@ async function render(id){
   return;
  }
 
- /* LOGO PAGE */
  if(id==='logo'){
   host.innerHTML=uploadPanel('logo');
 
@@ -967,7 +1331,7 @@ async function render(id){
  host.innerHTML=`<section class="section-card">
  <div class="section-title"><h2>${esc(moduleInfo(id))}</h2>
  <span class="help">${esc(descriptions[id]||'Gestione Nababi')}</span></div>${body}</section>
- ${['secret','menu_public','social','hours','contact','settings','reports','performance','attendance','activity','tables','delivery','customers','coupons','staff','reviews'].includes(id)?
+ ${['secret','menu_public','social','hours','contact','settings','reports','performance','attendance','activity','delivery','customers','coupons','staff','reviews'].includes(id)?
  `<section class="section-card"><h2>Gestione e configurazione</h2>
  <p class="help">Il pannello legge la tabella disponibile. Per attivare aggiunta/modifica completa bisogna verificare le colonne reali della tabella Supabase.</p>
  ${id==='secret'?uploadPanel('logo'):''}</section>`:''}`;
@@ -978,6 +1342,7 @@ async function render(id){
  }
 }
 
+/* GLOBAL EVENTS */
 $('#loginForm').addEventListener('submit',signIn);
 
 $('#sideNav').addEventListener('click',e=>{
@@ -1008,6 +1373,7 @@ $('#logoutBtn').onclick=async()=>{
  }
 };
 
+/* SESSION CHECK */
 (async()=>{
  if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY){
   $('#loginMessage').textContent='Supabase config non disponibile.';
