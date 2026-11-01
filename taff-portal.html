@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nababi Staff Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--green:#102d24;--gold:#d8b76a;--cream:#f7f1e5}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f1e8;color:#183e31;font:16px Arial}
+header{background:var(--green);color:var(--cream);text-align:center;padding:25px}
+.logo{font-size:27px;font-weight:bold;color:var(--gold);letter-spacing:4px}
+.wrap{max-width:540px;margin:20px auto;padding:14px}
+.card{background:white;border-radius:15px;padding:20px;margin-bottom:15px;box-shadow:0 3px 14px #0001}
+input,select,button{width:100%;padding:13px;margin:7px 0;border:1px solid #ccc;border-radius:8px;font:inherit}
+button{background:var(--green);color:white;border:0;font-weight:bold}
+button.gold{background:var(--gold);color:#17251e}
+img.profile{width:105px;height:105px;border-radius:50%;object-fit:cover;display:block;margin:10px auto}
+h2{text-align:center}
+.notice{background:#fff4d5;border-left:5px solid var(--gold);padding:12px;margin:10px 0;border-radius:5px}
+.task{border-bottom:1px solid #eee;padding:12px 0}
+#staffHome{display:none}
+#message{color:#a33}
+.brand{animation:appear 1.5s ease-in-out infinite alternate}
+@keyframes appear{from{opacity:.55;transform:scale(.98)}to{opacity:1;transform:scale(1.04)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo brand">NABABI</div>
+  <div>RISTORANTE · STAFF PORTAL</div>
+</header>
+
+<div class="wrap">
+<section id="login" class="card">
+  <h2>Staff Login</h2>
+  <p>আপনার নাম নির্বাচন করে Admin দেওয়া ৬ সংখ্যার PIN লিখুন।</p>
+  <select id="staffSelect"><option value="">কর্মী নির্বাচন করুন</option></select>
+  <input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="৬ সংখ্যার PIN">
+  <button id="loginBtn">Login</button>
+  <p id="message"></p>
+</section>
+
+<main id="staffHome">
+  <section class="card" style="text-align:center">
+    <img id="photo" class="profile" alt="Staff photo">
+    <h2 id="name"></h2>
+    <p id="role"></p>
+    <p id="phone"></p>
+    <p id="email"></p>
+    <div class="brand logo">NABABI</div>
+    <p>Welcome to Nababi Ristorante</p>
+  </section>
+
+  <section class="card">
+    <h2>Attendance</h2>
+    <p id="attendanceStatus">আপনার হাজিরার অবস্থা এখানে দেখা যাবে।</p>
+    <button id="checkIn">Check-in</button>
+    <button id="checkOut" class="gold">Check-out</button>
+    <p id="attendanceMessage"></p>
+  </section>
+
+  <section class="card">
+    <h2>Announcements</h2>
+    <div id="announcements">কোনো ঘোষণা নেই।</div>
+  </section>
+
+  <section class="card">
+    <h2>My Tasks</h2>
+    <div id="tasks">কোনো নির্দেশনা নেই।</div>
+  </section>
+
+  <button id="logout">Logout</button>
+</main>
+</div>
+
+<script>
+(() => {
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);
+let currentStaff=null;
+
+async function loadStaff(){
+  const {data,error}=await db.rpc("nababi_staff_active_list");
+  if(error){$("message").textContent=error.message;return;}
+  (data||[]).forEach(s=>{
+    $("staffSelect").add(new Option(s.full_name,s.id));
+  });
+}
+async function portalAction(action){
+  const {data,error}=await db.rpc("nababi_staff_portal",{
+    p_staff_id:currentStaff.id,
+    p_pin:$("pin").value,
+    p_action:action
+  });
+  if(error)throw error;
+  if(!data||!data.success)throw new Error("Request failed");
+  return data;
+}
+function showPortal(data){
+  const s=data.staff;
+  currentStaff=s;
+  $("login").style.display="none";
+  $("staffHome").style.display="block";
+  $("name").textContent=s.full_name||"";
+  $("role").textContent=s.role||"";
+  $("phone").textContent=s.phone||"";
+  $("email").textContent=s.email||"";
+  $("photo").src=s.photo_url||"";
+  $("attendanceStatus").textContent=
+    "Check-in: "+(data.check_in?new Date(data.check_in).toLocaleString():"এখনো হয়নি")+
+    " | Check-out: "+(data.check_out?new Date(data.check_out).toLocaleString():"এখনো হয়নি");
+
+  $("tasks").innerHTML="";
+  (data.tasks||[]).forEach(t=>{
+    const div=document.createElement("div");div.className="task";
+    const h=document.createElement("b");h.textContent=t.title;
+    const p=document.createElement("p");p.textContent=t.description||"";
+    const due=document.createElement("small");
+    due.textContent=t.due_at?"শেষ সময়: "+new Date(t.due_at).toLocaleString():"";
+    div.append(h,p,due);$("tasks").append(div);
+  });
+  if(!(data.tasks||[]).length)$("tasks").textContent="কোনো নির্দেশনা নেই।";
+
+  $("announcements").innerHTML="";
+  (data.announcements||[]).forEach(a=>{
+    const div=document.createElement("div");div.className="notice";
+    const h=document.createElement("b");h.textContent=a.title;
+    const p=document.createElement("p");p.textContent=a.message;
+    div.append(h,p);$("announcements").append(div);
+  });
+  if(!(data.announcements||[]).length)$("announcements").textContent="কোনো ঘোষণা নেই।";
+}
+$("loginBtn").onclick=async()=>{
+  const id=$("staffSelect").value,pin=$("pin").value;
+  if(!id||!/^[0-9]{6}$/.test(pin)){
+    $("message").textContent="কর্মী নির্বাচন করুন এবং ৬ সংখ্যার PIN লিখুন।";
+    return;
+  }
+  $("message").textContent="Checking...";
+  try{
+    const {data,error}=await db.rpc("nababi_staff_portal",{
+      p_staff_id:id,p_pin:pin,p_action:"login"
+    });
+    if(error)throw error;
+    if(!data||!data.success)throw new Error("Login failed");
+    currentStaff={id};
+    showPortal(data);
+  }catch(e){$("message").textContent=e.message;}
+};
+async function attendance(action){
+  if(!currentStaff)return;
+  $("attendanceMessage").textContent="Processing...";
+  try{
+    const data=await portalAction(action);
+    showPortal(data);
+    $("attendanceMessage").textContent=
+      action==="checkin"?"Check-in সফল হয়েছে।":"Check-out সফল হয়েছে।";
+  }catch(e){$("attendanceMessage").textContent=e.message;}
+}
+$("checkIn").onclick=()=>attendance("checkin");
+$("checkOut").onclick=()=>attendance("checkout");
+$("logout").onclick=()=>{
+  currentStaff=null;$("pin").value="";
+  $("staffHome").style.display="none";$("login").style.display="block";
+};
+loadStaff();
+})();
+</script>
+</body>
+</html>
