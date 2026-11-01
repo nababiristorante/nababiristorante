@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d24">
+  <title>Nababi Ristorante | Staff QR Attendance</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px;
+      background: #102d24;
+      color: #f7f1e5;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 440px;
+      padding: 26px;
+      background: #183e31;
+      border: 1px solid #d8b76a;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #d8b76a;
+      font-size: 25px;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      color: #e6dfcf;
+      margin-bottom: 24px;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin: 14px 0;
+      border: 1px solid #d8b76a;
+      border-radius: 8px;
+      background: #102d24;
+      color: white;
+      font-size: 22px;
+      text-align: center;
+      letter-spacing: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #d8b76a;
+      color: #102d24;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    #pinArea { display: none; }
+
+    #message {
+      margin-top: 18px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .small {
+      color: #e6dfcf;
+      font-size: 13px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="panel">
+    <h1>NABABI RISTORANTE</h1>
+    <div class="subtitle">Staff QR Attendance</div>
+
+    <div id="reader"></div>
+
+    <button id="startButton">Start QR Scanner</button>
+
+    <section id="pinArea">
+      <p id="staffLabel">Staff QR detected</p>
+
+      <input
+        id="pinInput"
+        type="password"
+        inputmode="numeric"
+        pattern="[0-9]{4}"
+        maxlength="4"
+        placeholder="••••"
+        autocomplete="off"
+        aria-label="Four digit Staff PIN"
+      >
+
+      <button id="punchButton">Confirm Attendance</button>
+    </section>
+
+    <div id="message" role="status" aria-live="polite"></div>
+
+    <button id="resetButton" hidden>
+      Scan Next Staff
+    </button>
+
+    <div class="small">
+      Staff attendance system · Roma
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/staff-qr.js"></script>
+</body>
+</html>
