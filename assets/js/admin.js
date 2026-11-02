@@ -884,7 +884,90 @@ async function removeStaffLink(id) {
   if (error) throw error;
   await staffLoad();
 }
+/* STAFF ATTENDANCE + SHARED QR */
 
+async function attendancePage() {
+  const {data,error} = await db
+    .from('staff_attendance')
+    .select('staff_name,attendance_date,check_in,check_out,status')
+    .order('attendance_date',{ascending:false})
+    .limit(100);
+
+  if (error) throw error;
+
+  const rows = data || [];
+
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Shared Staff QR Code</h2>
+      </div>
+
+      <p class="help">
+        Tutto il personale può utilizzare questo unico QR Code.
+        Ogni persona deve selezionare il proprio nome e inserire il
+        proprio PIN personale.
+      </p>
+
+      <div style="text-align:center;padding:20px">
+        <img
+          src="${STAFF_QR_IMAGE}"
+          alt="Nababi Staff Attendance QR Code"
+          style="width:280px;max-width:100%;height:auto;background:white;padding:10px;border-radius:12px"
+        >
+
+        <p><b>NABABI RISTORANTE</b></p>
+        <p class="help">Staff Check In / Check Out</p>
+
+        <p>
+          <a href="${STAFF_QR_URL}" target="_blank" rel="noopener">
+            Open Staff QR Page
+          </a>
+        </p>
+
+        <button class="gold-btn" data-print-attendance-qr>
+          Print QR Code
+        </button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Attendance Records</h2>
+        <span class="help">${rows.length} records</span>
+      </div>
+
+      ${
+        rows.length
+          ? `<div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Staff</th>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map(row => `
+                    <tr>
+                      <td>${esc(row.staff_name || '—')}</td>
+                      <td>${esc(row.attendance_date || '—')}</td>
+                      <td>${esc(row.check_in || '—')}</td>
+                      <td>${esc(row.check_out || '—')}</td>
+                      <td>${esc(row.status || '—')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>`
+          : '<div class="empty-state">Nessun record trovato.</div>'
+      }
+    </section>
+  `;
+}
 /* MODULE RENDERING */
 
 async function render(id) {
