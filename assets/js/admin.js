@@ -5,12 +5,14 @@
 /* NABABI RISTORANTE — ADMIN PANEL */
 
 const cfg = window.NABABI_CONFIG || {};
-  const STAFF_QR_URL =
+
+const STAFF_QR_URL =
   'https://nababiristorante.vercel.app/staff-qr.html';
 
 const STAFF_QR_IMAGE =
   'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
   encodeURIComponent(STAFF_QR_URL);
+
 const $ = s => document.querySelector(s);
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
@@ -109,7 +111,6 @@ function permissionObject(value) {
     result[id] = false;
   });
 
-  // Accept old array data when reading, but normalize to object.
   if (Array.isArray(value)) {
     value.forEach(id => {
       if (Object.prototype.hasOwnProperty.call(result,id)) {
@@ -255,7 +256,6 @@ async function signIn(e) {
     staffPermissions = {};
     sessionUser = null;
 
-    // Do not leave an authenticated but unauthorized session active.
     try {
       await db?.auth.signOut();
     } catch (_) {}
@@ -727,8 +727,8 @@ async function staffLoad() {
             </button>
 
             <button class="outline-btn" data-remove-staff="${esc(x.id)}">
-  Permanently Remove Staff Login
-</button>
+              Permanently Remove Staff Login
+            </button>
           </article>`;
         }).join('')
       : '<p class="empty-state">No staff accounts found.</p>';
@@ -863,6 +863,8 @@ async function toggleStaff(id,currentlyActive) {
   await staffLoad();
 }
 
+/* PERMANENT STAFF ACCOUNT REMOVAL */
+
 async function removeStaffLink(id) {
   if (userRole !== 'admin') {
     throw new Error('Only Super Admin can remove Staff accounts.');
@@ -893,6 +895,7 @@ async function removeStaffLink(id) {
 
   await staffLoad();
 }
+
 /* STAFF ATTENDANCE + SHARED QR */
 
 async function attendancePage() {
@@ -977,6 +980,7 @@ async function attendancePage() {
     </section>
   `;
 }
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -1018,10 +1022,12 @@ async function render(id) {
       };
       return;
     }
-   if (id === 'attendance') {
-    host.innerHTML = await attendancePage();
-     return;
-}
+
+    if (id === 'attendance') {
+      host.innerHTML = await attendancePage();
+      return;
+    }
+
     if (id === 'logo' || id === 'gallery') {
       host.innerHTML = uploadPanel(id);
 
@@ -1214,7 +1220,6 @@ async function genericTable(id) {
   }
 }
 
-
 /* EVENT LISTENERS */
 
 $('#loginForm').addEventListener('submit', signIn);
@@ -1308,36 +1313,14 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    async function removeStaffLink(id) {
-  if (userRole !== 'admin') {
-    throw new Error('Only Super Admin can remove Staff accounts.');
-  }
+    // PERMANENTLY REMOVE STAFF LOGIN
+    const removeButton = e.target.closest('[data-remove-staff]');
 
-  const confirmed = confirm(
-    'Permanently remove this Staff login account? ' +
-    'They will no longer be able to log in. ' +
-    'Attendance and historical records will be preserved.'
-  );
-
-  if (!confirmed) return;
-
-  const {data,error} = await db.functions.invoke(
-    'delete-staff-account',
-    {
-      body: { staff_id: id }
+    if (removeButton) {
+      await removeStaffLink(removeButton.dataset.removeStaff);
+      return;
     }
-  );
 
-  if (error) throw error;
-  if (data?.error) throw new Error(data.error);
-
-  alert(
-    data?.message ||
-    'Staff login account permanently removed.'
-  );
-
-  await staffLoad();
-}
     // RESET STAFF PASSWORD
     const resetButton = e.target.closest('[data-reset-staff]');
 
@@ -1382,8 +1365,6 @@ $('#logoutBtn').onclick = async () => {
     showLoginMessage('');
   }
 };
-
-
 
 /* SESSION RESTORE */
 
