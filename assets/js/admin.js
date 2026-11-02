@@ -1717,6 +1717,31 @@ async function render(id) {
       return;
     }
 
+    if (id === 'secret') {
+      host.innerHTML = secretPage();
+
+      if (userRole === 'admin') {
+        $('#generateSecretCoupon').onclick =
+          generateSecretCoupon;
+      }
+
+      $('#redeemSecretForm').onsubmit =
+        async e => {
+          try {
+            await redeemSecretCoupon(e);
+          } catch (err) {
+            $('#redeemSecretStatus').textContent =
+              err.message || 'Redemption failed.';
+          }
+        };
+
+      $('#refreshSecretHistory').onclick =
+        loadSecretHistory;
+
+      await loadSecretHistory();
+      return;
+    }
+
     if (id === 'attendance') {
       host.innerHTML = await attendancePage();
       return;
