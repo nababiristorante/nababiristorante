@@ -950,15 +950,16 @@ async function toggleStaff(id,currentlyActive) {
 
 /* PERMANENT STAFF ACCOUNT REMOVAL */
 
+
 async function removeStaffLink(id) {
   if (userRole !== 'admin') {
     throw new Error('Only Super Admin can remove Staff accounts.');
   }
 
   const confirmed = confirm(
-    'Permanently remove this Staff login account? ' +
-    'They will no longer be able to log in. ' +
-    'Attendance and historical records will be preserved.'
+    'Remove this Staff profile permanently? ' +
+    'The Staff member will no longer appear in the active Staff list. ' +
+    'Attendance Records will be retained. Continue?'
   );
 
   if (!confirmed) return;
@@ -975,11 +976,12 @@ async function removeStaffLink(id) {
 
   alert(
     data?.message ||
-    'Staff login account permanently removed.'
+    'Staff profile removed. Attendance records retained.'
   );
 
   await staffLoad();
 }
+
 
 /* STAFF ATTENDANCE + SHARED QR */
 
