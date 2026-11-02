@@ -1366,8 +1366,6 @@ $('#logoutBtn').onclick = async () => {
     } catch (_) {}
   }
 
-})();
-const printQR = e.target.closest('[data-print-attendance-qr]');
 
 if (printQR) {
   const printWindow = window.open('', '_blank');
