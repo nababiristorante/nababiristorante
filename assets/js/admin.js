@@ -593,42 +593,80 @@ async function categoryLoad() {
 
 /* MENU MANAGER */
 
+let editingDishId = null;
+
 function menuPage() {
-  return `<section class="section-card">
-    <div class="section-title"><h2>Aggiungi piatto</h2></div>
+  return `<section class="section-card menu-manager-card">
+    <div class="section-title">
+      <h2 id="dishFormTitle">Aggiungi piatto</h2>
+    </div>
     <form id="dishForm" class="form-grid">
-      <label class="field">Nome
-        <input name="name" required maxlength="150">
+      <label class="field">Nome del piatto
+        <input name="name" required maxlength="150"
+          placeholder="Es. Chicken Biryani">
       </label>
       <label class="field">Prezzo (€)
         <input name="price" type="number"
-          min="0" step="0.01" required>
+          min="0" step="0.01" required placeholder="0,00">
       </label>
       <label class="field">Categoria
-        <input name="category" maxlength="100">
-      </label>
-      <label class="field">Descrizione
-        <textarea name="description"></textarea>
-      </label>
-      <label class="field">Foto del piatto
-        <input name="image" type="file"
-          accept="image/jpeg,image/png,image/webp">
-      </label>
-      <label class="field">Disponibile
-        <select name="is_available">
-          <option value="true">Sì</option>
-          <option value="false">No</option>
+        <select name="category" id="dishCategory" required>
+          <option value="">Seleziona categoria</option>
         </select>
       </label>
-      <div><button class="gold-btn">Salva piatto</button></div>
+      <label class="field">Descrizione
+        <textarea name="description" maxlength="1000"
+          placeholder="Descrizione del piatto"></textarea>
+      </label>
+      <label class="field menu-photo-field">Foto del piatto
+        <input id="dishImage" name="image" type="file"
+          accept="image/jpeg,image/png,image/webp">
+        <span class="help">Scegli una foto dalla Galleria/Foto del telefono (JPG, PNG o WebP, max 8 MB).</span>
+      </label>
+      <div class="menu-image-preview-wrap">
+        <img id="dishImagePreview" class="menu-image-preview"
+          alt="Anteprima foto piatto" hidden>
+      </div>
+      <label class="field">Disponibilità
+        <select name="is_available">
+          <option value="true">Disponibile</option>
+          <option value="false">Non disponibile</option>
+        </select>
+      </label>
+      <div class="menu-form-actions">
+        <button id="dishSaveBtn" class="gold-btn" type="submit">Salva piatto</button>
+        <button id="dishCancelEdit" class="outline-btn" type="button" hidden>Annulla modifica</button>
+      </div>
     </form>
     <p id="dishStatus" class="help" aria-live="polite"></p>
   </section>
 
   <section class="section-card">
-    <h2>Menu Items</h2>
+    <div class="section-title"><h2>Piatti salvati</h2></div>
     <div id="dishList" class="help">Caricamento…</div>
   </section>`;
+}
+
+async function loadDishCategories(selected = '') {
+  const select = $('#dishCategory');
+  if (!select) return;
+
+  const {data,error} = await db
+    .from('categories')
+    .select('name')
+    .order('name');
+
+  if (error) throw error;
+
+  const names = (data || []).map(x => x.name).filter(Boolean);
+  select.innerHTML = '<option value="">Seleziona categoria</option>' +
+    names.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+
+  if (selected && !names.includes(selected)) {
+    select.insertAdjacentHTML('beforeend',
+      `<option value="${esc(selected)}">${esc(selected)}</option>`);
+  }
+  select.value = selected || '';
 }
 
 async function dishLoad() {
@@ -639,33 +677,158 @@ async function dishLoad() {
     const {data,error} = await db
       .from('menu_items')
       .select('*')
-      .limit(100);
+      .order('name')
+      .limit(200);
 
     if (error) throw error;
 
     host.innerHTML = data?.length
-      ? `<div class="table-scroll"><table class="data-table">
-          <thead>
-            <tr>
-              <th>Nome</th><th>Prezzo</th>
-              <th>Categoria</th><th>Disponibile</th>
-            </tr>
-          </thead>
-          <tbody>${data.map(x => `
-            <tr>
-              <td>${esc(x.name)}</td>
-              <td>€${esc(x.price)}</td>
-              <td>${esc(x.category)}</td>
-              <td>${x.is_available ? 'Sì' : 'No'}</td>
-            </tr>
-          `).join('')}</tbody>
-        </table></div>`
-      : 'Nessun piatto inserito.';
+      ? `<div class="menu-dish-list">${data.map(x => `
+          <article class="menu-dish-row">
+            ${x.image_url
+              ? `<img class="menu-dish-thumb" src="${esc(x.image_url)}" alt="${esc(x.name)}">`
+              : '<div class="menu-dish-thumb menu-no-photo">🍽️</div>'}
+            <div class="menu-dish-info">
+              <strong>${esc(x.name)}</strong>
+              <span>€${esc(Number(x.price).toFixed(2))} · ${esc(x.category || 'Senza categoria')}</span>
+              <small>${x.is_available ? 'Disponibile' : 'Non disponibile'}</small>
+            </div>
+            <div class="menu-dish-actions">
+              <button type="button" class="outline-btn"
+                data-edit-dish="${esc(x.id)}">Modifica</button>
+              <button type="button" class="menu-delete-btn"
+                data-delete-dish="${esc(x.id)}">Elimina</button>
+            </div>
+          </article>
+        `).join('')}</div>`
+      : '<div class="empty-state">Nessun piatto inserito. Aggiungi il primo piatto qui sopra.</div>';
 
   } catch (e) {
-    host.innerHTML =
-      `<span class="error-text">${esc(e.message)}</span>`;
+    host.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
   }
+}
+
+function resetDishForm() {
+  const form = $('#dishForm');
+  if (!form) return;
+  form.reset();
+  editingDishId = null;
+  $('#dishFormTitle').textContent = 'Aggiungi piatto';
+  $('#dishSaveBtn').textContent = 'Salva piatto';
+  $('#dishCancelEdit').hidden = true;
+  const preview = $('#dishImagePreview');
+  preview.hidden = true;
+  preview.removeAttribute('src');
+  $('#dishStatus').textContent = '';
+  loadDishCategories().catch(err => {
+    $('#dishStatus').textContent = err.message;
+  });
+}
+
+async function editDish(id) {
+  const status = $('#dishStatus');
+  try {
+    const {data,error} = await db
+      .from('menu_items')
+      .select('*')
+      .eq('id',id)
+      .single();
+    if (error) throw error;
+
+    const form = $('#dishForm');
+    form.elements.name.value = data.name || '';
+    form.elements.price.value = data.price ?? '';
+    form.elements.description.value = data.description || '';
+    form.elements.is_available.value = data.is_available ? 'true' : 'false';
+    await loadDishCategories(data.category || '');
+    editingDishId = id;
+    $('#dishFormTitle').textContent = 'Modifica piatto';
+    $('#dishSaveBtn').textContent = 'Salva modifiche';
+    $('#dishCancelEdit').hidden = false;
+
+    const preview = $('#dishImagePreview');
+    if (data.image_url) {
+      preview.src = data.image_url;
+      preview.hidden = false;
+    } else {
+      preview.hidden = true;
+    }
+    status.textContent = 'Modifica i campi e premi Salva modifiche.';
+    form.scrollIntoView({behavior:'smooth',block:'start'});
+  } catch (e) {
+    status.textContent = e.message || 'Impossibile aprire il piatto.';
+  }
+}
+
+async function saveDish(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const status = $('#dishStatus');
+  const btn = $('#dishSaveBtn');
+  const file = fd.get('image');
+  btn.disabled = true;
+  status.textContent = 'Salvataggio in corso…';
+
+  try {
+    const payload = {
+      name:String(fd.get('name') || '').trim(),
+      price:Number(fd.get('price')),
+      category:String(fd.get('category') || '').trim(),
+      description:String(fd.get('description') || '').trim() || null,
+      is_available:fd.get('is_available') === 'true'
+    };
+
+    if (!payload.name || !payload.category ||
+        !Number.isFinite(payload.price) || payload.price < 0) {
+      throw new Error('Inserisci nome, prezzo valido e categoria.');
+    }
+
+    if (file?.size) {
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) ||
+          file.size > 8 * 1024 * 1024) {
+        throw new Error('Usa JPG, PNG o WebP con dimensione massima di 8 MB.');
+      }
+      const ext = file.type === 'image/png' ? 'png'
+        : file.type === 'image/webp' ? 'webp' : 'jpg';
+      const unique = globalThis.crypto?.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+      const path = `menu/${unique}.${ext}`;
+      const {data,error} = await db.storage.from(bucket).upload(path,file,{
+        cacheControl:'3600',upsert:false,contentType:file.type
+      });
+      if (error) throw error;
+      const publicUrl = db.storage.from(bucket).getPublicUrl(data.path).data.publicUrl;
+      if (!publicUrl) throw new Error('Foto caricata ma URL non disponibile.');
+      payload.image_url = publicUrl;
+    }
+
+    const request = editingDishId
+      ? db.from('menu_items').update(payload).eq('id',editingDishId)
+      : db.from('menu_items').insert(payload);
+    const {error} = await request;
+    if (error) throw error;
+
+    status.textContent = editingDishId
+      ? 'Piatto aggiornato correttamente.'
+      : 'Piatto salvato correttamente.';
+    resetDishForm();
+    await dishLoad();
+  } catch (err) {
+    status.textContent = err.message || 'Salvataggio non riuscito.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteDish(id) {
+  if (!confirm('Vuoi eliminare definitivamente questo piatto dal menu?')) return;
+  const {error} = await db.from('menu_items').delete().eq('id',id);
+  if (error) throw error;
+  if (String(editingDishId) === String(id)) resetDishForm();
+  await dishLoad();
 }
 
 /* STAFF PERMISSIONS */
@@ -2040,83 +2203,28 @@ async function render(id) {
 
     if (id === 'menu_manager') {
       host.innerHTML = menuPage();
+      await loadDishCategories();
       await dishLoad();
 
-      $('#dishForm').onsubmit = async e => {
-        e.preventDefault();
-
-        const fd = new FormData(e.target);
-        const status = $('#dishStatus');
-
-        const submit = e.target.querySelector(
-          'button[type="submit"],button:not([type])'
-        );
-
-        if (submit) submit.disabled = true;
-
-        try {
-          let image_url = null;
-          const file = fd.get('image');
-
-          if (file?.size) {
-            if (!['image/jpeg','image/png','image/webp'].includes(file.type) ||
-                file.size > 8 * 1024 * 1024) {
-              throw new Error(
-                'Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.'
-              );
-            }
-
-            const ext = file.type === 'image/png' ? 'png'
-              : file.type === 'image/webp' ? 'webp' : 'jpg';
-
-            const path = `menu/${Date.now()}.${ext}`;
-            const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
-
-            const {data,error} = await db.storage
-              .from(bucket)
-              .upload(path,file,{contentType:file.type});
-
-            if (error) throw error;
-
-            image_url = db.storage
-              .from(bucket)
-              .getPublicUrl(data.path).data.publicUrl;
-          }
-
-          const payload = {
-            name:String(fd.get('name') || '').trim(),
-            price:Number(fd.get('price')),
-            category:String(fd.get('category') || '').trim() || null,
-            description:String(fd.get('description') || '').trim() || null,
-            is_available:fd.get('is_available') === 'true'
-          };
-
-          if (image_url) payload.image_url = image_url;
-
-          if (!payload.name ||
-              !Number.isFinite(payload.price) ||
-              payload.price < 0) {
-            throw new Error('Controlla il nome e il prezzo del piatto.');
-          }
-
-          const {error} = await db
-            .from('menu_items')
-            .insert(payload);
-
-          if (error) throw error;
-
-          status.textContent = 'Piatto salvato.';
-          e.target.reset();
-          await dishLoad();
-
-        } catch (err) {
-          status.textContent =
-            err.message || 'Salvataggio non riuscito.';
-        } finally {
-          if (submit) submit.disabled = false;
+      $('#dishForm').onsubmit = saveDish;
+      $('#dishCancelEdit').onclick = resetDishForm;
+      $('#dishImage').onchange = () => {
+        const file = $('#dishImage').files?.[0];
+        const preview = $('#dishImagePreview');
+        if (!file) return;
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+          $('#dishStatus').textContent = 'Usa JPG, PNG o WebP.';
+          $('#dishImage').value = '';
+          return;
         }
+        if (file.size > 8 * 1024 * 1024) {
+          $('#dishStatus').textContent = 'La foto deve essere massimo 8 MB.';
+          $('#dishImage').value = '';
+          return;
+        }
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
       };
-
       return;
     }
 
@@ -2306,6 +2414,18 @@ $('#pageContent').addEventListener('click', async e => {
         await categoryLoad();
       }
 
+      return;
+    }
+
+    const editDishButton = e.target.closest('[data-edit-dish]');
+    if (editDishButton) {
+      await editDish(editDishButton.dataset.editDish);
+      return;
+    }
+
+    const deleteDishButton = e.target.closest('[data-delete-dish]');
+    if (deleteDishButton) {
+      await deleteDish(deleteDishButton.dataset.deleteDish);
       return;
     }
 
