@@ -628,48 +628,104 @@ function permissionOptions(selected = {}) {
 }
 
 
+
 function staffPage() {
-  return `<section class="section-card">
-    <div class="section-title"><h2>Nuovo Staff Account</h2></div>
-    <p class="help">
-      Crea un profilo con nome, foto personale e PIN di 4 cifre.
-      Non servono email o password.
-    </p>
-
-    <form id="staffForm" class="form-grid">
-      <label class="field">Staff Name
-        <input name="full_name" required maxlength="120"
-          placeholder="Nome del dipendente">
-      </label>
-
-      <label class="field">Staff Photo
-        <input name="photo" type="file"
-          accept="image/jpeg,image/png,image/webp" required>
-      </label>
-
-      <label class="field">Personal PIN (4 digits)
-        <input name="pin" type="password"
-          inputmode="numeric" pattern="[0-9]{4}"
-          minlength="4" maxlength="4"
-          autocomplete="new-password" required
-          placeholder="••••">
-      </label>
-
-      <div>
-        <button id="createStaffBtn" class="gold-btn" type="submit">
-          Create Staff Account
-        </button>
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Full Staff Account — Email & Password</h2>
       </div>
-    </form>
 
-    <p id="staffStatus" class="help" aria-live="polite"></p>
-  </section>
+      <p class="help">
+        Create a staff login account. The staff member can log in
+        using their own email and password. Select only the modules
+        they are allowed to access.
+      </p>
 
-  <section class="section-card">
-    <div class="section-title"><h2>Staff Accounts</h2></div>
-    <div id="staffList">Loading…</div>
-  </section>`;
+      <form id="fullStaffForm" class="form-grid">
+        <label class="field">Staff Name
+          <input name="full_name" required maxlength="120">
+        </label>
+
+        <label class="field">Email
+          <input name="email" type="email" required maxlength="254">
+        </label>
+
+        <label class="field">Phone
+          <input name="phone" type="tel" maxlength="40">
+        </label>
+
+        <label class="field">Password (minimum 10 characters)
+          <input name="password" type="password"
+            minlength="10" autocomplete="new-password" required>
+        </label>
+
+        <div class="section-card">
+          <h3>Module Permissions</h3>
+          <p class="help">
+            Only selected modules will appear in this staff account.
+          </p>
+          <div class="form-grid">
+            ${permissionOptions({})}
+          </div>
+        </div>
+
+        <div>
+          <button id="createFullStaffBtn" class="gold-btn" type="submit">
+            Create Full Staff Account
+          </button>
+        </div>
+      </form>
+
+      <p id="fullStaffStatus" class="help" aria-live="polite"></p>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Attendance-only Account — Photo & PIN</h2>
+      </div>
+
+      <p class="help">
+        This account is only for QR Check-in / Check-out.
+        No email or password is required.
+      </p>
+
+      <form id="staffForm" class="form-grid">
+        <label class="field">Staff Name
+          <input name="full_name" required maxlength="120"
+            placeholder="Nome del dipendente">
+        </label>
+
+        <label class="field">Staff Photo
+          <input name="photo" type="file"
+            accept="image/jpeg,image/png,image/webp" required>
+        </label>
+
+        <label class="field">Personal PIN (4 digits)
+          <input name="pin" type="password"
+            inputmode="numeric" pattern="[0-9]{4}"
+            minlength="4" maxlength="4"
+            autocomplete="new-password" required
+            placeholder="••••">
+        </label>
+
+        <div>
+          <button id="createStaffBtn" class="gold-btn" type="submit">
+            Create Attendance Account
+          </button>
+        </div>
+      </form>
+
+      <p id="staffStatus" class="help" aria-live="polite"></p>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title"><h2>Staff Accounts</h2></div>
+      <div id="staffList">Loading…</div>
+    </section>
+  `;
 }
+
 
 
 
