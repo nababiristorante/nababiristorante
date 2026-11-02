@@ -565,3 +565,23 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
   #contact .contact-hours-panel{padding:16px}
   #contact .contact-directions-btn{width:100%;margin-bottom:30px}
 }
+
+
+/* HEADER LANGUAGE SELECTOR */
+.language-switcher{
+  display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;
+  padding:5px 8px;border:1px solid rgba(216,183,106,.58);
+  border-radius:999px;background:rgba(18,39,30,.94);color:#f1cf70;
+}
+.language-switcher>span{font-size:15px}
+.language-switcher select{
+  max-width:112px;border:0;outline:0;background:transparent;
+  color:#f5e6bf;font-size:12px;font-weight:700;cursor:pointer;
+}
+.language-switcher select option{background:#102d24;color:#fff}
+@media(max-width:760px){
+  .language-switcher{order:2;margin-left:auto;padding:5px 7px}
+  .language-switcher select{max-width:100px;font-size:11px}
+  #mobileMenuButton{order:3;margin-left:0}
+  .site-header-actions{order:4}
+}
