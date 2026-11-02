@@ -532,27 +532,28 @@ async function uploadHandler() {
 
     const {data:pub} = db.storage.from(bucket).getPublicUrl(data.path);
 
-    $('#uploadedUrl').innerHTML = `
-      <p class="success-text">Caricamento completato.</p>
-      <input class="search-input" id="uploadedUrlInput" readonly>
-      <button class="outline-btn" id="copyUrl">Copia URL</button>
-      <p class="help">
-        Il file è nello Storage. Per visualizzarlo nella Gallery
-        o come Logo bisogna anche salvare il relativo record.
-      </p>`;
+    if (current === 'logo') {
+      const {error:saveError} = await db.from('site_settings').upsert({
+        setting_key:'restaurant_logo_url',
+        setting_value:pub.publicUrl,
+        updated_at:new Date().toISOString()
+      }, {onConflict:'setting_key'});
+      if (saveError) throw saveError;
+      const preview = $('#currentLogoPreview');
+      if (preview) { preview.src = pub.publicUrl; preview.hidden = false; }
+      const fallback = $('#currentLogoFallback');
+      if (fallback) fallback.hidden = true;
+      $('#uploadedUrl').innerHTML = '<p class="success-text">Logo salvato! Header, Footer e Favicon saranno aggiornati sul sito.</p>';
+      status.textContent = 'Logo caricato e salvato correttamente.';
+      return;
+    }
 
+    $('#uploadedUrl').innerHTML = '<p class="success-text">Caricamento completato.</p><input class="search-input" id="uploadedUrlInput" readonly><button class="outline-btn" id="copyUrl">Copia URL</button><p class="help">Il file è stato caricato nello Storage.</p>';
     $('#uploadedUrlInput').value = pub.publicUrl;
-
     $('#copyUrl').onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(pub.publicUrl);
-        status.textContent = 'URL copiato.';
-      } catch (_) {
-        $('#uploadedUrlInput').select();
-        status.textContent = 'Seleziona e copia l’URL.';
-      }
+      try { await navigator.clipboard.writeText(pub.publicUrl); status.textContent = 'URL copiato.'; }
+      catch (_) { $('#uploadedUrlInput').select(); status.textContent = 'Seleziona e copia l’URL.'; }
     };
-
     status.textContent = 'Foto caricata nello Storage.';
 
   } catch (e) {
@@ -2817,6 +2818,19 @@ async function saveSocialLink(event) {
   }
 }
 
+async function logoManagementPage() {
+  const {data,error} = await db.from('site_settings').select('setting_value').eq('setting_key','restaurant_logo_url').maybeSingle();
+  if (error) throw error;
+  const url = data?.setting_value || '';
+  return `<section class="section-card">
+    <div class="section-title"><h2>Logo attuale</h2><span class="help">Header, Footer e icona del browser</span></div>
+    <div class="upload-box">
+      <img id="currentLogoPreview" class="preview-img" alt="Logo attuale" src="${esc(url)}" ${url ? '' : 'hidden'}>
+      <p id="currentLogoFallback" class="help" ${url ? 'hidden' : ''}>Nessun logo personalizzato salvato.</p>
+    </div>
+  </section>
+  ${uploadPanel('logo')}`;
+}
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -2909,25 +2923,34 @@ async function render(id) {
       return;
     }
 
-    if (id === 'logo' || id === 'gallery') {
-      host.innerHTML = uploadPanel(id);
-
+    if (id === 'logo') {
+      host.innerHTML = await logoManagementPage();
       $('#mediaFile').onchange = () => {
         const file = $('#mediaFile').files?.[0];
         if (!file) return;
-
         const img = $('#uploadPreview');
-
-        if (img.dataset.objectUrl) {
-          URL.revokeObjectURL(img.dataset.objectUrl);
-        }
-
+        if (img.dataset.objectUrl) URL.revokeObjectURL(img.dataset.objectUrl);
         const objectUrl = URL.createObjectURL(file);
         img.src = objectUrl;
         img.dataset.objectUrl = objectUrl;
         img.hidden = false;
       };
+      $('#uploadBtn').onclick = uploadHandler;
+      return;
+    }
 
+    if (id === 'gallery') {
+      host.innerHTML = uploadPanel(id);
+      $('#mediaFile').onchange = () => {
+        const file = $('#mediaFile').files?.[0];
+        if (!file) return;
+        const img = $('#uploadPreview');
+        if (img.dataset.objectUrl) URL.revokeObjectURL(img.dataset.objectUrl);
+        const objectUrl = URL.createObjectURL(file);
+        img.src = objectUrl;
+        img.dataset.objectUrl = objectUrl;
+        img.hidden = false;
+      };
       $('#uploadBtn').onclick = uploadHandler;
       return;
     }
