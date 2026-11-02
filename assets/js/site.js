@@ -194,25 +194,16 @@
     return item ? 'https://cdn.simpleicons.org/' + item[0] + '/' + item[1] : '';
   }
 
-  /* FOOD DELIVERY LINKS — one compact button, logos only in its popup */
+  /* FOOD DELIVERY — original provider brand marks beside social icons in footer */
   async function loadFoodDeliveryLinks() {
     const section = $('#foodDelivery');
     const container = $('#publicDeliveryLinks');
-    const toggle = $('#deliveryToggle');
-    if (!section || !container || !toggle) return;
+    if (!section || !container) return;
 
     const rows = await getRows(
       'food_delivery_links',
       query => query.eq('is_active', true).order('sort_order').order('created_at')
     );
-
-    if (!rows.length) {
-      section.hidden = true;
-      container.hidden = true;
-      container.innerHTML = '';
-      toggle.setAttribute('aria-expanded', 'false');
-      return;
-    }
 
     container.innerHTML = rows.map(item => {
       let parsed;
@@ -230,36 +221,6 @@
     }).join('');
 
     section.hidden = !container.innerHTML;
-    if (!container.innerHTML) {
-      container.hidden = true;
-      toggle.setAttribute('aria-expanded', 'false');
-    }
-  }
-
-  function setupDeliveryPopup() {
-    const toggle = $('#deliveryToggle');
-    const popup = $('#publicDeliveryLinks');
-    if (!toggle || !popup) return;
-
-    toggle.addEventListener('click', () => {
-      const opened = popup.hidden;
-      popup.hidden = !opened;
-      toggle.setAttribute('aria-expanded', String(opened));
-    });
-
-    document.addEventListener('click', event => {
-      if (!event.target.closest('#foodDelivery')) {
-        popup.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') {
-        popup.hidden = true;
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    });
   }
 
   /* SOCIAL LINKS */
@@ -763,7 +724,6 @@
 
     setupBooking();
     setupMobileNavigation();
-    setupDeliveryPopup();
 
     if (!db) {
 
