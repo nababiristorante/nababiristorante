@@ -727,8 +727,8 @@ async function staffLoad() {
             </button>
 
             <button class="outline-btn" data-remove-staff="${esc(x.id)}">
-              Remove Staff Link
-            </button>
+  Permanently Remove Staff Login
+</button>
           </article>`;
         }).join('')
       : '<p class="empty-state">No staff accounts found.</p>';
