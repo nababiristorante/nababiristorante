@@ -232,6 +232,102 @@
     `).join('');
   }
 
+
+  /* CUSTOMER COUPON COLLECTION */
+
+  function getVisitorToken() {
+    const key = 'nababi_coupon_visitor_v1';
+    let token = localStorage.getItem(key);
+
+    if (!token) {
+      token = window.crypto?.randomUUID
+        ? window.crypto.randomUUID()
+        : 'nb-' + Date.now().toString(36) + '-' +
+          Math.random().toString(36).slice(2) + '-' +
+          Math.random().toString(36).slice(2);
+
+      localStorage.setItem(key, token);
+    }
+
+    return token;
+  }
+
+  async function loadCustomerCouponOffer() {
+    const section = $('#customerCouponSection');
+    if (!section || !db) return;
+
+    try {
+      const {data,error} = await db.rpc('get_nababi_coupon_offer');
+      if (error) throw error;
+
+      if (!data?.success || data.is_active !== true) {
+        section.hidden = true;
+        return;
+      }
+
+      section.hidden = false;
+      $('#customerCouponDiscount').textContent =
+        Number(data.discount_percent) + '% DI SCONTO';
+
+      $('#customerCouponPeriod').textContent =
+        'Valido fino al ' +
+        new Date(data.ends_at).toLocaleString('it-IT');
+
+      $('#customerCouponRemaining').textContent =
+        data.remaining == null
+          ? 'Coupon disponibili fino alla fine dell’offerta.'
+          : 'Coupon rimanenti: ' + data.remaining;
+
+      $('#claimCustomerCoupon').onclick = claimCustomerCoupon;
+    } catch (error) {
+      console.error('Nababi coupon offer:', error);
+      section.hidden = true;
+    }
+  }
+
+  async function claimCustomerCoupon() {
+    const button = $('#claimCustomerCoupon');
+    const status = $('#customerCouponStatus');
+    const codePanel = $('#customerCouponCode');
+
+    button.disabled = true;
+    status.textContent = 'Generazione del coupon…';
+    codePanel.hidden = true;
+
+    try {
+      const visitorToken = getVisitorToken();
+      const {data,error} = await db.rpc('claim_nababi_coupon', {
+        p_visitor_token: visitorToken
+      });
+
+      if (error) throw error;
+      if (!data?.success) {
+        throw new Error(data?.message || 'Coupon non disponibile.');
+      }
+
+      $('#customerCouponCodeValue').textContent = data.code;
+      $('#customerCouponExpiry').textContent =
+        'Scade: ' + new Date(data.expires_at).toLocaleString('it-IT');
+      codePanel.hidden = false;
+      status.textContent =
+        'Coupon del ' + data.discount_percent + '% ottenuto con successo!';
+
+      $('#copyCustomerCoupon').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(String(data.code));
+          status.textContent = 'Codice copiato.';
+        } catch (_) {
+          status.textContent = 'Il tuo codice è: ' + data.code;
+        }
+      };
+    } catch (error) {
+      status.textContent = error.message ||
+        'Non è stato possibile ottenere il coupon.';
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   /* EVENTS */
 
   async function loadEvents() {
@@ -570,6 +666,8 @@
       loadGallery(),
 
       loadNews(),
+
+      loadCustomerCouponOffer(),
 
       loadEvents(),
 

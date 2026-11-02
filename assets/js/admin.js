@@ -25,6 +25,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
 const menu = [
   ['dashboard','▦','Dashboard'],
   ['secret','🎁','Secret Coupon Box'],
+  ['discounts','％','Discount Management'],
   ['menu_manager','🍛','Menu Manager'],
   ['categories','▦','Categories'],
   ['bookings','▣','Bookings'],
@@ -74,6 +75,7 @@ const tableMap = {
 
 const descriptions = {
   secret:'Gestisci offerte riservate e coupon esclusivi.',
+  discounts:'Imposta sconto, periodo di validità e limite dei coupon per i clienti.',
   menu_manager:'Aggiungi e modifica piatti, descrizioni, prezzi e immagini.',
   categories:'Organizza le categorie del menu.',
   bookings:'Consulta le prenotazioni dei tavoli.',
@@ -98,7 +100,7 @@ const descriptions = {
 };
 
 const MODULES = menu.filter(([id]) =>
-  !['dashboard','staff'].includes(id)
+  !['dashboard','staff','discounts'].includes(id)
 );
 
 let db = null;
@@ -1666,6 +1668,171 @@ async function redeemSecretCoupon(e) {
   }
 }
 
+
+/* CUSTOMER DISCOUNT OFFER MANAGEMENT — ADMIN ONLY */
+
+function discountPage() {
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Offerta Coupon per i Clienti</h2>
+      </div>
+      <p class="help">
+        Imposta la percentuale e il periodo. Quando l'offerta è attiva,
+        il sito mostrerà automaticamente il pulsante per ottenere un coupon.
+        Non vengono richiesti nome, telefono o email.
+      </p>
+      <form id="discountOfferForm" class="form-grid">
+        <label class="field">Percentuale di sconto
+          <select name="discount_percent" id="discountPercent" required>
+            <option value="10">10%</option>
+            <option value="15">15%</option>
+            <option value="20">20%</option>
+            <option value="25">25%</option>
+            <option value="30">30%</option>
+          </select>
+        </label>
+        <label class="field">Massimo coupon (facoltativo)
+          <input id="discountMaxCoupons" name="max_coupons"
+            type="number" min="1" step="1"
+            placeholder="Vuoto = senza limite">
+        </label>
+        <label class="field">Inizio offerta
+          <input id="discountStartsAt" name="starts_at"
+            type="datetime-local" required>
+        </label>
+        <label class="field">Fine offerta
+          <input id="discountEndsAt" name="ends_at"
+            type="datetime-local" required>
+        </label>
+        <label class="field" style="display:flex;gap:10px;align-items:center">
+          <input id="discountEnabled" name="is_enabled"
+            type="checkbox" style="width:auto">
+          Attiva l'offerta sul sito
+        </label>
+        <div>
+          <button id="saveDiscountOffer" class="gold-btn" type="submit">
+            Salva offerta
+          </button>
+        </div>
+      </form>
+      <p id="discountOfferStatus" class="help" aria-live="polite">
+        Caricamento impostazioni…
+      </p>
+    </section>
+    <section class="section-card">
+      <h2>Stato coupon</h2>
+      <div id="discountOfferSummary" class="help">
+        Caricamento…
+      </div>
+      <p class="help">
+        I coupon già emessi mantengono la propria data di scadenza.
+        Disattivare l'offerta impedisce soltanto nuove richieste.
+      </p>
+    </section>
+  `;
+}
+
+function toDateTimeLocal(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0,16);
+}
+
+async function loadDiscountSettings() {
+  const status = $('#discountOfferStatus');
+  const summary = $('#discountOfferSummary');
+
+  try {
+    const {data,error} = await db.rpc('get_nababi_coupon_offer');
+    if (error) throw error;
+
+    if (!data?.success) {
+      if (status) status.textContent = 'Nessuna offerta configurata.';
+      if (summary) summary.textContent = 'Nessuna offerta disponibile.';
+      return;
+    }
+
+    $('#discountPercent').value = String(data.discount_percent || 10);
+    $('#discountStartsAt').value = toDateTimeLocal(data.starts_at);
+    $('#discountEndsAt').value = toDateTimeLocal(data.ends_at);
+    $('#discountEnabled').checked = data.is_enabled === true;
+    $('#discountMaxCoupons').value =
+      data.max_coupons == null ? '' : String(data.max_coupons);
+
+    const active = data.is_active === true;
+    const limitText = data.max_coupons == null
+      ? 'Senza limite'
+      : `${data.issued_count || 0} / ${data.max_coupons}`;
+
+    summary.textContent =
+      `${active ? 'ATTIVA' : 'NON ATTIVA'} · ${data.discount_percent}% · Coupon emessi: ${limitText}`;
+
+    if (status) status.textContent = 'Impostazioni caricate.';
+  } catch (err) {
+    if (status) status.textContent =
+      'Errore caricamento: ' + (err.message || 'richiesta non riuscita');
+    if (summary) summary.textContent = 'Impossibile leggere lo stato dell’offerta.';
+  }
+}
+
+async function saveDiscountOffer(e) {
+  e.preventDefault();
+
+  if (userRole !== 'admin') {
+    throw new Error('Solo il Super Admin può modificare le offerte.');
+  }
+
+  const form = e.currentTarget;
+  const btn = $('#saveDiscountOffer');
+  const status = $('#discountOfferStatus');
+
+  const discount = Number($('#discountPercent').value);
+  const starts = $('#discountStartsAt').value;
+  const ends = $('#discountEndsAt').value;
+  const maxRaw = $('#discountMaxCoupons').value.trim();
+  const maxCoupons = maxRaw === '' ? null : Number(maxRaw);
+  const enabled = $('#discountEnabled').checked;
+
+  if (!starts || !ends || new Date(ends) <= new Date(starts)) {
+    status.textContent = 'Controlla la data e l’ora di inizio e fine.';
+    return;
+  }
+
+  if (maxCoupons !== null &&
+      (!Number.isInteger(maxCoupons) || maxCoupons < 1)) {
+    status.textContent = 'Il limite deve essere un numero intero maggiore di zero.';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Salvataggio…';
+
+  try {
+    const {data,error} = await db.rpc('save_nababi_coupon_offer', {
+      p_discount_percent: discount,
+      p_starts_at: new Date(starts).toISOString(),
+      p_ends_at: new Date(ends).toISOString(),
+      p_is_enabled: enabled,
+      p_max_coupons: maxCoupons
+    });
+
+    if (error) throw error;
+    if (!data?.success) {
+      throw new Error(data?.message || 'Salvataggio non riuscito.');
+    }
+
+    status.textContent = 'Offerta salvata. Il sito mostrerà l’offerta quando il periodo sarà attivo.';
+    await loadDiscountSettings();
+  } catch (err) {
+    status.textContent = err.message || 'Salvataggio non riuscito.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -1714,6 +1881,17 @@ async function render(id) {
         }
       };
 
+      return;
+    }
+
+    if (id === 'discounts') {
+      if (userRole !== 'admin') {
+        host.innerHTML = '<p>Solo il Super Admin può gestire le offerte.</p>';
+        return;
+      }
+      host.innerHTML = discountPage();
+      await loadDiscountSettings();
+      $('#discountOfferForm').onsubmit = saveDiscountOffer;
       return;
     }
 
