@@ -1205,18 +1205,21 @@ async function genericTable(id) {
   }
 }
 
+
 /* EVENT LISTENERS */
 
-$('#loginForm').addEventListener('submit',signIn);
+$('#loginForm').addEventListener('submit', signIn);
 
-$('#sideNav').addEventListener('click',e => {
+$('#sideNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
   if (button) render(button.dataset.page);
 });
 
-$('#pageContent').addEventListener('click',async e => {
-   try {
- 
+$('#pageContent').addEventListener('click', async e => {
+  try {
+    // PRINT STAFF QR CODE
+    const printQR = e.target.closest('[data-print-attendance-qr]');
+
     if (printQR) {
       const printWindow = window.open('', '_blank');
 
@@ -1259,16 +1262,17 @@ $('#pageContent').addEventListener('click',async e => {
       return;
     }
 
+    // DELETE CATEGORY
     const categoryButton = e.target.closest('[data-delete-category]');
 
     if (categoryButton) {
       const categoryId = categoryButton.dataset.deleteCategory;
 
       if (confirm('Eliminare questa categoria?')) {
-        const {error} = await db
+        const { error } = await db
           .from('categories')
           .delete()
-          .eq('id',categoryId);
+          .eq('id', categoryId);
 
         if (error) throw error;
         await categoryLoad();
@@ -1276,13 +1280,17 @@ $('#pageContent').addEventListener('click',async e => {
       return;
     }
 
+    // SAVE STAFF PERMISSIONS
     const saveButton = e.target.closest('[data-save-perms]');
+
     if (saveButton) {
       await savePermissions(saveButton.dataset.savePerms);
       return;
     }
 
+    // ENABLE / DISABLE STAFF
     const toggleButton = e.target.closest('[data-toggle-staff]');
+
     if (toggleButton) {
       await toggleStaff(
         toggleButton.dataset.toggleStaff,
@@ -1291,15 +1299,20 @@ $('#pageContent').addEventListener('click',async e => {
       return;
     }
 
+    // REMOVE STAFF LINK
     const removeButton = e.target.closest('[data-remove-staff]');
+
     if (removeButton) {
       await removeStaffLink(removeButton.dataset.removeStaff);
       return;
     }
 
+    // RESET STAFF PASSWORD
     const resetButton = e.target.closest('[data-reset-staff]');
+
     if (resetButton) {
       await resetStaffPassword(resetButton.dataset.resetStaff);
+      return;
     }
 
   } catch (err) {
@@ -1307,14 +1320,21 @@ $('#pageContent').addEventListener('click',async e => {
   }
 });
 
-$('#menuToggle').onclick = () => $('#sidebar').classList.toggle('open');
-$('#mobileMore').onclick = () => $('#sidebar').classList.toggle('open');
+// MOBILE MENU
+$('#menuToggle').onclick = () => {
+  $('#sidebar').classList.toggle('open');
+};
 
-$('#mobileNav').addEventListener('click',e => {
+$('#mobileMore').onclick = () => {
+  $('#sidebar').classList.toggle('open');
+};
+
+$('#mobileNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
   if (button) render(button.dataset.page);
 });
 
+// LOGOUT
 $('#logoutBtn').onclick = async () => {
   try {
     await db?.auth.signOut();
@@ -1327,10 +1347,54 @@ $('#logoutBtn').onclick = async () => {
     $('#adminApp').hidden = true;
     $('#loginScreen').hidden = false;
     $('#password').value = '';
+
     showLoginMessage('');
   }
 };
 
+/* SESSION RESTORE */
+
+(async () => {
+  if (
+    !window.supabase ||
+    !cfg.SUPABASE_URL ||
+    !cfg.SUPABASE_ANON_KEY
+  ) {
+    showLoginMessage('Supabase config non disponibile.');
+    return;
+  }
+
+  db = window.supabase.createClient(
+    cfg.SUPABASE_URL,
+    cfg.SUPABASE_ANON_KEY
+  );
+
+  try {
+    const { data, error } = await db.auth.getSession();
+
+    if (error) throw error;
+
+    if (data.session?.user) {
+      await verifyAdmin(data.session.user);
+      openApp(data.session.user.email);
+    }
+
+  } catch (e) {
+    userRole = 'guest';
+    staffPermissions = {};
+    sessionUser = null;
+
+    showLoginMessage(e.message || 'Sessione non valida.');
+
+    try {
+      await db.auth.signOut();
+    } catch (_) {}
+  }
+})();
+
+})();
+
+        
 /* SESSION RESTORE */
 
 (async () => {
