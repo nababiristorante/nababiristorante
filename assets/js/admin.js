@@ -2649,7 +2649,7 @@ async function saveDeliveryLink(event) {
 
 /* SOCIAL LINKS MANAGER */
 function socialLinksPage() {
-  return \`
+  return `
     <section class="section-card">
       <div class="section-title"><h2 id="socialLinkFormTitle">Aggiungi social</h2></div>
       <form id="socialLinkForm" class="form-grid">
@@ -2684,7 +2684,7 @@ function socialLinksPage() {
         <p class="empty-state">Caricamento…</p>
       </div>
     </section>
-  \`;
+  `;
 }
 
 function resetSocialLinkForm() {
@@ -2706,19 +2706,19 @@ async function loadSocialLinksAdmin() {
     list.innerHTML = '<p class="empty-state">Nessun social aggiunto. Aggiungi il primo link qui sopra.</p>';
     return;
   }
-  list.innerHTML = data.map(item => \`
+  list.innerHTML = data.map(item => `
     <article class="delivery-link-admin-row">
       <div class="delivery-link-admin-info">
-        <strong>\${esc(item.platform || item.name || 'Social')}</strong>
-        <a href="\${esc(item.url)}" target="_blank" rel="noopener noreferrer">\${esc(item.url)}</a>
-        <small>\${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'}</small>
+        <strong>${esc(item.platform || item.name || 'Social')}</strong>
+        <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>
+        <small>${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'}</small>
       </div>
       <div class="delivery-link-admin-actions">
-        <button class="outline-btn" type="button" data-edit-social="\${esc(item.id)}">Modifica</button>
-        <button class="news-delete-btn" type="button" data-delete-social="\${esc(item.id)}">Elimina</button>
+        <button class="outline-btn" type="button" data-edit-social="${esc(item.id)}">Modifica</button>
+        <button class="news-delete-btn" type="button" data-delete-social="${esc(item.id)}">Elimina</button>
       </div>
     </article>
-  \`).join('');
+  `).join('');
   list.querySelectorAll('[data-edit-social]').forEach(button => {
     button.onclick = () => {
       const item = data.find(row => String(row.id) === button.dataset.editSocial);
