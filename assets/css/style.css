@@ -168,3 +168,50 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
   .mobile-nav{padding-left:5px;padding-right:5px}
   .mobile-nav small{font-size:9px}
 }
+
+
+/* NABABI — REFINED WHATSAPP CONTACT */
+.whatsapp-booking-card{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  max-width:760px;margin:24px auto 4px;padding:18px 20px;
+  border:1px solid rgba(216,183,106,.48);border-radius:18px;
+  background:linear-gradient(115deg,#102d24 0%,#0b1714 70%,#101b17 100%);
+  box-shadow:0 12px 34px rgba(0,0,0,.22)
+}
+.whatsapp-booking-copy{display:grid;gap:4px;min-width:0}
+.whatsapp-mini-label{font-size:9px;letter-spacing:2px;font-weight:800;color:#d8b76a}
+.whatsapp-booking-copy strong{font:21px Georgia,serif;color:#f7f1e5}
+.whatsapp-booking-copy small{font-size:12px;color:#c9c6bb}
+.whatsapp-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:48px;padding:11px 17px;border-radius:999px;
+  color:#062b19;background:#25d366;text-decoration:none;font-weight:800;font-size:13px;
+  box-shadow:0 6px 18px rgba(37,211,102,.2);white-space:nowrap;
+  transition:transform .18s ease,filter .18s ease
+}
+.whatsapp-cta:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.whatsapp-cta svg{width:22px;height:22px;flex:0 0 22px}
+.whatsapp-cta-arrow{font-size:15px}
+.contact-whatsapp-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.contact-whatsapp-line>a{display:inline-flex;align-items:center;gap:7px;color:#25d366;font-weight:700;text-decoration:none}
+.contact-whatsapp-line>a:hover{text-decoration:underline}
+.whatsapp-floating{
+  position:fixed;right:22px;bottom:22px;z-index:60;
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:54px;padding:12px 19px;border:2px solid rgba(255,255,255,.22);
+  border-radius:999px;background:#25d366;color:#062b19;text-decoration:none;
+  font-size:14px;font-weight:850;letter-spacing:.1px;
+  box-shadow:0 9px 28px rgba(0,0,0,.38),0 4px 15px rgba(37,211,102,.2);
+  transition:transform .18s ease,box-shadow .18s ease
+}
+.whatsapp-floating:hover{transform:translateY(-3px);box-shadow:0 13px 32px rgba(0,0,0,.42)}
+.whatsapp-floating svg{width:25px;height:25px;flex:0 0 25px}
+.whatsapp-floating:focus-visible,.whatsapp-cta:focus-visible{outline:3px solid #f6d77d;outline-offset:3px}
+@media(max-width:600px){
+ .whatsapp-booking-card{align-items:stretch;flex-direction:column;gap:13px;margin:20px 0 4px;padding:16px;border-radius:15px}
+ .whatsapp-booking-copy strong{font-size:19px}
+ .whatsapp-cta{width:100%;min-height:48px}
+ .whatsapp-floating{right:13px;bottom:14px;min-height:50px;padding:10px 15px;font-size:13px}
+ .whatsapp-floating svg{width:23px;height:23px}
+}
+@media(prefers-reduced-motion:reduce){.whatsapp-floating,.whatsapp-cta{transition:none}}
