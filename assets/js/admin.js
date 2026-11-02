@@ -2898,6 +2898,98 @@ async function contactMessagesPage() {
   </section>`;
 }
 
+
+/* OPENING HOURS MANAGEMENT */
+
+async function hoursPage() {
+  const {data,error} = await db
+    .from('opening_hours')
+    .select('id,day_of_week,day_name,is_closed,opens_at,closes_at')
+    .order('day_of_week');
+
+  if (error) throw error;
+
+  const rows = data || [];
+  const cards = rows.map(row => `
+    <article class="section-card" style="margin:12px 0">
+      <div class="section-title">
+        <h3>${esc(row.day_name)}</h3>
+        <label class="field" style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" data-hour-closed="${esc(row.id)}" ${row.is_closed === true ? 'checked' : ''}>
+          Chiuso
+        </label>
+      </div>
+      <div class="form-grid">
+        <label class="field">Apertura
+          <input type="time" data-hour-open="${esc(row.id)}" value="${esc(row.opens_at ? String(row.opens_at).slice(0,5) : '')}">
+        </label>
+        <label class="field">Chiusura
+          <input type="time" data-hour-close="${esc(row.id)}" value="${esc(row.closes_at ? String(row.closes_at).slice(0,5) : '')}">
+        </label>
+      </div>
+    </article>
+  `).join('');
+
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Orari di apertura e chiusura</h2>
+        <span class="help">Modifica gli orari direttamente da Admin</span>
+      </div>
+      <form id="openingHoursForm">
+        ${cards || '<p class="empty-state">Nessun giorno configurato nella tabella opening_hours.</p>'}
+        <button class="gold-btn" id="saveOpeningHours" type="submit" ${rows.length ? '' : 'disabled'}>Salva orari</button>
+        <p id="openingHoursStatus" class="help" aria-live="polite"></p>
+      </form>
+    </section>
+  `;
+}
+
+async function saveOpeningHours(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = $('#openingHoursStatus');
+  const button = $('#saveOpeningHours');
+  const closedInputs = [...form.querySelectorAll('[data-hour-closed]')];
+
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+
+  try {
+    for (const closedInput of closedInputs) {
+      const id = closedInput.dataset.hourClosed;
+      const isClosed = closedInput.checked;
+      const opensAt = form.querySelector('[data-hour-open="' + id + '"]')?.value || '';
+      const closesAt = form.querySelector('[data-hour-close="' + id + '"]')?.value || '';
+
+      if (!isClosed && (!opensAt || !closesAt)) {
+        throw new Error('Inserisci sia l’orario di apertura sia quello di chiusura, oppure seleziona Chiuso.');
+      }
+      if (!isClosed && opensAt >= closesAt) {
+        throw new Error('L’orario di chiusura deve essere successivo a quello di apertura.');
+      }
+
+      const {error} = await db
+        .from('opening_hours')
+        .update({
+          is_closed: isClosed,
+          opens_at: isClosed ? null : opensAt,
+          closes_at: isClosed ? null : closesAt,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    }
+
+    status.textContent = 'Orari salvati correttamente.';
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -2917,6 +3009,12 @@ async function render(id) {
   try {
     if (id === 'contact') {
       host.innerHTML = await contactMessagesPage();
+      return;
+    }
+
+    if (id === 'hours') {
+      host.innerHTML = await hoursPage();
+      $('#openingHoursForm').onsubmit = saveOpeningHours;
       return;
     }
 
