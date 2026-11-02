@@ -2234,6 +2234,270 @@ async function saveDiscountOffer(e) {
   }
 }
 
+
+/* BREAKING NEWS MANAGER — SCHEDULED IMAGE / VIDEO */
+
+let editingNewsId = null;
+let newsExistingMedia = {image_url:null,youtube_url:null};
+
+function localDateTimeValue(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0,16);
+}
+
+function newsPage() {
+  return `
+    <section class="section-card news-manager-card">
+      <div class="section-title">
+        <h2 id="newsFormTitle">Nuova Breaking News</h2>
+      </div>
+      <form id="breakingNewsForm" class="form-grid">
+        <label class="field">Titolo
+          <input name="title" required maxlength="180"
+            placeholder="Es. Serata speciale da Nababi">
+        </label>
+        <label class="field">Descrizione
+          <textarea name="body" rows="3" maxlength="2000"
+            placeholder="Scrivi il messaggio da mostrare sul sito"></textarea>
+        </label>
+        <label class="field">Foto o video dal telefono
+          <input id="newsMediaFile" name="media" type="file"
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm">
+          <span class="help">Foto JPG/PNG/WebP max 8 MB. Video MP4/MOV/WebM max 50 MB.</span>
+        </label>
+        <div class="news-media-preview-wrap">
+          <img id="newsImagePreview" alt="Anteprima foto" hidden>
+          <video id="newsVideoPreview" controls playsinline hidden></video>
+          <p id="newsExistingMediaLabel" class="help"></p>
+        </div>
+        <label class="field">Mostra dal giorno e ora
+          <input name="starts_at" type="datetime-local" required>
+        </label>
+        <label class="field">Nascondi dal giorno e ora
+          <input name="ends_at" type="datetime-local" required>
+        </label>
+        <label class="field">Pubblicazione
+          <select name="is_active">
+            <option value="true">Attiva</option>
+            <option value="false">Disattivata</option>
+          </select>
+        </label>
+        <div class="news-form-actions">
+          <button id="newsSaveBtn" class="gold-btn" type="submit">Salva Breaking News</button>
+          <button id="newsCancelEdit" class="outline-btn" type="button" hidden>Annulla modifica</button>
+        </div>
+      </form>
+      <p id="newsStatus" class="help" aria-live="polite"></p>
+      <p class="help">La notizia apparirà automaticamente all’ora iniziale e scomparirà dal sito all’ora finale. Il contenuto resterà nell’Admin Panel.</p>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title"><h2>Notizie salvate</h2></div>
+      <div id="breakingNewsList" class="help">Caricamento…</div>
+    </section>
+  `;
+}
+
+async function loadBreakingNews() {
+  const host = $('#breakingNewsList');
+  if (!host) return;
+  try {
+    const {data,error} = await db
+      .from('breaking_news')
+      .select('id,title,body,image_url,youtube_url,starts_at,ends_at,is_active,created_at')
+      .order('created_at',{ascending:false})
+      .limit(100);
+    if (error) throw error;
+
+    const rows = data || [];
+    host.innerHTML = rows.length
+      ? `<div class="breaking-news-admin-list">${rows.map(item => {
+          const now = Date.now();
+          const start = item.starts_at ? new Date(item.starts_at).getTime() : 0;
+          const end = item.ends_at ? new Date(item.ends_at).getTime() : Infinity;
+          const state = item.is_active === false ? 'Disattivata'
+            : now < start ? 'Programmata'
+            : now > end ? 'Terminata' : 'Online';
+          const stateClass = state === 'Online' ? 'live'
+            : state === 'Terminata' || state === 'Disattivata' ? 'ended' : 'scheduled';
+          const media = item.image_url
+            ? `<img src="${esc(item.image_url)}" alt="" loading="lazy">`
+            : item.youtube_url
+              ? `<video src="${esc(item.youtube_url)}" muted playsinline preload="metadata"></video>`
+              : '';
+          return `
+            <article class="breaking-news-admin-row">
+              ${media ? `<div class="breaking-news-admin-media">${media}</div>` : ''}
+              <div class="breaking-news-admin-info">
+                <div class="breaking-news-admin-heading">
+                  <strong>${esc(item.title)}</strong>
+                  <span class="breaking-news-state ${stateClass}">${state}</span>
+                </div>
+                <p>${esc(item.body || '')}</p>
+                <small>Dal: ${esc(item.starts_at ? new Date(item.starts_at).toLocaleString('it-IT') : '—')}</small>
+                <small>Al: ${esc(item.ends_at ? new Date(item.ends_at).toLocaleString('it-IT') : '—')}</small>
+                <div class="breaking-news-admin-actions">
+                  <button type="button" class="outline-btn" data-edit-news="${esc(item.id)}">Modifica</button>
+                  <button type="button" class="news-delete-btn" data-delete-news="${esc(item.id)}">Elimina</button>
+                </div>
+              </div>
+            </article>`;
+        }).join('')}</div>`
+      : '<div class="empty-state">Nessuna Breaking News salvata.</div>';
+  } catch (e) {
+    host.innerHTML = `<p class="error-text">${esc(e.message || 'Impossibile caricare le notizie.')}</p>`;
+  }
+}
+
+function resetNewsForm() {
+  const form = $('#breakingNewsForm');
+  if (!form) return;
+  form.reset();
+  editingNewsId = null;
+  newsExistingMedia = {image_url:null,youtube_url:null};
+  $('#newsFormTitle').textContent = 'Nuova Breaking News';
+  $('#newsSaveBtn').textContent = 'Salva Breaking News';
+  $('#newsCancelEdit').hidden = true;
+  $('#newsImagePreview').hidden = true;
+  $('#newsVideoPreview').pause();
+  $('#newsVideoPreview').hidden = true;
+  $('#newsExistingMediaLabel').textContent = '';
+  $('#newsStatus').textContent = '';
+}
+
+async function editBreakingNews(id) {
+  const status = $('#newsStatus');
+  try {
+    const {data,error} = await db
+      .from('breaking_news')
+      .select('id,title,body,image_url,youtube_url,starts_at,ends_at,is_active')
+      .eq('id',id)
+      .single();
+    if (error) throw error;
+
+    const form = $('#breakingNewsForm');
+    form.elements.title.value = data.title || '';
+    form.elements.body.value = data.body || '';
+    form.elements.starts_at.value = localDateTimeValue(data.starts_at);
+    form.elements.ends_at.value = localDateTimeValue(data.ends_at);
+    form.elements.is_active.value = data.is_active === false ? 'false' : 'true';
+    newsExistingMedia = {
+      image_url:data.image_url || null,
+      youtube_url:data.youtube_url || null
+    };
+    $('#newsImagePreview').hidden = true;
+    $('#newsVideoPreview').hidden = true;
+    $('#newsExistingMediaLabel').textContent =
+      data.image_url ? 'Foto già salvata: sarà mantenuta se non scegli un nuovo file.'
+      : data.youtube_url ? 'Video/link già salvato: sarà mantenuto se non scegli un nuovo file.'
+      : 'Nessun file già salvato.';
+    editingNewsId = id;
+    $('#newsFormTitle').textContent = 'Modifica Breaking News';
+    $('#newsSaveBtn').textContent = 'Salva modifiche';
+    $('#newsCancelEdit').hidden = false;
+    status.textContent = 'Modifica il contenuto e gli orari, poi salva.';
+    form.scrollIntoView({behavior:'smooth',block:'start'});
+  } catch (e) {
+    status.textContent = e.message || 'Impossibile aprire la notizia.';
+  }
+}
+
+async function uploadBreakingNewsMedia(file) {
+  const isImage = file.type.startsWith('image/');
+  const isVideo = file.type.startsWith('video/');
+  const allowed = ['image/jpeg','image/png','image/webp',
+    'video/mp4','video/quicktime','video/webm'];
+  if (!allowed.includes(file.type) || (!isImage && !isVideo)) {
+    throw new Error('Formato non supportato. Usa JPG, PNG, WebP, MP4, MOV o WebM.');
+  }
+  const maxBytes = isVideo ? 50 * 1024 * 1024 : 8 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    throw new Error(isVideo ? 'Il video deve essere massimo 50 MB.' : 'La foto deve essere massimo 8 MB.');
+  }
+  const ext = file.name.includes('.') ? file.name.split('.').pop().toLowerCase()
+    : (file.type === 'video/quicktime' ? 'mov' : 'bin');
+  const unique = globalThis.crypto?.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const path = `breaking-news/${Date.now()}-${unique}.${ext}`;
+  const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+  const {data,error} = await db.storage.from(bucket).upload(path,file,{
+    cacheControl:'3600',upsert:false,contentType:file.type
+  });
+  if (error) throw error;
+  const {data:pub} = db.storage.from(bucket).getPublicUrl(data.path);
+  return isImage
+    ? {image_url:pub.publicUrl,youtube_url:null}
+    : {image_url:null,youtube_url:pub.publicUrl};
+}
+
+async function saveBreakingNews(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const status = $('#newsStatus');
+  const btn = $('#newsSaveBtn');
+  const title = String(fd.get('title') || '').trim();
+  const body = String(fd.get('body') || '').trim();
+  const startsRaw = String(fd.get('starts_at') || '');
+  const endsRaw = String(fd.get('ends_at') || '');
+  const starts = new Date(startsRaw);
+  const ends = new Date(endsRaw);
+  const is_active = fd.get('is_active') === 'true';
+  const file = $('#newsMediaFile').files?.[0];
+
+  if (!title || !startsRaw || !endsRaw ||
+      Number.isNaN(starts.getTime()) || Number.isNaN(ends.getTime())) {
+    status.textContent = 'Inserisci titolo, data iniziale e data finale.';
+    return;
+  }
+  if (ends <= starts) {
+    status.textContent = 'La data e ora finale deve essere successiva a quella iniziale.';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Salvataggio in corso…';
+  try {
+    let media = {...newsExistingMedia};
+    if (file) media = await uploadBreakingNewsMedia(file);
+    const payload = {
+      title,body,
+      starts_at:starts.toISOString(),
+      ends_at:ends.toISOString(),
+      is_active,
+      image_url:media.image_url,
+      youtube_url:media.youtube_url
+    };
+    const request = editingNewsId
+      ? db.from('breaking_news').update(payload).eq('id',editingNewsId)
+      : db.from('breaking_news').insert(payload);
+    const {error} = await request;
+    if (error) throw error;
+
+    status.textContent = editingNewsId
+      ? 'Breaking News aggiornata.'
+      : 'Breaking News salvata.';
+    resetNewsForm();
+    await loadBreakingNews();
+  } catch (err) {
+    status.textContent = err.message || 'Salvataggio non riuscito.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteBreakingNews(id) {
+  if (!confirm('Vuoi eliminare definitivamente questa Breaking News?')) return;
+  const {error} = await db.from('breaking_news').delete().eq('id',id);
+  if (error) throw error;
+  if (String(editingNewsId) === String(id)) resetNewsForm();
+  await loadBreakingNews();
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -2400,6 +2664,32 @@ async function render(id) {
         }
         preview.src = URL.createObjectURL(file);
         preview.hidden = false;
+      };
+      return;
+    }
+
+    if (id === 'news') {
+      host.innerHTML = newsPage();
+      await loadBreakingNews();
+      $('#breakingNewsForm').onsubmit = saveBreakingNews;
+      $('#newsCancelEdit').onclick = resetNewsForm;
+      $('#newsMediaFile').onchange = () => {
+        const file = $('#newsMediaFile').files?.[0];
+        if (!file) return;
+        const image = $('#newsImagePreview');
+        const video = $('#newsVideoPreview');
+        const url = URL.createObjectURL(file);
+        if (file.type.startsWith('image/')) {
+          video.pause();
+          video.hidden = true;
+          image.src = url;
+          image.hidden = false;
+        } else {
+          image.hidden = true;
+          video.src = url;
+          video.hidden = false;
+        }
+        $('#newsStatus').textContent = '';
       };
       return;
     }
@@ -2580,6 +2870,18 @@ $('#pageContent').addEventListener('click', async e => {
       `);
 
       printWindow.document.close();
+      return;
+    }
+
+    const editNewsButton = e.target.closest('[data-edit-news]');
+    if (editNewsButton) {
+      await editBreakingNews(editNewsButton.dataset.editNews);
+      return;
+    }
+
+    const deleteNewsButton = e.target.closest('[data-delete-news]');
+    if (deleteNewsButton) {
+      await deleteBreakingNews(deleteNewsButton.dataset.deleteNews);
       return;
     }
 
