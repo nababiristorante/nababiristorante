@@ -627,41 +627,50 @@ function permissionOptions(selected = {}) {
   `).join('');
 }
 
+
 function staffPage() {
   return `<section class="section-card">
     <div class="section-title"><h2>Nuovo Staff Account</h2></div>
     <p class="help">
-      L’account viene creato tramite la Edge Function protetta di Supabase.
+      Crea un profilo con nome, foto personale e PIN di 4 cifre.
+      Non servono email o password.
     </p>
+
     <form id="staffForm" class="form-grid">
       <label class="field">Staff Name
-        <input name="full_name" required maxlength="120">
+        <input name="full_name" required maxlength="120"
+          placeholder="Nome del dipendente">
       </label>
-      <label class="field">Email
-        <input name="email" type="email" required>
+
+      <label class="field">Staff Photo
+        <input name="photo" type="file"
+          accept="image/jpeg,image/png,image/webp" required>
       </label>
-      <label class="field">Phone
-        <input name="phone" type="tel">
+
+      <label class="field">Personal PIN (4 digits)
+        <input name="pin" type="password"
+          inputmode="numeric" pattern="[0-9]{4}"
+          minlength="4" maxlength="4"
+          autocomplete="new-password" required
+          placeholder="••••">
       </label>
-      <label class="field">Password (minimo 10 caratteri)
-        <input name="password" type="password" minlength="10"
-          autocomplete="new-password" required>
-      </label>
-      <div class="field" style="grid-column:1/-1">
-        <b>Permessi dei moduli</b>
-        <div class="form-grid">${permissionOptions()}</div>
-      </div>
+
       <div>
-        <button id="createStaffBtn" class="gold-btn">Create Staff Account</button>
+        <button id="createStaffBtn" class="gold-btn" type="submit">
+          Create Staff Account
+        </button>
       </div>
     </form>
+
     <p id="staffStatus" class="help" aria-live="polite"></p>
   </section>
+
   <section class="section-card">
     <div class="section-title"><h2>Staff Accounts</h2></div>
     <div id="staffList">Loading…</div>
   </section>`;
 }
+
 
 async function staffLoad() {
   const host = $('#staffList');
