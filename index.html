@@ -636,6 +636,30 @@
     <p class="site-empty">Caricamento recensioni…</p>
   </div>
 
+  <div class="site-card" style="padding:20px;margin:22px 0;max-width:720px">
+    <h3 id="reviewFormHeading">Lascia la tua recensione</h3>
+    <p id="reviewFormIntro" class="help">Raccontaci la tua esperienza. La recensione sarà pubblicata dopo la verifica del nostro team.</p>
+    <form id="customerReviewForm" class="site-form" style="margin-top:14px">
+      <label>Nome *</label>
+      <input name="customer_name" type="text" maxlength="120" minlength="2" autocomplete="name" required>
+      <label>Valutazione *</label>
+      <select name="rating" required>
+        <option value="5">★★★★★ — 5</option>
+        <option value="4">★★★★☆ — 4</option>
+        <option value="3">★★★☆☆ — 3</option>
+        <option value="2">★★☆☆☆ — 2</option>
+        <option value="1">★☆☆☆☆ — 1</option>
+      </select>
+      <label>La tua recensione *</label>
+      <textarea name="review_text" rows="4" minlength="5" maxlength="3000" required></textarea>
+      <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+        <label>Sito web <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button class="google-review-btn" type="submit">Invia recensione</button>
+      <p id="customerReviewStatus" class="help" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+
   <a class="google-review-btn"
      href="https://g.page/r/CW3lALmyTJ-yEAE/review"
      target="_blank" rel="noopener noreferrer">
