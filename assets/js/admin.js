@@ -672,6 +672,7 @@ function staffPage() {
 }
 
 
+
 async function staffLoad() {
   const host = $('#staffList');
   if (!host) return;
@@ -679,7 +680,8 @@ async function staffLoad() {
   try {
     const {data,error} = await db
       .from('staff')
-      .select('id,full_name,email,phone,role,auth_user_id,permissions,is_active');
+      .select('id,full_name,photo_url,email,phone,role,auth_user_id,permissions,is_active')
+      .order('full_name');
 
     if (error) throw error;
 
@@ -699,44 +701,59 @@ async function staffLoad() {
           `).join('');
 
           return `<article class="section-card">
-            <b>${esc(x.full_name || 'Staff')}</b>
-            <p>${esc(x.email || 'No email')}</p>
-            <p class="help">${esc(x.phone || 'No phone')} · ${esc(x.role || 'Staff')}</p>
-            <p class="help">${x.auth_user_id ? 'Auth account linked' : 'Auth account not linked'}</p>
+            <div style="display:flex;gap:14px;align-items:center">
+              ${
+                x.photo_url
+                  ? `<img src="${esc(x.photo_url)}"
+                      alt="${esc(x.full_name)}"
+                      style="width:76px;height:76px;object-fit:cover;border-radius:50%">`
+                  : ''
+              }
+              <div>
+                <b>${esc(x.full_name || 'Staff')}</b>
+                <p class="help">${esc(x.phone || 'No phone')}</p>
+                <p class="help">${x.auth_user_id ? 'Auth account linked' : 'PIN attendance account'}</p>
+              </div>
+            </div>
+
             <p><b>Status:</b> ${x.is_active === true ? 'Active' : 'Disabled'}</p>
 
-            <details>
-              <summary>Manage module permissions</summary>
-              <div class="form-grid">${checks}</div>
-              <button class="gold-btn" data-save-perms="${esc(x.id)}">Save Permissions</button>
-            </details>
+            ${
+              x.auth_user_id ? `
+                <details>
+                  <summary>Manage module permissions</summary>
+                  <div class="form-grid">${checks}</div>
+                  <button class="gold-btn" data-save-perms="${esc(x.id)}">
+                    Save Permissions
+                  </button>
+                </details>
 
-            <details>
-              <summary>Reset Staff Password</summary>
-              ${x.auth_user_id ? `
-                <label class="field">New Password (minimum 10 characters)
-                  <input type="password" minlength="10"
-                    autocomplete="new-password"
-                    data-reset-password="${esc(x.id)}">
-                </label>
-                <button class="gold-btn" data-reset-staff="${esc(x.id)}">
-                  Update Password
-                </button>
-              ` : '<p class="help">No linked Auth account.</p>'}
-            </details>
-
-            <p class="help">Current permissions: ${
-              esc(Object.keys(permissions).filter(k => permissions[k]).join(', ') || 'None')
-            }</p>
+                <details>
+                  <summary>Reset Staff Password</summary>
+                  <label class="field">New Password (minimum 10 characters)
+                    <input type="password" minlength="10"
+                      autocomplete="new-password"
+                      data-reset-password="${esc(x.id)}">
+                  </label>
+                  <button class="gold-btn" data-reset-staff="${esc(x.id)}">
+                    Update Password
+                  </button>
+                </details>
+              ` : `
+                <p class="help">
+                  Staff attendance is managed with the personal PIN.
+                </p>
+              `
+            }
 
             <button class="outline-btn"
               data-toggle-staff="${esc(x.id)}"
-              data-active="${x.is_active===true?'true':'false'}">
-              ${x.is_active===true?'Disable':'Enable'}
+              data-active="${x.is_active === true ? 'true' : 'false'}">
+              ${x.is_active === true ? 'Disable' : 'Enable'}
             </button>
 
             <button class="outline-btn" data-remove-staff="${esc(x.id)}">
-              Permanently Remove Staff Login
+              Remove Staff Profile
             </button>
           </article>`;
         }).join('')
@@ -746,6 +763,7 @@ async function staffLoad() {
     host.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
   }
 }
+
 
 async function createStaff(e) {
   e.preventDefault();
