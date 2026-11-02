@@ -20,3 +20,28 @@
 .coupon-status{min-height:22px;margin:15px 0 0;font-weight:700}
 .coupon-footnote{margin:15px 0 0;color:#aaa58f;font-size:11px}
 @media(max-width:600px){.coupon-redeem-card{margin:8px 0 18px;padding:25px 17px}.coupon-redeem-form input{letter-spacing:3px}}
+
+
+/* MOBILE-FRIENDLY MENU MANAGER */
+.menu-manager-card .menu-image-preview-wrap{display:flex;align-items:center;min-height:20px}
+.menu-image-preview{width:150px;height:125px;object-fit:cover;border-radius:12px;border:1px solid #80652e;background:#080e11}
+.menu-form-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.menu-dish-list{display:grid;gap:12px}
+.menu-dish-row{display:flex;align-items:center;gap:14px;padding:12px;border:1px solid #403722;border-radius:14px;background:#10191d}
+.menu-dish-thumb{width:76px;height:76px;flex:0 0 76px;object-fit:cover;border-radius:10px;background:#080e11}
+.menu-no-photo{display:grid;place-items:center;font-size:30px}
+.menu-dish-info{display:grid;gap:4px;min-width:0;flex:1}
+.menu-dish-info strong{color:#f6d77d;overflow-wrap:anywhere}
+.menu-dish-info span,.menu-dish-info small{color:#c5c0b4;font-size:12px}
+.menu-dish-actions{display:flex;gap:7px;flex-wrap:wrap}
+.menu-delete-btn{background:transparent;color:#ffaaa5;border:1px solid #9d3b36;border-radius:999px;padding:8px 14px}
+.menu-dish-actions button{font-size:12px}
+@media(max-width:600px){
+ .menu-dish-row{align-items:flex-start;flex-wrap:wrap;gap:10px}
+ .menu-dish-thumb{width:66px;height:66px;flex-basis:66px}
+ .menu-dish-info{min-width:calc(100% - 90px)}
+ .menu-dish-actions{width:100%;padding-left:76px}
+ .menu-dish-actions button{flex:1;min-height:40px}
+ .menu-form-actions button{min-height:44px}
+ .menu-photo-field input{padding:10px 0}
+}
