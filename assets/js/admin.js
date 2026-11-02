@@ -139,6 +139,24 @@ function canSee(id) {
     staffPermissions[id] === true;
 }
 
+
+function brandLogoUrl(name, type = 'social') {
+  const key = String(name || '').trim().toLowerCase().replace(/\s+/g, '');
+  const logos = type === 'delivery' ? {
+    deliveroo: ['deliveroo','00CCBC'],
+    glovo: ['glovo','FFC244'],
+    justeat: ['justeat','F36D00'],
+    'just-eat': ['justeat','F36D00']
+  } : {
+    facebook: ['facebook','0866FF'],
+    instagram: ['instagram','E4405F'],
+    tiktok: ['tiktok','000000'],
+    youtube: ['youtube','FF0000']
+  };
+  const item = logos[key];
+  return item ? 'https://cdn.simpleicons.org/' + item[0] + '/' + item[1] : '';
+}
+
 function moduleInfo(id) {
   return menu.find(x => x[0] === id)?.[2] || 'Dashboard';
 }
@@ -2509,7 +2527,11 @@ async function deliveryLinksPage() {
       <div class="section-title"><h2 id="deliveryLinkFormTitle">Aggiungi piattaforma</h2></div>
       <form id="deliveryLinkForm" class="form-grid">
         <label class="field">Nome piattaforma
-          <input name="name" required maxlength="80" placeholder="Es. Deliveroo">
+          <select name="name" required>
+            <option value="Deliveroo">Deliveroo</option>
+            <option value="Glovo">Glovo</option>
+            <option value="Just Eat">Just Eat</option>
+          </select>
         </label>
         <label class="field">Link ordine
           <input name="url" type="url" required maxlength="1000" placeholder="https://...">
@@ -2568,6 +2590,7 @@ async function loadDeliveryLinksAdmin() {
   list.innerHTML = data.map(item => `
     <article class="delivery-link-admin-row">
       <div class="delivery-link-admin-info">
+        <img class="brand-logo" src="${brandLogoUrl(item.name,'delivery')}" alt="" onerror="this.hidden=true">
         <strong>${esc(item.name)}</strong>
         <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>
         <small>${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'} · Ordine: ${Number(item.sort_order)||0}</small>
@@ -2709,6 +2732,7 @@ async function loadSocialLinksAdmin() {
   list.innerHTML = data.map(item => `
     <article class="delivery-link-admin-row">
       <div class="delivery-link-admin-info">
+        <img class="brand-logo" src="${brandLogoUrl(item.platform || item.name)}" alt="" onerror="this.hidden=true">
         <strong>${esc(item.platform || item.name || 'Social')}</strong>
         <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>
         <small>${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'}</small>
