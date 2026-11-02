@@ -2969,7 +2969,7 @@ async function saveOpeningHours(event) {
         throw new Error('L’orario di chiusura deve essere successivo a quello di apertura.');
       }
 
-      const {error} = await db
+      const {data: updatedRow, error} = await db
         .from('opening_hours')
         .update({
           is_closed: isClosed,
@@ -2977,9 +2977,14 @@ async function saveOpeningHours(event) {
           closes_at: isClosed ? null : closesAt,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
 
       if (error) throw error;
+      if (!updatedRow) {
+        throw new Error('Nessuna riga aggiornata. Controlla la policy UPDATE della tabella opening_hours in Supabase.');
+      }
     }
 
     status.textContent = 'Orari salvati correttamente.';
