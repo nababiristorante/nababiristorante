@@ -215,16 +215,18 @@
             : ''
         }
 
-        ${
+        ${ 
           item.youtube_url
-            ? `<p>
-                <a
-                  href="${escapeHTML(item.youtube_url)}"
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  Guarda il video
-                </a>
-              </p>`
+            ? /\\.(mp4|mov|webm)(?:[?#]|$)/i.test(item.youtube_url)
+              ? `<video class="news-video" controls playsinline preload="metadata">
+                  <source src="${escapeHTML(item.youtube_url)}">
+                </video>`
+              : `<p>
+                  <a href="${escapeHTML(item.youtube_url)}"
+                    target="_blank" rel="noopener noreferrer">
+                    Guarda il video
+                  </a>
+                </p>`
             : ''
         }
 
@@ -674,6 +676,31 @@
       loadReviews(),
 
       loadOpeningHours()
+
+    ]);
+
+    // Refresh Breaking News so scheduled start/end times apply while the page stays open.
+    window.setInterval(loadNews, 30000);
+
+    console.log('Nababi public website initialized.');
+
+  }
+
+  if (document.readyState === 'loading') {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      initializeWebsite,
+      { once: true }
+    );
+
+  } else {
+
+    initializeWebsite();
+
+  }
+
+})();
 
     ]);
 
