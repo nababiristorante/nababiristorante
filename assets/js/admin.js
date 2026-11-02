@@ -3107,37 +3107,43 @@ async function saveOpeningHours(event) {
 
 async function reviewsPage() {
   return `
-    <section class="section-card">
+    <section class="section-card reviews-manager-card">
       <div class="section-title">
         <h2>Gestione Reviews</h2>
         <p class="help">Aggiungi recensioni e scegli quali pubblicare sul sito.</p>
       </div>
-      <form id="reviewForm" class="admin-form">
+      <form id="reviewForm" class="form-grid reviews-form">
         <input type="hidden" name="id" id="reviewId">
-        <label for="reviewCustomerName">Nome cliente</label>
-        <input id="reviewCustomerName" name="customer_name" maxlength="120" required>
-        <label for="reviewRating">Valutazione</label>
-        <select id="reviewRating" name="rating" required>
-          <option value="5">★★★★★ — 5</option>
-          <option value="4">★★★★☆ — 4</option>
-          <option value="3">★★★☆☆ — 3</option>
-          <option value="2">★★☆☆☆ — 2</option>
-          <option value="1">★☆☆☆☆ — 1</option>
-        </select>
-        <label for="reviewText">Testo della recensione</label>
-        <textarea id="reviewText" name="review_text" rows="4" maxlength="3000" required></textarea>
-        <label class="checkbox-row">
-          <input type="checkbox" name="is_approved" id="reviewApproved">
-          Pubblica sul sito
+        <label class="field" for="reviewCustomerName">Nome cliente
+          <input id="reviewCustomerName" name="customer_name" maxlength="120" required>
         </label>
-        <div class="form-actions">
-          <button class="btn btn-primary" type="submit" id="reviewSaveButton">Salva recensione</button>
-          <button class="btn btn-secondary" type="button" id="reviewCancelButton">Annulla modifica</button>
+        <label class="field" for="reviewRating">Valutazione
+          <select id="reviewRating" name="rating" required>
+            <option value="5">★★★★★ — 5</option>
+            <option value="4">★★★★☆ — 4</option>
+            <option value="3">★★★☆☆ — 3</option>
+            <option value="2">★★☆☆☆ — 2</option>
+            <option value="1">★☆☆☆☆ — 1</option>
+          </select>
+        </label>
+        <label class="field" for="reviewText">Testo della recensione
+          <textarea id="reviewText" name="review_text" rows="3" maxlength="3000" required></textarea>
+        </label>
+        <label class="field reviews-publish-field">
+          <span>Pubblicazione</span>
+          <span class="checkbox-row">
+            <input type="checkbox" name="is_approved" id="reviewApproved">
+            Pubblica sul sito
+          </span>
+        </label>
+        <div class="news-form-actions reviews-form-actions">
+          <button class="gold-btn" type="submit" id="reviewSaveButton">Salva recensione</button>
+          <button class="outline-btn" type="button" id="reviewCancelButton">Annulla modifica</button>
         </div>
         <p id="reviewStatus" class="help" role="status" aria-live="polite"></p>
       </form>
     </section>
-    <section class="section-card">
+    <section class="section-card reviews-list-card">
       <div class="section-title"><h2>Recensioni ricevute</h2></div>
       <div id="reviewsAdminList"><p class="help">Caricamento recensioni…</p></div>
     </section>
