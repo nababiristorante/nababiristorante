@@ -16,6 +16,14 @@ on public.food_delivery_links for select
 to anon, authenticated
 using (is_active = true);
 
+drop policy if exists "Admins can view all food delivery links" on public.food_delivery_links;
+create policy "Admins can view all food delivery links"
+on public.food_delivery_links for select
+to authenticated
+using (
+  exists (select 1 from public.admin_users au where au.user_id = auth.uid())
+);
+
 drop policy if exists "Admins can manage food delivery links" on public.food_delivery_links;
 create policy "Admins can manage food delivery links"
 on public.food_delivery_links for all
