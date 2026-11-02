@@ -95,7 +95,7 @@ const descriptions = {
   hours:'Orari di apertura e chiusura.',
   logo:'Carica il logo del ristorante dal tuo telefono.',
   reports:'Statistiche e report del ristorante.',
-  contact:'Informazioni di contatto del ristorante.',
+  contact:'Leggi e gestisci i messaggi inviati dal modulo Contatti.',
   settings:'Impostazioni generali del sito.'
 };
 
@@ -2831,6 +2831,47 @@ async function logoManagementPage() {
   </section>
   ${uploadPanel('logo')}`;
 }
+/* CONTACT MESSAGE INBOX */
+
+async function contactMessagesPage() {
+  const host = $('#pageContent');
+  const { data, error } = await db
+    .from('contact_messages')
+    .select('id,full_name,email,phone,subject,message,is_read,created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+
+  if (!data?.length) {
+    return '<section class="section-card"><h2>Messaggi ricevuti</h2><p class="empty-state">Nessun messaggio ricevuto.</p></section>';
+  }
+
+  const unread = data.filter(row => row.is_read !== true).length;
+  return `<section class="section-card">
+    <div class="section-title">
+      <h2>Messaggi ricevuti</h2>
+      <span class="help">${unread} da leggere · ultimi 100 messaggi</span>
+    </div>
+    <div class="contact-message-list">
+      ${data.map(row => `
+        <article class="section-card" style="margin:14px 0">
+          <div class="section-title">
+            <h3>${esc(row.subject || 'Senza oggetto')}</h3>
+            <span class="help">${row.is_read ? 'Letto' : 'Nuovo'}</span>
+          </div>
+          <p><strong>${esc(row.full_name)}</strong></p>
+          <p>Email: ${row.email ? `<a href="mailto:${esc(row.email)}">${esc(row.email)}</a>` : 'Non indicata'}</p>
+          <p>Telefono: ${row.phone ? esc(row.phone) : 'Non indicato'}</p>
+          <p class="help">${esc(row.created_at ? new Date(row.created_at).toLocaleString('it-IT') : '')}</p>
+          <p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(row.message)}</p>
+          ${row.is_read ? '' : `<button class="outline-btn" type="button" data-mark-contact="${esc(row.id)}">Segna come letto</button>`}
+        </article>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -2848,6 +2889,11 @@ async function render(id) {
   host.innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   try {
+    if (id === 'contact') {
+      host.innerHTML = await contactMessagesPage();
+      return;
+    }
+
     if (id === 'dashboard') {
       host.innerHTML = await dashboard();
       if (userRole === 'admin') loadRecent();
@@ -3184,6 +3230,17 @@ $('#pageContent').addEventListener('click', async e => {
     const pageButton = e.target.closest('[data-page]');
     if (pageButton) {
       render(pageButton.dataset.page);
+      return;
+    }
+
+    const markContactButton = e.target.closest('[data-mark-contact]');
+    if (markContactButton) {
+      const { error } = await db
+        .from('contact_messages')
+        .update({ is_read: true })
+        .eq('id', markContactButton.dataset.markContact);
+      if (error) throw error;
+      await render('contact');
       return;
     }
 
