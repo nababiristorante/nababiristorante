@@ -1299,14 +1299,36 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    // REMOVE STAFF LINK
-    const removeButton = e.target.closest('[data-remove-staff]');
+    async function removeStaffLink(id) {
+  if (userRole !== 'admin') {
+    throw new Error('Only Super Admin can remove Staff accounts.');
+  }
 
-    if (removeButton) {
-      await removeStaffLink(removeButton.dataset.removeStaff);
-      return;
+  const confirmed = confirm(
+    'Permanently remove this Staff login account? ' +
+    'They will no longer be able to log in. ' +
+    'Attendance and historical records will be preserved.'
+  );
+
+  if (!confirmed) return;
+
+  const {data,error} = await db.functions.invoke(
+    'delete-staff-account',
+    {
+      body: { staff_id: id }
     }
+  );
 
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  alert(
+    data?.message ||
+    'Staff login account permanently removed.'
+  );
+
+  await staffLoad();
+}
     // RESET STAFF PASSWORD
     const resetButton = e.target.closest('[data-reset-staff]');
 
