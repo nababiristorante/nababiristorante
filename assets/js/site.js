@@ -194,28 +194,72 @@
     return item ? 'https://cdn.simpleicons.org/' + item[0] + '/' + item[1] : '';
   }
 
-  /* FOOD DELIVERY LINKS — only admin-enabled links are shown */
+  /* FOOD DELIVERY LINKS — one compact button, logos only in its popup */
   async function loadFoodDeliveryLinks() {
     const section = $('#foodDelivery');
     const container = $('#publicDeliveryLinks');
-    if (!section || !container) return;
+    const toggle = $('#deliveryToggle');
+    if (!section || !container || !toggle) return;
+
     const rows = await getRows(
       'food_delivery_links',
       query => query.eq('is_active', true).order('sort_order').order('created_at')
     );
+
     if (!rows.length) {
       section.hidden = true;
+      container.hidden = true;
       container.innerHTML = '';
+      toggle.setAttribute('aria-expanded', 'false');
       return;
     }
-    container.innerHTML = rows.map(item => `
-      <a class="delivery-link" href="${escapeHTML(item.url)}"
-        target="_blank" rel="noopener noreferrer">
-        <img class="brand-logo" src="${brandLogoUrl(item.name,'delivery')}" alt="" onerror="this.hidden=true">
-        <span>Ordina su ${escapeHTML(item.name)}</span>
-      </a>
-    `).join('');
-    section.hidden = false;
+
+    container.innerHTML = rows.map(item => {
+      let parsed;
+      try { parsed = new URL(item.url); } catch (_) { return ''; }
+      if (!['https:', 'http:'].includes(parsed.protocol)) return '';
+      const logo = brandLogoUrl(item.name, 'delivery');
+      if (!logo) return '';
+      const label = String(item.name || 'Food delivery');
+      return `<a class="delivery-link" href="${escapeHTML(parsed.href)}"
+        target="_blank" rel="noopener noreferrer"
+        aria-label="${escapeHTML(label)}" title="${escapeHTML(label)}">
+        <img class="brand-logo" src="${logo}" alt="${escapeHTML(label)}"
+          onerror="this.closest('a').hidden=true">
+      </a>`;
+    }).join('');
+
+    section.hidden = !container.innerHTML;
+    if (!container.innerHTML) {
+      container.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function setupDeliveryPopup() {
+    const toggle = $('#deliveryToggle');
+    const popup = $('#publicDeliveryLinks');
+    if (!toggle || !popup) return;
+
+    toggle.addEventListener('click', () => {
+      const opened = popup.hidden;
+      popup.hidden = !opened;
+      toggle.setAttribute('aria-expanded', String(opened));
+    });
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('#foodDelivery')) {
+        popup.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        popup.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   /* SOCIAL LINKS */
@@ -719,6 +763,7 @@
 
     setupBooking();
     setupMobileNavigation();
+    setupDeliveryPopup();
 
     if (!db) {
 
