@@ -811,94 +811,205 @@
 
     const translations = {
       en: {
-        nav: ['Home','Menu','About us','Gallery','Events','Book a table','Contact'],
-        hero: ['A royal journey of flavours','Authentic Indian cuisine in the heart of Rome'],
-        sections: {
-          menu: 'Our Menu', about: 'Our Story', gallery: 'Gallery',
-          events: 'Events', reservation: 'Book a table', reviews: 'What our guests say',
-          contact: 'Visit us', faq: 'Frequently asked questions'
+        nav: ['Home', 'Menu', 'About us', 'Gallery', 'Events', 'Book a table', 'Contact'],
+        text: {
+          '.site-hero .eyebrow': 'WELCOME TO',
+          '.site-hero > div > h2': 'Authentic Indian cuisine in the heart of Rome.',
+          '.site-hero > div > p:not(.eyebrow)': 'A journey of flavour, tradition and passion. Discover our authentic dishes, prepared with selected ingredients and original recipes.',
+          '.site-hero a[href="#menu"]': 'Explore the Menu',
+          '.site-hero a[href="#reservation"]': 'Book a Table',
+          '#liveNewsSection h2': 'News and announcements',
+          '#customerCouponSection .eyebrow': 'NABABI SPECIAL OFFER',
+          '#customerCouponSection h2': 'Get your Coupon',
+          '#customerCouponPeriod': 'Offer valid for a limited time.',
+          '#claimCustomerCoupon': 'Get Coupon',
+          '#customerCouponCode > p:first-child': 'Your coupon code:',
+          '#copyCustomerCoupon': 'Copy code',
+          '#customerCouponSection .site-card > p.help:last-child': 'No name, phone number or email required. Show the code to our staff.',
+          '#menu > p': 'Discover our special dishes, prepared with care and tradition.',
+          '#gallery > p': 'Experience the atmosphere of our restaurant through our photos.',
+          '#events > p': 'Discover the events organised by Nababi Ristorante.',
+          '#reservation > p': 'Send us a booking request. Our staff will contact you to confirm your reservation.',
+          '#bookingForm button[type="submit"]': 'Send request',
+          '.whatsapp-mini-label': 'DIRECT CONTACT',
+          '.whatsapp-booking-copy strong': 'Prefer WhatsApp?',
+          '.whatsapp-booking-copy small': 'Message us for information or bookings.',
+          '.whatsapp-cta span:not(.whatsapp-cta-arrow)': 'Message us on WhatsApp',
+          '#about > h2': 'About us',
+          '#about > p': 'Nababi Ristorante brings the authentic flavours of India to Rome, with dishes prepared using traditional recipes and a modern touch.',
+          '#reviews > h2': 'What our guests say',
+          '#reviews > p': 'Our guests’ satisfaction is our greatest reward.',
+          '.google-review-btn': '⭐ Write a Google review',
+          '#contact .contact-heading h2': 'Visit us',
+          '#contact .contact-heading > p': 'We look forward to welcoming you for an authentic Indian dining experience.',
+          '#contact .contact-info-card:nth-child(1) .contact-card-label': 'WHERE WE ARE',
+          '#contact .contact-info-card:nth-child(1) h3': 'Our restaurant',
+          '#contact .contact-info-card:nth-child(2) .contact-card-label': 'PHONE',
+          '#contact .contact-info-card:nth-child(2) h3': 'Call us',
+          '#contact .contact-info-card:nth-child(3) .contact-card-label': 'WHATSAPP',
+          '#contact .contact-info-card:nth-child(3) h3': 'Message us directly',
+          '#contact .contact-info-card:nth-child(4) .contact-card-label': 'EMAIL',
+          '#contact .contact-info-card:nth-child(4) h3': 'Send us an email',
+          '#contact .contact-hours-heading .contact-card-label': 'WE LOOK FORWARD TO SEEING YOU',
+          '#contact .contact-hours-heading h3': 'Opening hours',
+          '#contact .contact-form-heading .contact-eyebrow': 'WE ARE HERE FOR YOU',
+          '#contact .contact-form-heading h2': 'Send us a message',
+          '#contact .contact-form-heading > p': 'Fill in the form and our team will receive your message.',
+          '#faq > h2': 'Frequently asked questions',
+          '#faq .faq-intro': 'Answers to the most common questions about Nababi Ristorante.',
+          '.site-footer > p:last-of-type': 'Authentic Indian cuisine in the heart of Rome.'
         },
-        contact: ['WHERE WE ARE','Our restaurant','PHONE','Call us','WHATSAPP','Message us directly','EMAIL','Send us an email','OPENING HOURS','Get directions','We are here for you','Send us a message','Fill in the form and our team will receive your message.','Full name *','Email','Phone','Subject','Message *','Send message'],
-        buttons: { review: '⭐ Write a Google review', directions: '➤ Get directions ↗', whatsapp: 'Message us on WhatsApp' },
-        about: 'Nababi Ristorante brings the authentic flavours of India to Rome, with dishes prepared using traditional recipes and a modern touch.',
-        reviewIntro: 'Our guests’ satisfaction is our greatest reward.',
-        contactIntro: 'We look forward to welcoming you for an authentic Indian dining experience.',
-        hours: 'Opening hours: please contact us to confirm.',
-        faqIntro: 'Answers to the most common questions about Nababi Ristorante.',
-        footer: 'Authentic Indian cuisine in the heart of Rome.',
-        form: ['Name and surname *','Email','Phone','Subject','Message *','Send message']
+        bookingLabels: ['Full name *', 'Phone *', 'Email', 'Number of guests *', 'Date *', 'Time *', 'Booking type', 'Notes'],
+        bookingTypes: ['Table', 'Birthday', 'Special event'],
+        bookingPlaceholder: 'Special requests (optional)',
+        contactLabels: ['Full name *', 'Email', 'Phone', 'Subject', 'Message *'],
+        contactButton: 'Send message',
+        directions: 'Get directions',
+        faq: ['Bookings / Reservations / বুকিং', 'Opening hours / Orari / খোলার সময়', 'Location / Dove siamo / ঠিকানা', 'Takeaway / Asporto / খাবার নিয়ে যাওয়া', 'Home delivery / Consegna a domicilio / হোম ডেলিভারি', 'Payments / Pagamenti / পেমেন্ট', 'Vegetarian options / Menu vegetariano / নিরামিষ খাবার', 'Events and birthdays / Eventi e compleanni / অনুষ্ঠান ও জন্মদিন']
       },
       bn: {
-        nav: ['হোম','মেনু','আমাদের পরিচয়','গ্যালারি','অনুষ্ঠান','টেবিল বুকিং','যোগাযোগ'],
-        hero: ['স্বাদের রাজকীয় ভ্রমণ','রোমের হৃদয়ে আসল ভারতীয় খাবার'],
-        sections: {
-          menu: 'আমাদের মেনু', about: 'আমাদের গল্প', gallery: 'গ্যালারি',
-          events: 'অনুষ্ঠান', reservation: 'টেবিল বুকিং', reviews: 'গ্রাহকদের মতামত',
-          contact: 'আমাদের ঠিকানা', faq: 'সাধারণ প্রশ্ন'
+        nav: ['হোম', 'মেনু', 'আমাদের পরিচয়', 'গ্যালারি', 'অনুষ্ঠান', 'টেবিল বুকিং', 'যোগাযোগ'],
+        text: {
+          '.site-hero .eyebrow': 'নবাবিতে আপনাকে স্বাগতম',
+          '.site-hero > div > h2': 'রোমের হৃদয়ে আসল ভারতীয় খাবার।',
+          '.site-hero > div > p:not(.eyebrow)': 'স্বাদ, ঐতিহ্য ও ভালোবাসার এক ভ্রমণ। বাছাই করা উপকরণ ও আসল রেসিপিতে তৈরি আমাদের বিশেষ খাবার উপভোগ করুন।',
+          '.site-hero a[href="#menu"]': 'মেনু দেখুন',
+          '.site-hero a[href="#reservation"]': 'টেবিল বুক করুন',
+          '#liveNewsSection h2': 'নতুন খবর ও ঘোষণা',
+          '#customerCouponSection .eyebrow': 'নবাবির বিশেষ অফার',
+          '#customerCouponSection h2': 'আপনার কুপন নিন',
+          '#customerCouponPeriod': 'এই অফারটি সীমিত সময়ের জন্য।',
+          '#claimCustomerCoupon': 'কুপন নিন',
+          '#customerCouponCode > p:first-child': 'আপনার কুপন কোড:',
+          '#copyCustomerCoupon': 'কোড কপি করুন',
+          '#customerCouponSection .site-card > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোডটি দেখান।',
+          '#menu > p': 'ভালোবাসা ও ঐতিহ্যে তৈরি আমাদের বিশেষ খাবারগুলো দেখুন।',
+          '#gallery > p': 'ছবির মাধ্যমে আমাদের রেস্টুরেন্টের পরিবেশ উপভোগ করুন।',
+          '#events > p': 'Nababi Ristorante-এর আয়োজিত অনুষ্ঠানগুলো দেখুন।',
+          '#reservation > p': 'টেবিল বুকিংয়ের অনুরোধ পাঠান। বুকিং নিশ্চিত করতে আমাদের স্টাফ আপনার সঙ্গে যোগাযোগ করবে।',
+          '#bookingForm button[type="submit"]': 'অনুরোধ পাঠান',
+          '.whatsapp-mini-label': 'সরাসরি যোগাযোগ',
+          '.whatsapp-booking-copy strong': 'WhatsApp-এ যোগাযোগ করবেন?',
+          '.whatsapp-booking-copy small': 'তথ্য বা বুকিংয়ের জন্য আমাদের মেসেজ করুন।',
+          '.whatsapp-cta span:not(.whatsapp-cta-arrow)': 'WhatsApp-এ মেসেজ করুন',
+          '#about > h2': 'আমাদের পরিচয়',
+          '#about > p': 'Nababi Ristorante রোমে নিয়ে এসেছে ভারতের আসল স্বাদ—ঐতিহ্যবাহী রেসিপি ও আধুনিক পরিবেশনায় তৈরি খাবার।',
+          '#reviews > h2': 'আমাদের সম্পর্কে অতিথিদের মতামত',
+          '#reviews > p': 'আমাদের অতিথিদের সন্তুষ্টিই আমাদের সবচেয়ে বড় প্রাপ্তি।',
+          '.google-review-btn': '⭐ Google-এ রিভিউ লিখুন',
+          '#contact .contact-heading h2': 'আমাদের ঠিকানা',
+          '#contact .contact-heading > p': 'আসল ভারতীয় খাবারের অভিজ্ঞতার জন্য আপনাকে স্বাগত জানাই।',
+          '#contact .contact-info-card:nth-child(1) .contact-card-label': 'আমাদের ঠিকানা',
+          '#contact .contact-info-card:nth-child(1) h3': 'আমাদের রেস্টুরেন্ট',
+          '#contact .contact-info-card:nth-child(2) .contact-card-label': 'ফোন',
+          '#contact .contact-info-card:nth-child(2) h3': 'কল করুন',
+          '#contact .contact-info-card:nth-child(3) .contact-card-label': 'হোয়াটসঅ্যাপ',
+          '#contact .contact-info-card:nth-child(3) h3': 'সরাসরি মেসেজ করুন',
+          '#contact .contact-info-card:nth-child(4) .contact-card-label': 'ইমেইল',
+          '#contact .contact-info-card:nth-child(4) h3': 'ইমেইল পাঠান',
+          '#contact .contact-hours-heading .contact-card-label': 'আপনার অপেক্ষায়',
+          '#contact .contact-hours-heading h3': 'খোলার সময়',
+          '#contact .contact-form-heading .contact-eyebrow': 'আমরা আপনার জন্য আছি',
+          '#contact .contact-form-heading h2': 'আমাদের মেসেজ পাঠান',
+          '#contact .contact-form-heading > p': 'ফর্ম পূরণ করুন, আমাদের টিম আপনার মেসেজ পাবে।',
+          '#faq > h2': 'সাধারণ প্রশ্ন',
+          '#faq .faq-intro': 'Nababi Ristorante সম্পর্কে সাধারণ প্রশ্নের উত্তর।',
+          '.site-footer > p:last-of-type': 'রোমের হৃদয়ে আসল ভারতীয় খাবার।'
         },
-        contact: ['আমাদের ঠিকানা','আমাদের রেস্টুরেন্ট','ফোন','কল করুন','হোয়াটসঅ্যাপ','সরাসরি মেসেজ করুন','ইমেইল','ইমেইল পাঠান','খোলার সময়','দিকনির্দেশনা','আমরা আপনার জন্য আছি','আমাদের মেসেজ পাঠান','ফর্ম পূরণ করুন, আমাদের টিম আপনার মেসেজ পাবে।','নাম ও পদবি *','ইমেইল','ফোন','বিষয়','মেসেজ *','মেসেজ পাঠান'],
-        buttons: { review: '⭐ Google-এ রিভিউ লিখুন', directions: '➤ যাওয়ার দিকনির্দেশনা ↗', whatsapp: 'WhatsApp-এ মেসেজ করুন' },
-        about: 'Nababi Ristorante রোমে নিয়ে এসেছে ভারতের আসল স্বাদ—ঐতিহ্যবাহী রেসিপি ও আধুনিক পরিবেশনায় তৈরি খাবার।',
-        reviewIntro: 'আমাদের অতিথিদের সন্তুষ্টিই আমাদের সবচেয়ে বড় প্রাপ্তি।',
-        contactIntro: 'আসল ভারতীয় খাবারের অভিজ্ঞতার জন্য আপনাকে স্বাগত জানাই।',
-        hours: 'খোলার সময় নিশ্চিত করতে আমাদের সঙ্গে যোগাযোগ করুন।',
-        faqIntro: 'Nababi Ristorante সম্পর্কে সাধারণ প্রশ্নের উত্তর।',
-        footer: 'রোমের হৃদয়ে আসল ভারতীয় খাবার।',
-        form: ['নাম ও পদবি *','ইমেইল','ফোন','বিষয়','মেসেজ *','মেসেজ পাঠান']
+        bookingLabels: ['নাম ও পদবি *', 'ফোন *', 'ইমেইল', 'অতিথির সংখ্যা *', 'তারিখ *', 'সময় *', 'বুকিংয়ের ধরন', 'বিশেষ নোট'],
+        bookingTypes: ['টেবিল', 'জন্মদিন', 'বিশেষ অনুষ্ঠান'],
+        bookingPlaceholder: 'বিশেষ অনুরোধ (ঐচ্ছিক)',
+        contactLabels: ['নাম ও পদবি *', 'ইমেইল', 'ফোন', 'বিষয়', 'মেসেজ *'],
+        contactButton: 'মেসেজ পাঠান',
+        directions: 'যাওয়ার দিকনির্দেশনা',
+        faq: ['বুকিং / Reservations / বুকিং', 'খোলার সময় / Opening hours / Orari', 'ঠিকানা / Location / Dove siamo', 'খাবার নিয়ে যাওয়া / Takeaway / Asporto', 'হোম ডেলিভারি / Delivery / Consegna a domicilio', 'পেমেন্ট / Payments / Pagamenti', 'নিরামিষ খাবার / Vegetarian options', 'অনুষ্ঠান ও জন্মদিন / Events and birthdays']
       }
     };
 
-    const original = {
-      nav: Array.from($('#mainNavigation')?.querySelectorAll('a') || []).map(a => a.textContent),
-      headings: {
-        menu: $('#menu h2')?.textContent, about: $('#about h2')?.textContent,
-        gallery: $('#gallery h2')?.textContent, events: $('#events h2')?.textContent,
-        reservation: $('#reservation h2')?.textContent, reviews: $('#reviews h2')?.textContent,
-        contact: $('#contact > .contact-heading h2')?.textContent, faq: $('#faq h2')?.textContent
-      },
-      about: $('#about > p')?.textContent, reviewIntro: $('#reviews > p')?.textContent,
-      contactIntro: $('#contact .contact-heading > p')?.textContent,
-      faqIntro: $('#faq .faq-intro')?.textContent,
-      footer: document.querySelector('.site-footer > p:last-of-type')?.textContent
-    };
-
-    function applyLanguage(lang) {
-      const t = translations[lang];
-      document.documentElement.lang = lang;
-      if (!t) {
-        selector.value = 'it';
-        document.documentElement.lang = 'it';
-        $('#mainNavigation')?.querySelectorAll('a').forEach((a,i)=>a.textContent=original.nav[i] || a.textContent);
-        Object.entries(original.headings).forEach(([key,value])=>{const el=key==='contact'?$('#contact > .contact-heading h2'):$(`#${key} h2`);if(el&&value)el.textContent=value;});
-        if($('#about > p'))$('#about > p').textContent=original.about;
-        if($('#reviews > p'))$('#reviews > p').textContent=original.reviewIntro;
-        if($('#contact .contact-heading > p'))$('#contact .contact-heading > p').textContent=original.contactIntro;
-        if($('#faq .faq-intro'))$('#faq .faq-intro').textContent=original.faqIntro;
-        if(document.querySelector('.site-footer > p:last-of-type'))document.querySelector('.site-footer > p:last-of-type').textContent=original.footer;
-        document.querySelectorAll('#contact .contact-info-card').forEach((card,i)=>{const h=card.querySelector('h3');const p=card.querySelector('.contact-card-label');if(h)h.textContent=['Il nostro ristorante','Chiamaci','Scrivici direttamente','Mandaci un’email'][i];if(p)p.textContent=['DOVE SIAMO','TELEFONO','WHATSAPP','EMAIL'][i];});
-        const hoursTitle=$('#contact .contact-hours-heading h3');if(hoursTitle)hoursTitle.textContent='Orari di apertura';
-        const form=$('#contactForm');if(form){const labels=form.querySelectorAll('label');const names=['Nome e cognome *','Email','Telefono','Oggetto','Messaggio *'];labels.forEach((label,i)=>{if(names[i]){const input=label.querySelector('input,textarea');label.childNodes[0].textContent=names[i];}});const btn=form.querySelector('button[type="submit"]');if(btn)btn.textContent='Invia messaggio';}
-        const directions=$('#contact .contact-directions-btn');if(directions)directions.innerHTML='<span aria-hidden="true">➤</span> Indicazioni stradali <span aria-hidden="true">↗</span>';
-        return;
+    const originals = new Map();
+    function remember(node) {
+      if (node && !originals.has(node)) {
+        originals.set(node, { html: node.innerHTML });
       }
-      $('#mainNavigation')?.querySelectorAll('a').forEach((a,i)=>{if(t.nav[i])a.textContent=t.nav[i];});
-      Object.entries(t.sections).forEach(([key,value])=>{const el=key==='contact'?$('#contact > .contact-heading h2'):$(`#${key} h2`);if(el)el.textContent=value;});
-      if($('#about > p'))$('#about > p').textContent=t.about;
-      if($('#reviews > p'))$('#reviews > p').textContent=t.reviewIntro;
-      if($('#contact .contact-heading > p'))$('#contact .contact-heading > p').textContent=t.contactIntro;
-      if($('#faq .faq-intro'))$('#faq .faq-intro').textContent=t.faqIntro;
-      if(document.querySelector('.site-footer > p:last-of-type'))document.querySelector('.site-footer > p:last-of-type').textContent=t.footer;
-      const cards=Array.from(document.querySelectorAll('#contact .contact-info-card'));
-      cards.forEach((card,i)=>{const label=card.querySelector('.contact-card-label'),heading=card.querySelector('h3');if(label)label.textContent=t.contact[i*2];if(heading)heading.textContent=t.contact[i*2+1];});
-      const hoursTitle=$('#contact .contact-hours-heading h3');if(hoursTitle)hoursTitle.textContent=t.contact[9];
-      const directions=$('#contact .contact-directions-btn');if(directions)directions.innerHTML=t.buttons.directions;
-      const form=$('#contactForm');if(form){const labels=form.querySelectorAll('label');labels.forEach((label,i)=>{const input=label.querySelector('input,textarea');if(input){label.childNodes[0].textContent=t.form[i] || label.childNodes[0].textContent;}});const btn=form.querySelector('button[type="submit"]');if(btn)btn.textContent=t.form[5];}
-      try{localStorage.setItem('nababi-language',lang);}catch(_){}
+    }
+    function setText(selector, value) {
+      document.querySelectorAll(selector).forEach(node => {
+        remember(node);
+        const textNode = Array.from(node.childNodes).find(child =>
+          child.nodeType === 3 && child.textContent.trim()
+        );
+        if (textNode) textNode.textContent = value;
+        else node.textContent = value;
+      });
+    }
+    function setLabelText(form, labels) {
+      if (!form) return;
+      form.querySelectorAll('label').forEach((label, index) => {
+        if (labels[index] === undefined) return;
+        remember(label);
+        const textNode = Array.from(label.childNodes).find(child =>
+          child.nodeType === 3 && child.textContent.trim()
+        );
+        if (textNode) textNode.textContent = labels[index] + ' ';
+      });
+    }
+    function restore() {
+      originals.forEach((value, node) => {
+        if (node.isConnected) node.innerHTML = value.html;
+      });
     }
 
-    let saved='it';try{saved=localStorage.getItem('nababi-language')||'it';}catch(_){}
-    selector.value=['it','en','bn'].includes(saved)?saved:'it';
-    selector.addEventListener('change',()=>applyLanguage(selector.value));
+    function applyLanguage(lang) {
+      const language = translations[lang] ? lang : 'it';
+      document.documentElement.lang = language;
+      selector.value = language;
+      if (language === 'it') {
+        restore();
+        try { localStorage.setItem('nababi-language', 'it'); } catch (_) {}
+        return;
+      }
+
+      const t = translations[language];
+      $('#mainNavigation')?.querySelectorAll('a').forEach((anchor, index) => {
+        if (t.nav[index]) setText('#mainNavigation a:nth-child(' + (index + 1) + ')', t.nav[index]);
+      });
+      Object.entries(t.text).forEach(([selectorText, value]) => setText(selectorText, value));
+      setLabelText($('#bookingForm'), t.bookingLabels);
+      setLabelText($('#contactForm'), t.contactLabels);
+
+      const bookingType = $('#bookingForm select[name="booking_type"]');
+      if (bookingType) {
+        Array.from(bookingType.options).forEach((option, index) => {
+          if (t.bookingTypes[index]) {
+            remember(option);
+            option.textContent = t.bookingTypes[index];
+          }
+        });
+      }
+      const notes = $('#bookingForm textarea[name="notes"]');
+      if (notes) {
+        remember(notes);
+        notes.placeholder = t.bookingPlaceholder;
+      }
+      if ($('#contactForm button[type="submit"]')) {
+        setText('#contactForm button[type="submit"]', t.contactButton);
+      }
+
+      const direction = $('#contact .contact-directions-btn');
+      if (direction) {
+        remember(direction);
+        direction.innerHTML = '<span aria-hidden="true">➤</span> ' + t.directions + ' <span aria-hidden="true">↗</span>';
+      }
+      Array.from(document.querySelectorAll('#faq .faq-item summary')).forEach((node, index) => {
+        if (t.faq[index]) setText('#faq .faq-item:nth-child(' + (index + 1) + ') summary', t.faq[index]);
+      });
+      try { localStorage.setItem('nababi-language', language); } catch (_) {}
+    }
+
+    let saved = 'it';
+    try { saved = localStorage.getItem('nababi-language') || 'it'; } catch (_) {}
+    selector.value = ['it', 'en', 'bn'].includes(saved) ? saved : 'it';
+    selector.addEventListener('change', () => applyLanguage(selector.value));
     applyLanguage(selector.value);
   }
 
