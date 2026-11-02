@@ -394,3 +394,31 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 @media(prefers-reduced-motion:reduce){
   .site-card,.news-card,.gold-btn,.outline-btn,.site-header nav a::after{transition:none}
 }
+
+
+/* NABABI HOMEPAGE — FINAL VISUAL DETAIL PASS */
+.site-hero{
+  background:
+    linear-gradient(90deg,rgba(3,7,6,.94) 0%,rgba(3,7,6,.76) 36%,rgba(3,7,6,.10) 100%),
+    linear-gradient(0deg,rgba(3,7,6,.32),transparent 44%),
+    url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90') center 52%/cover!important;
+}
+#liveMenu .site-card{position:relative;min-height:250px}
+#liveMenu .site-card img{
+  display:block;width:100%;height:180px;object-fit:cover;
+  border-bottom:1px solid rgba(224,184,82,.35);
+}
+#liveMenu .site-card>div{padding:14px 15px 16px}
+#liveMenu .site-card h3{margin:0 0 7px;font-size:20px}
+#liveMenu .site-card p{margin:5px 0;font-size:13px}
+#liveGallery .site-card img,#liveEvents .site-card img{
+  width:100%;height:210px;object-fit:cover;
+}
+#liveNews .news-card{padding:18px}
+#liveNews .news-card h3{color:#f1cf70;font:21px Georgia,serif}
+.site-empty{color:#cfc6b2;border:1px dashed rgba(216,183,106,.35);border-radius:12px}
+@media(max-width:760px){
+  #liveMenu .site-card{min-height:0}
+  #liveMenu .site-card img{height:150px}
+  #liveGallery .site-card img,#liveEvents .site-card img{height:165px}
+}
