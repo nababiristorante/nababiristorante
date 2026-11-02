@@ -2502,7 +2502,7 @@ async function deleteBreakingNews(id) {
 /* FOOD DELIVERY LINK MANAGER */
 let editingDeliveryLinkId = null;
 
-function deliveryLinksPage() {
+async function deliveryLinksPage() {
   return `
     <section class="section-card delivery-manager-card">
       <div class="section-title"><h2 id="deliveryLinkFormTitle">Aggiungi piattaforma</h2></div>
@@ -2615,7 +2615,7 @@ async function saveDeliveryLink(event) {
   const button = $('#deliveryLinkSave');
   const values = new FormData(form);
   const url = String(values.get('url')||'').trim();
-  if (!/^https?:\\/\\//i.test(url)) {
+  if (!/^https?:\/\//i.test(url)) {
     status.textContent = 'Inserisci un link valido che inizi con https://';
     return;
   }
@@ -2842,7 +2842,7 @@ async function render(id) {
     }
 
     if (id === 'delivery') {
-      host.innerHTML = deliveryLinksPage();
+      host.innerHTML = await deliveryLinksPage();
       await loadDeliveryLinksAdmin();
       $('#deliveryLinkForm').onsubmit = saveDeliveryLink;
       $('#deliveryLinkCancel').onclick = resetDeliveryLinkForm;
