@@ -1628,12 +1628,14 @@ async function redeemSecretCoupon(e) {
   const code = String(new FormData(form).get('code') || '').trim();
 
   if (!/^[0-9]{5,9}$/.test(code)) {
+    status.className = 'help error-text';
     status.textContent = 'Enter a valid 5–9 digit coupon code.';
     return;
   }
 
   btn.disabled = true;
   btn.textContent = 'Checking coupon…';
+  status.className = 'help';
   status.textContent = 'Verifying coupon…';
 
   try {
@@ -1648,8 +1650,8 @@ async function redeemSecretCoupon(e) {
       throw new Error(data?.message || 'Coupon could not be redeemed.');
     }
 
-    status.textContent =
-      'Coupon collected successfully.';
+    status.className = 'help success-text';
+    status.textContent = 'Coupon collected successfully.';
 
     form.reset();
 
@@ -1661,7 +1663,15 @@ async function redeemSecretCoupon(e) {
     await loadSecretHistory();
 
   } catch (err) {
-    status.textContent = err.message || 'Redemption failed.';
+    const message = String(err.message || 'Redemption failed.');
+    status.className = 'help error-text';
+    status.textContent = [
+      'ALREADY USED',
+      'EXPIRED',
+      'NOT ACTIVE'
+    ].includes(message.toUpperCase())
+      ? message.toUpperCase()
+      : message;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Collect Coupon';
