@@ -217,7 +217,7 @@
 
         ${ 
           item.youtube_url
-            ? /\\.(mp4|mov|webm)(?:[?#]|$)/i.test(item.youtube_url)
+            ? /\.(mp4|mov|webm)(?:[?#]|$)/i.test(item.youtube_url)
               ? `<video class="news-video" controls playsinline preload="metadata">
                   <source src="${escapeHTML(item.youtube_url)}">
                 </video>`
