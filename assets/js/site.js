@@ -115,6 +115,21 @@
       }
     } catch (error) { console.error('Nababi logo could not be loaded:', error.message); }
   }
+
+  function menuFallbackImage(item) {
+    const text = `${item?.name || ''} ${item?.category || ''}`.toLowerCase();
+    if (/biryani|biriyani|briyani|riso/.test(text)) {
+      return 'https://images.unsplash.com/photo-1563379091339-03246963d96c?auto=format&fit=crop&w=900&q=85';
+    }
+    if (/samosa|antipast|starter|snack/.test(text)) {
+      return 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=85';
+    }
+    if (/dessert|dolc|sweet|gulab|jamun/.test(text)) {
+      return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=85';
+    }
+    return 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=900&q=85';
+  }
+
   /* MENU */
 
   async function loadMenu() {
@@ -138,14 +153,11 @@
     container.innerHTML = rows.map(item => `
       <article class="site-card live-card">
 
-        ${
-          item.image_url
-            ? `<img
-                src="${escapeHTML(item.image_url)}"
-                alt="${escapeHTML(item.name)}"
-                loading="lazy">`
-            : ''
-        }
+        ${`<img
+          src="${escapeHTML(item.image_url || menuFallbackImage(item))}"
+          alt="${escapeHTML(item.name)}"
+          loading="lazy"
+          onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=900&q=85'">`}
 
         <div>
           <h3>${escapeHTML(item.name)}</h3>
