@@ -701,25 +701,3 @@
   }
 
 })();
-
-    ]);
-
-    console.log('Nababi public website initialized.');
-
-  }
-
-  if (document.readyState === 'loading') {
-
-    document.addEventListener(
-      'DOMContentLoaded',
-      initializeWebsite,
-      { once: true }
-    );
-
-  } else {
-
-    initializeWebsite();
-
-  }
-
-})();
