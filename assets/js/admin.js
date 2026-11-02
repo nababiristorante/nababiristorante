@@ -1009,7 +1009,10 @@ async function render(id) {
       };
       return;
     }
-
+   if (id === 'attendance') {
+    host.innerHTML = await attendancePage();
+     return;
+}
     if (id === 'logo' || id === 'gallery') {
       host.innerHTML = uploadPanel(id);
 
