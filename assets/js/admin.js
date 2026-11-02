@@ -1292,6 +1292,380 @@ async function attendancePage() {
   `;
 }
 
+/* SECRET COUPON BOX */
+
+function secretPage() {
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>🎁 Secret Coupon Box</h2>
+      </div>
+
+      ${
+        userRole === 'admin' ? `
+          <h3>Generate New Coupon</h3>
+          <p class="help">
+            Admin only. Each coupon can be redeemed once.
+          </p>
+          <button type="button" id="generateSecretCoupon"
+            class="gold-btn">
+            Generate Coupon
+          </button>
+          <div id="generatedCoupon" class="help"
+            aria-live="polite"></div>
+        ` : ''
+      }
+
+      <div class="divider"></div>
+
+      <h3>Redeem Customer Coupon</h3>
+      <p class="help">
+        Enter the numeric coupon code provided by the customer.
+      </p>
+
+      <form id="redeemSecretForm" class="form-grid">
+        <label class="field">Coupon Code
+          <input name="code" inputmode="numeric"
+            pattern="[0-9]{5,9}" minlength="5" maxlength="9"
+            placeholder="Enter 5–9 digit code" required>
+        </label>
+        <div>
+          <button type="submit" id="redeemSecretBtn"
+            class="gold-btn">
+            Collect Coupon
+          </button>
+        </div>
+      </form>
+
+      <p id="redeemSecretStatus" class="help"
+        aria-live="polite"></p>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Redemption History</h2>
+        <button type="button" id="refreshSecretHistory"
+          class="outline-btn">
+          Refresh
+        </button>
+      </div>
+      <div id="secretHistory">Loading…</div>
+    </section>
+  `;
+}
+
+async function loadSecretHistory() {
+  const host = $('#secretHistory');
+  if (!host) return;
+
+  try {
+    const {data,error} = await db
+      .from('coupon_redemptions')
+      .select(
+        'coupon_code,discount_percent,redeemed_by_name,redeemed_at'
+      )
+      .order('redeemed_at',{ascending:false})
+      .limit(100);
+
+    if (error) throw error;
+
+    host.innerHTML = data?.length
+      ? `<div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Coupon</th>
+                <th>Discount</th>
+                <th>Collected By</th>
+                <th>Date & Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>
+                  <td>${esc(row.coupon_code)}</td>
+                  <td>${esc(row.discount_percent)}%</td>
+                  <td>${esc(row.redeemed_by_name || 'Staff')}</td>
+                  <td>${esc(
+                    row.redeemed_at
+                      ? new Date(row.redeemed_at).toLocaleString('it-IT')
+                      : '—'
+                  )}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>`
+      : '<div class="empty-state">No redeemed coupons yet.</div>';
+
+  } catch (err) {
+    host.innerHTML =
+      `<p class="error-text">${esc(err.message)}</p>`;
+  }
+}
+
+async function generateSecretCoupon() {
+  if (userRole !== 'admin') {
+    throw new Error('Only Admin can generate coupons.');
+  }
+
+  const btn = $('#generateSecretCoupon');
+  const output = $('#generatedCoupon');
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  output.textContent = 'Please wait…';
+
+  try {
+    const {data,error} = await db.rpc(
+      'generate_nababi_coupon'
+    );
+
+    if (error) throw error;
+
+    if (!data?.success) {
+      throw new Error(data?.message || 'Coupon generation failed.');
+    }
+
+    output.innerHTML = `
+      <div class="section-card">
+        <p class="success-text">Coupon generated successfully!</p>
+        <h2 style="letter-spacing:4px">
+          ${esc(data.code)}
+        </h2>
+        <p><b>${esc(data.discount_percent)}% OFF</b></p>
+        <button type="button" class="gold-btn"
+          id="copySecretCoupon">
+          Copy Coupon Code
+        </button>
+        <p class="help">
+          Expires: ${esc(data.expires_at || 'Offer end date')}
+        </p>
+      </div>
+    `;
+
+    $('#copySecretCoupon').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(String(data.code));
+        $('#copySecretCoupon').textContent = 'Copied!';
+      } catch (_) {
+        alert('Coupon code: ' + data.code);
+      }
+    };
+
+  } catch (err) {
+    output.innerHTML =
+      `<p class="error-text">${esc(err.message)}</p>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Coupon';
+  }
+}
+
+function playCouponCelebration() {
+  // Sound starts only after the Staff member taps Collect Coupon.
+  try {
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (AudioContextClass) {
+      const audio = new AudioContextClass();
+
+      [523,659,784,1046].forEach((frequency,index) => {
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'sine';
+
+        gain.gain.setValueAtTime(0.0001,audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.12,audio.currentTime + 0.03 + index * 0.18
+        );
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,audio.currentTime + 0.25 + index * 0.18
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+
+        oscillator.start(audio.currentTime + index * 0.18);
+        oscillator.stop(audio.currentTime + 0.3 + index * 0.18);
+      });
+
+      setTimeout(() => audio.close().catch(() => {}),1800);
+    }
+  } catch (_) {}
+
+  // Browser voice announcement, where supported.
+  try {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+
+      const announcement = new SpeechSynthesisUtterance(
+        'Congratulations! Coupon successfully collected!'
+      );
+
+      announcement.lang = 'en-GB';
+      window.speechSynthesis.speak(announcement);
+    }
+  } catch (_) {}
+}
+
+function showCouponFireworks(discount,code) {
+  document.querySelector('#couponCelebration')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'couponCelebration';
+
+  overlay.innerHTML = `
+    <style>
+      #couponCelebration {
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:rgba(5,20,15,.96);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        overflow:hidden;
+        color:#f7f1e5;
+        text-align:center;
+        font-family:Arial,sans-serif;
+      }
+      #couponCelebration .celebrate-content {
+        position:relative;
+        z-index:2;
+        padding:28px;
+        border:1px solid #d8b76a;
+        border-radius:18px;
+        background:rgba(16,45,36,.92);
+        max-width:90%;
+      }
+      #couponCelebration h1 {
+        color:#d8b76a;
+        font-size:clamp(30px,8vw,54px);
+        margin:12px 0;
+      }
+      #couponCelebration .firework {
+        position:absolute;
+        left:var(--left);
+        top:var(--top);
+        width:7px;
+        height:7px;
+        border-radius:50%;
+        background:var(--color);
+        box-shadow:0 0 12px 3px var(--color);
+        animation:couponBurst 1.8s ease-out forwards;
+        animation-delay:var(--delay);
+        opacity:0;
+      }
+      @keyframes couponBurst {
+        0% {
+          opacity:1;
+          transform:translate(0,0) scale(.2);
+        }
+        100% {
+          opacity:0;
+          transform:translate(var(--x),var(--y)) scale(1.5);
+        }
+      }
+    </style>
+
+    <div class="celebrate-content">
+      <div style="font-size:48px">🎉 ✨ 🎉</div>
+      <h1>Congratulations!</h1>
+      <h2>${esc(discount)}% DISCOUNT</h2>
+      <p>Coupon successfully collected.</p>
+      <p>Code: <b>${esc(code)}</b></p>
+      <button type="button" id="closeCouponCelebration"
+        class="gold-btn">
+        Continue
+      </button>
+    </div>
+  `;
+
+  for (let i=0;i<65;i++) {
+    const particle = document.createElement('span');
+    particle.className = 'firework';
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 60 + Math.random() * 190;
+
+    particle.style.setProperty('--left',`${10+Math.random()*80}%`);
+    particle.style.setProperty('--top',`${10+Math.random()*75}%`);
+    particle.style.setProperty(
+      '--x',`${Math.cos(angle)*distance}px`
+    );
+    particle.style.setProperty(
+      '--y',`${Math.sin(angle)*distance}px`
+    );
+    particle.style.setProperty(
+      '--color',`hsl(${Math.floor(Math.random()*360)},100%,65%)`
+    );
+    particle.style.setProperty(
+      '--delay',`${Math.random()*1.2}s`
+    );
+
+    overlay.appendChild(particle);
+  }
+
+  document.body.appendChild(overlay);
+
+  $('#closeCouponCelebration').onclick = () => overlay.remove();
+
+  playCouponCelebration();
+}
+
+async function redeemSecretCoupon(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const btn = $('#redeemSecretBtn');
+  const status = $('#redeemSecretStatus');
+  const code = String(new FormData(form).get('code') || '').trim();
+
+  if (!/^[0-9]{5,9}$/.test(code)) {
+    status.textContent = 'Enter a valid 5–9 digit coupon code.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Checking coupon…';
+  status.textContent = 'Verifying coupon…';
+
+  try {
+    const {data,error} = await db.rpc(
+      'redeem_nababi_coupon',
+      {p_code:code}
+    );
+
+    if (error) throw error;
+
+    if (!data?.success) {
+      throw new Error(data?.message || 'Coupon could not be redeemed.');
+    }
+
+    status.textContent =
+      'Coupon collected successfully.';
+
+    form.reset();
+
+    showCouponFireworks(
+      data.discount_percent,
+      data.code || code
+    );
+
+    await loadSecretHistory();
+
+  } catch (err) {
+    status.textContent = err.message || 'Redemption failed.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Collect Coupon';
+  }
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
