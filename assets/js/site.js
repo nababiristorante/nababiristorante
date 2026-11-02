@@ -584,6 +584,54 @@
     }).join('');
   }
 
+  /* PUBLIC CONTACT FORM */
+
+  function setupContactForm() {
+    const form = $('#contactForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const status = $('#contactMessage');
+
+      if (!db) {
+        message(status, 'Servizio non disponibile. Contattaci per telefono o WhatsApp.', 'error');
+        return;
+      }
+
+      const values = new FormData(form);
+      const payload = {
+        full_name: String(values.get('full_name') || '').trim(),
+        email: String(values.get('email') || '').trim() || null,
+        phone: String(values.get('phone') || '').trim() || null,
+        subject: String(values.get('subject') || '').trim() || null,
+        message: String(values.get('message') || '').trim(),
+        is_read: false
+      };
+
+      if (!payload.full_name || !payload.message) {
+        message(status, 'Inserisci nome e messaggio.', 'error');
+        return;
+      }
+
+      const submit = $('button[type="submit"]', form);
+      if (submit) submit.disabled = true;
+      message(status, 'Invio del messaggio…');
+
+      try {
+        const { error } = await db.from('contact_messages').insert(payload);
+        if (error) throw error;
+        form.reset();
+        message(status, 'Messaggio inviato! Grazie per averci contattato.', 'success');
+      } catch (error) {
+        console.error('Contact form error:', error);
+        message(status, 'Invio non riuscito. Riprova o contattaci su WhatsApp.', 'error');
+      } finally {
+        if (submit) submit.disabled = false;
+      }
+    });
+  }
+
   /* TABLE BOOKING */
 
   function setupBooking() {
@@ -747,6 +795,7 @@
   async function initializeWebsite() {
 
     setupBooking();
+    setupContactForm();
     setupMobileNavigation();
 
     if (!db) {
