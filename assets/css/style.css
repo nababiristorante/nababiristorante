@@ -585,3 +585,91 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
   #mobileMenuButton{order:3;margin-left:0}
   .site-header-actions{order:4}
 }
+
+
+/* REVIEWS ADMIN — LIGHT CARD DESIGN */
+.section-card:has(#reviewForm),
+.section-card:has(#reviewsAdminList){
+  background:#f7f3e9;
+  border:1px solid #d8b76a;
+  border-radius:16px;
+  color:#202820;
+  box-shadow:0 8px 22px rgba(0,0,0,.16);
+}
+.section-card:has(#reviewForm) .section-title h2,
+.section-card:has(#reviewsAdminList) .section-title h2{
+  color:#173528;
+}
+.section-card:has(#reviewForm) .help,
+.section-card:has(#reviewsAdminList) .help{
+  color:#596258;
+}
+#reviewForm label{
+  color:#24352a;
+  font-weight:700;
+}
+#reviewForm input:not([type="hidden"]),
+#reviewForm select,
+#reviewForm textarea{
+  background:#fff;
+  color:#202820;
+  border:1px solid #c9b77f;
+  border-radius:9px;
+  padding:10px 12px;
+  max-width:100%;
+}
+#reviewForm input:focus,
+#reviewForm select:focus,
+#reviewForm textarea:focus{
+  outline:2px solid #d8b76a;
+  outline-offset:1px;
+}
+#reviewForm .checkbox-row{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+#reviewForm .form-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+#reviewForm .btn,
+#reviewsAdminList .btn{
+  border-radius:8px;
+  padding:8px 12px;
+  font-weight:700;
+}
+#reviewsAdminList .table-scroll{
+  border:1px solid #d8cda9;
+  border-radius:10px;
+  background:#fff;
+}
+#reviewsAdminList .data-table{
+  color:#202820;
+}
+#reviewsAdminList .data-table th{
+  color:#73551a;
+  background:#eee5cf;
+}
+#reviewsAdminList .data-table td{
+  color:#263329;
+  border-bottom:1px solid #e5decf;
+}
+#reviewsAdminList .data-table tr:last-child td{
+  border-bottom:0;
+}
+#reviewsAdminList .empty-state{
+  color:#596258;
+  border-color:#c9b77f;
+}
+@media(max-width:700px){
+  .section-card:has(#reviewForm),
+  .section-card:has(#reviewsAdminList){padding:15px}
+  #reviewForm input:not([type="hidden"]),
+  #reviewForm select,
+  #reviewForm textarea{width:100%;min-height:42px}
+  #reviewForm .form-actions .btn{flex:1;min-height:42px}
+  #reviewsAdminList .data-table{min-width:650px}
+  #reviewsAdminList .btn{margin:2px}
+}
