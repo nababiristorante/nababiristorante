@@ -765,6 +765,7 @@ async function staffLoad() {
 }
 
 
+
 async function createStaff(e) {
   e.preventDefault();
 
@@ -775,52 +776,109 @@ async function createStaff(e) {
   const form = e.target;
   const btn = $('#createStaffBtn');
   const status = $('#staffStatus');
+
   const fd = new FormData(form);
-
   const full_name = String(fd.get('full_name') || '').trim();
-  const email = String(fd.get('email') || '').trim().toLowerCase();
-  const phone = String(fd.get('phone') || '').trim();
-  const password = String(fd.get('password') || '');
+  const pin = String(fd.get('pin') || '').trim();
+  const file = fd.get('photo');
 
-  const permissions = {};
-  MODULES.forEach(([id]) => {
-    permissions[id] = fd.getAll('perm').includes(id);
-  });
+  if (full_name.length < 2) {
+    status.textContent = 'Enter a valid Staff name.';
+    return;
+  }
 
-  if (!full_name || !email || password.length < 10) {
-    status.textContent = 'Name, email and a password of at least 10 characters are required.';
+  if (!/^[0-9]{4}$/.test(pin)) {
+    status.textContent = 'PIN must contain exactly 4 digits.';
+    return;
+  }
+
+  if (!(file instanceof File) || !file.size) {
+    status.textContent = 'Please select a Staff photo.';
+    return;
+  }
+
+  if (
+    !['image/jpeg','image/png','image/webp'].includes(file.type) ||
+    file.size > 8 * 1024 * 1024
+  ) {
+    status.textContent = 'Use JPG, PNG or WebP. Maximum size: 8 MB.';
     return;
   }
 
   btn.disabled = true;
   btn.textContent = 'Creating account…';
-  status.textContent = 'Creating Staff account…';
+  status.textContent = 'Uploading Staff photo…';
+
+  let uploadedPath = null;
+  const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
 
   try {
-    const {data,error} = await db.functions.invoke('create-staff-account', {
-      body:{
-        full_name,
-        email,
-        phone:phone || null,
-        password,
-        permissions
+    const ext = file.type === 'image/png' ? 'png'
+      : file.type === 'image/webp' ? 'webp' : 'jpg';
+
+    const uniqueId = crypto.randomUUID();
+    const path = `staff/${uniqueId}.${ext}`;
+
+    const {data:uploadData,error:uploadError} = await db.storage
+      .from(bucket)
+      .upload(path,file,{
+        cacheControl:'3600',
+        upsert:false,
+        contentType:file.type
+      });
+
+    if (uploadError) throw uploadError;
+
+    uploadedPath = uploadData.path;
+
+    const {data:publicData} = db.storage
+      .from(bucket)
+      .getPublicUrl(uploadData.path);
+
+    const photo_url = publicData?.publicUrl;
+
+    if (!photo_url) {
+      throw new Error('Could not create Staff photo URL.');
+    }
+
+    status.textContent = 'Creating PIN account…';
+
+    const {data,error} = await db.rpc(
+      'admin_create_staff_pin_account',
+      {
+        p_full_name: full_name,
+        p_photo_url: photo_url,
+        p_pin: pin
       }
-    });
+    );
 
     if (error) throw error;
-    if (data?.error) throw new Error(data.error);
+    if (!data?.ok) {
+      throw new Error(data?.message || 'Staff account creation failed.');
+    }
 
-    status.textContent = data?.message || 'Staff account created successfully.';
+    status.textContent =
+      data.message || 'Staff account created successfully.';
+
     form.reset();
     await staffLoad();
 
   } catch (err) {
+    // Remove an uploaded photo if account creation failed.
+    if (uploadedPath) {
+      try {
+        await db.storage.from(bucket).remove([uploadedPath]);
+      } catch (_) {}
+    }
+
     status.textContent = err.message || 'Creation failed.';
+
   } finally {
     btn.disabled = false;
     btn.textContent = 'Create Staff Account';
   }
 }
+
 
 async function resetStaffPassword(id) {
   if (userRole !== 'admin') {
