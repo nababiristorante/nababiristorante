@@ -12,7 +12,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/site.js?v=20261102-delivery-icon"></script>
+  <script defer src="assets/js/site.js?v=20261102-delivery-footer"></script>
 
   <style>
     .site-header {
@@ -68,43 +68,48 @@
       border-bottom:1px solid rgba(216,183,106,.3);
     }
 
-    .delivery-section {
-      position:fixed;
-      right:14px;
-      bottom:22px;
-      z-index:40;
-      padding:0;
-      margin:0;
-      width:auto;
-      background:transparent;
-      border:0;
-      text-align:center;
+    .footer-platforms {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-top:18px;
     }
 
-    .delivery-toggle {
+    .footer-delivery-links,
+    .footer-delivery-links[hidden] {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .footer-platform-icons {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .footer-platform-icons .delivery-link {
       display:grid;
       place-items:center;
-      width:64px;
-      height:64px;
-      padding:8px;
+      width:38px;
+      height:38px;
+      padding:3px;
       border:0;
-      border-radius:50%;
+      border-radius:8px;
       background:transparent;
-      cursor:pointer;
-      box-shadow:none;
     }
 
-    .delivery-toggle img {
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
+    .footer-platform-icons .brand-logo {
+      width:30px;
+      height:30px;
     }
 
-    .delivery-toggle:hover,
-    .delivery-toggle:focus-visible {
-      outline:2px solid #d8b76a;
-      outline-offset:3px;
+    .footer-platforms .social-links {
+      margin:0;
     }
 
     .delivery-popup {
@@ -356,15 +361,7 @@
   </div>
 </section>
 
-<section class="delivery-section" id="foodDelivery" hidden>
-  <button id="deliveryToggle" class="delivery-toggle" type="button"
-    aria-label="Apri Food Delivery" title="Food Delivery"
-    aria-expanded="false" aria-controls="publicDeliveryLinks">
-    <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png"
-      alt="Food Delivery">
-  </button>
-  <div id="publicDeliveryLinks" class="delivery-popup" aria-label="Piattaforme di consegna" hidden></div>
-</section>
+
 
 <section class="site-section" id="liveNewsSection">
   <h2>Novità e comunicazioni</h2>
@@ -596,7 +593,12 @@
 
   <p>Autentica cucina indiana nel cuore di Roma.</p>
 
-  <div id="publicSocialLinks" class="social-links" aria-label="Social network" hidden></div>
+  <div class="footer-platforms">
+    <div id="foodDelivery" class="footer-delivery-links" aria-label="Food delivery" hidden>
+      <div id="publicDeliveryLinks" class="footer-platform-icons"></div>
+    </div>
+    <div id="publicSocialLinks" class="social-links" aria-label="Social network" hidden></div>
+  </div>
 
 </footer>
 
