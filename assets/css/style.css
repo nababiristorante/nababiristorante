@@ -97,3 +97,11 @@
 .social-links[hidden]{display:none}
 .social-link{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:1px solid #d8b76a;border-radius:999px;color:#f7f1e5;text-decoration:none;background:#183e31;cursor:pointer;pointer-events:auto;position:relative;z-index:2}
 .social-link:hover,.social-link:focus-visible{background:#245640;color:#fff;outline:2px solid #d8b76a;outline-offset:3px}
+
+/* Recognizable platform brand marks */
+.brand-logo{width:34px;height:34px;object-fit:contain;flex:0 0 34px;display:inline-block}
+.delivery-link,.social-link{display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.delivery-link-admin-row,.delivery-link-admin-info{align-items:center}
+.delivery-link-admin-row{display:flex;gap:14px}
+.delivery-link-admin-info{display:flex;flex-wrap:wrap;gap:8px}
+.social-link .brand-logo,.delivery-link .brand-logo{width:30px;height:30px;flex-basis:30px}
