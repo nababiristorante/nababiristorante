@@ -61,6 +61,43 @@
       max-width:720px;
     }
 
+    .delivery-section {
+      padding:34px 7%;
+      text-align:center;
+      background:linear-gradient(135deg,#102d24,#080d0f);
+      border-bottom:1px solid rgba(216,183,106,.3);
+    }
+
+    .delivery-links {
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .delivery-link {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:150px;
+      padding:12px 20px;
+      border:1px solid #d8b76a;
+      border-radius:999px;
+      color:#f7f1e5;
+      text-decoration:none;
+      font-weight:700;
+      background:#183e31;
+      opacity:.78;
+      cursor:not-allowed;
+    }
+
+    .delivery-note {
+      color:#c9c1ad;
+      font-size:13px;
+      margin:12px 0 0;
+    }
+
     .site-hero h1 {
       font-size:clamp(38px,7vw,72px);
       margin:10px 0;
@@ -267,6 +304,17 @@
       Prenota un Tavolo
     </a>
   </div>
+</section>
+
+<section class="delivery-section" id="foodDelivery">
+  <h2>Ordina a Domicilio</h2>
+  <p>Scegli la tua piattaforma preferita per ordinare Nababi Ristorante.</p>
+  <div class="delivery-links" aria-label="Piattaforme di consegna">
+    <a class="delivery-link" href="#" aria-disabled="true" title="Link Nababi in arrivo">Glovo · Link in arrivo</a>
+    <a class="delivery-link" href="#" aria-disabled="true" title="Link Nababi in arrivo">Deliveroo · Link in arrivo</a>
+    <a class="delivery-link" href="#" aria-disabled="true" title="Link Nababi in arrivo">Just Eat · Link in arrivo</a>
+  </div>
+  <p class="delivery-note">I link diretti per ordinare saranno attivati appena disponibili.</p>
 </section>
 
 <section class="site-section" id="liveNewsSection">
