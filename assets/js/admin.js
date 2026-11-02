@@ -470,6 +470,14 @@ function uploadPanel(kind) {
       <h2>Carica ${kind==='logo'?'Logo':'immagini'}</h2>
     </div>
     <div class="upload-box">
+      ${kind==='gallery' ? `
+        <label class="field">Titolo foto
+          <input id="galleryTitle" maxlength="150" placeholder="Nababi Ristorante">
+        </label>
+        <label class="field">Descrizione
+          <textarea id="galleryDescription" maxlength="500" placeholder="Descrizione breve (facoltativa)"></textarea>
+        </label>
+      ` : ''}
       <label class="field">Scegli foto dal telefono
         <input id="mediaFile" type="file"
           accept="image/jpeg,image/png,image/webp">
@@ -548,6 +556,35 @@ async function uploadHandler() {
       return;
     }
 
+    if (current === 'gallery') {
+      const {data:lastRows,error:lastError} = await db
+        .from('gallery_items')
+        .select('sort_order')
+        .order('sort_order',{ascending:false})
+        .limit(1);
+      if (lastError) throw lastError;
+
+      const nextOrder = Number(lastRows?.[0]?.sort_order || 0) + 1;
+      const title = String($('#galleryTitle')?.value || '').trim() || 'Nababi Ristorante';
+      const description = String($('#galleryDescription')?.value || '').trim() || null;
+      const {error:rowError} = await db.from('gallery_items').insert({
+        image_url:pub.publicUrl,
+        title,
+        description,
+        is_active:true,
+        sort_order:nextOrder
+      });
+      if (rowError) throw rowError;
+
+      status.textContent = 'Foto caricata e pubblicata nella Gallery.';
+      $('#uploadedUrl').innerHTML = '<p class="success-text">Foto salvata nella Gallery.</p>';
+      input.value = '';
+      const preview = $('#uploadPreview');
+      if (preview) preview.hidden = true;
+      await loadGalleryAdmin();
+      return;
+    }
+
     $('#uploadedUrl').innerHTML = '<p class="success-text">Caricamento completato.</p><input class="search-input" id="uploadedUrlInput" readonly><button class="outline-btn" id="copyUrl">Copia URL</button><p class="help">Il file è stato caricato nello Storage.</p>';
     $('#uploadedUrlInput').value = pub.publicUrl;
     $('#copyUrl').onclick = async () => {
@@ -561,6 +598,76 @@ async function uploadHandler() {
   } finally {
     btn.disabled = false;
   }
+}
+
+/* GALLERY ADMIN */
+
+async function loadGalleryAdmin() {
+  const host = $('#galleryAdminList');
+  if (!host) return;
+
+  host.innerHTML = '<p class="help">Caricamento foto…</p>';
+  try {
+    const {data,error} = await db
+      .from('gallery_items')
+      .select('id,image_url,title,description,is_active,sort_order')
+      .order('sort_order',{ascending:true});
+    if (error) throw error;
+
+    host.innerHTML = data?.length ? `
+      <div class="menu-dish-list">${data.map(item => `
+        <article class="menu-dish-row">
+          <img class="menu-dish-thumb" src="${esc(item.image_url)}" alt="${esc(item.title || 'Gallery')}">
+          <div class="menu-dish-info">
+            <strong>${esc(item.title || 'Nababi Ristorante')}</strong>
+            <small>${item.is_active === false ? 'Nascosta dal sito' : 'Visibile sul sito'}</small>
+            ${item.description ? `<small>${esc(item.description)}</small>` : ''}
+          </div>
+          <div class="menu-dish-actions">
+            <button type="button" class="menu-delete-btn" data-delete-gallery="${esc(item.id)}">Elimina</button>
+          </div>
+        </article>
+      `).join('')}</div>`
+      : '<div class="empty-state">Nessuna foto nella Gallery.</div>';
+  } catch (e) {
+    host.innerHTML = `<p class="error-text">${esc(e.message || 'Impossibile caricare la Gallery.')}</p>`;
+  }
+}
+
+async function deleteGalleryItem(id) {
+  if (!confirm('Eliminare definitivamente questa foto dal sito e da Supabase Storage?')) return;
+
+  const {data:item,error:readError} = await db
+    .from('gallery_items')
+    .select('id,image_url')
+    .eq('id',id)
+    .single();
+  if (readError) throw readError;
+
+  const {data:deleted,error:deleteError} = await db
+    .from('gallery_items')
+    .delete()
+    .eq('id',id)
+    .select('id')
+    .maybeSingle();
+  if (deleteError) throw deleteError;
+  if (!deleted) throw new Error('Foto non eliminata. Controlla la policy DELETE di gallery_items.');
+
+  const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+  try {
+    const marker = '/object/public/' + bucket + '/';
+    const url = new URL(item.image_url);
+    const at = url.pathname.indexOf(marker);
+    if (at >= 0) {
+      const path = decodeURIComponent(url.pathname.slice(at + marker.length));
+      const {error:storageError} = await db.storage.from(bucket).remove([path]);
+      if (storageError) throw storageError;
+    }
+  } catch (e) {
+    throw new Error('Foto rimossa dal sito, ma Storage non è riuscito a eliminarla: ' + e.message);
+  }
+
+  await loadGalleryAdmin();
 }
 
 /* CATEGORIES */
@@ -3316,7 +3423,12 @@ async function render(id) {
     }
 
     if (id === 'gallery') {
-      host.innerHTML = uploadPanel(id);
+      host.innerHTML = uploadPanel(id) + `
+        <section class="section-card">
+          <div class="section-title"><h2>Foto salvate nella Gallery</h2></div>
+          <div id="galleryAdminList" class="help">Caricamento…</div>
+        </section>`;
+      await loadGalleryAdmin();
       $('#mediaFile').onchange = () => {
         const file = $('#mediaFile').files?.[0];
         if (!file) return;
@@ -3328,6 +3440,17 @@ async function render(id) {
         img.hidden = false;
       };
       $('#uploadBtn').onclick = uploadHandler;
+      $('#galleryAdminList').onclick = async e => {
+        const button = e.target.closest('[data-delete-gallery]');
+        if (!button) return;
+        button.disabled = true;
+        try {
+          await deleteGalleryItem(button.dataset.deleteGallery);
+        } catch (err) {
+          alert(err.message || 'Impossibile eliminare la foto.');
+          button.disabled = false;
+        }
+      };
       return;
     }
 
