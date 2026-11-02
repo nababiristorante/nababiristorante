@@ -178,7 +178,10 @@ function openApp(email) {
     (email || 'Account');
 
   nav();
-  render('dashboard');
+
+  // Open the coupon redemption screen immediately after login.
+  // Staff still need the existing "secret" permission.
+  render(canSee('secret') ? 'secret' : 'dashboard');
 }
 
 async function verifyAdmin(user) {
