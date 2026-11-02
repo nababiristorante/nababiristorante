@@ -5,6 +5,12 @@
 /* NABABI RISTORANTE — ADMIN PANEL */
 
 const cfg = window.NABABI_CONFIG || {};
+  const STAFF_QR_URL =
+  'https://nababiristorante.vercel.app/staff-qr.html';
+
+const STAFF_QR_IMAGE =
+  'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
+  encodeURIComponent(STAFF_QR_URL);
 const $ = s => document.querySelector(s);
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
