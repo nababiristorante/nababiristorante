@@ -12,7 +12,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/site.js?v=20261102-breaking-news"></script>
+  <script defer src="assets/js/site.js?v=20261102-delivery-links"></script>
 
   <style>
     .site-header {
@@ -306,15 +306,10 @@
   </div>
 </section>
 
-<section class="delivery-section" id="foodDelivery">
+<section class="delivery-section" id="foodDelivery" hidden>
   <h2>Ordina a Domicilio</h2>
   <p>Scegli la tua piattaforma preferita per ordinare Nababi Ristorante.</p>
-  <div class="delivery-links" aria-label="Piattaforme di consegna">
-    <a class="delivery-link" href="#" aria-disabled="true" title="Link Nababi in arrivo">Glovo · Link in arrivo</a>
-    <a class="delivery-link" href="https://deliveroo.it/it/menu/roma/roma-prati/nababi-restaurant" target="_blank" rel="noopener noreferrer">Ordina su Deliveroo</a>
-    <a class="delivery-link" href="#" aria-disabled="true" title="Link Nababi in arrivo">Just Eat · Link in arrivo</a>
-  </div>
-  <p class="delivery-note">I link diretti per ordinare saranno attivati appena disponibili.</p>
+  <div id="publicDeliveryLinks" class="delivery-links" aria-label="Piattaforme di consegna"></div>
 </section>
 
 <section class="site-section" id="liveNewsSection">
