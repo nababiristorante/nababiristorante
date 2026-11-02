@@ -6,8 +6,7 @@
 
 const cfg = window.NABABI_CONFIG || {};
 
-const STAFF_QR_URL =
-  'https://nababiristorante.vercel.app/staff-qr.html';
+const STAFF_QR_URL = 'https://nababiristorante.vercel.app/staff-qr.html';
 
 const STAFF_QR_IMAGE =
   'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' +
@@ -16,7 +15,11 @@ const STAFF_QR_IMAGE =
 const $ = s => document.querySelector(s);
 
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
-  '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  '&':'&amp;',
+  '<':'&lt;',
+  '>':'&gt;',
+  '"':'&quot;',
+  "'":'&#39;'
 }[c]));
 
 const menu = [
@@ -129,7 +132,9 @@ function permissionObject(value) {
 function canSee(id) {
   if (userRole === 'admin') return true;
   if (id === 'dashboard' && userRole === 'staff') return true;
-  return userRole === 'staff' && staffPermissions[id] === true;
+
+  return userRole === 'staff' &&
+    staffPermissions[id] === true;
 }
 
 function moduleInfo(id) {
@@ -175,7 +180,9 @@ function openApp(email) {
 }
 
 async function verifyAdmin(user) {
-  if (!user?.id) throw new Error('Account utente non valido.');
+  if (!user?.id) {
+    throw new Error('Account utente non valido.');
+  }
 
   sessionUser = user;
 
@@ -204,7 +211,9 @@ async function verifyAdmin(user) {
   }
 
   if (!staff || staff.is_active !== true) {
-    throw new Error('Questo account non è autorizzato. Contatta il Super Admin.');
+    throw new Error(
+      'Questo account non è autorizzato. Contatta il Super Admin.'
+    );
   }
 
   userRole = 'staff';
@@ -212,6 +221,8 @@ async function verifyAdmin(user) {
 
   return true;
 }
+
+/* LOGIN */
 
 async function signIn(e) {
   e.preventDefault();
@@ -222,7 +233,9 @@ async function signIn(e) {
 
   showLoginMessage('');
 
-  if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+  if (!window.supabase ||
+      !cfg.SUPABASE_URL ||
+      !cfg.SUPABASE_ANON_KEY) {
     showLoginMessage('Configurazione Supabase mancante.');
     return;
   }
@@ -268,9 +281,13 @@ async function signIn(e) {
   }
 }
 
+/* DASHBOARD */
+
 function statCard(icon,label,value) {
   return `<article class="stat-card">
-    <div class="stat-top"><span class="stat-icon">${icon}</span>${esc(label)}</div>
+    <div class="stat-top">
+      <span class="stat-icon">${icon}</span>${esc(label)}
+    </div>
     <strong>${esc(value)}</strong>
   </article>`;
 }
@@ -294,7 +311,8 @@ async function dashboard() {
       .filter(([id]) => id !== 'dashboard' && canSee(id))
       .map(([id,ico,label]) => `
         <button class="quick-btn" data-page="${id}">
-          ${ico} ${esc(label)}<small>Apri modulo</small>
+          ${ico} ${esc(label)}
+          <small>Apri modulo</small>
         </button>
       `).join('');
 
@@ -306,6 +324,7 @@ async function dashboard() {
       </div>
       <div class="hero-art">♛</div>
     </section>
+
     <section class="section-card">
       <div class="section-title"><h2>I tuoi moduli</h2></div>
       <div class="quick-grid">
@@ -330,7 +349,9 @@ async function dashboard() {
       <p class="eyebrow">OFFERTE ESCLUSIVE</p>
       <h2>♛ Secret Coupon Box 🔒</h2>
       <p>Special discounts, exclusive offers & more!</p>
-      <button class="gold-btn" data-page="secret">Open Coupon Box →</button>
+      <button class="gold-btn" data-page="secret">
+        Open Coupon Box →
+      </button>
     </div>
     <div class="hero-art">🎁 🍛</div>
   </section>
@@ -370,9 +391,12 @@ async function dashboard() {
       </div>
       <div id="recentBookings" class="help">Loading bookings…</div>
     </section>
+
     <section class="section-card">
       <div class="section-title"><h2>♟ Recent Activity</h2></div>
-      <p class="help">Le attività recenti saranno mostrate quando configurate.</p>
+      <p class="help">
+        Le attività recenti saranno mostrate quando configurate.
+      </p>
     </section>
   </div>`;
 }
@@ -394,7 +418,9 @@ async function loadRecent() {
 
     el.innerHTML = data?.length
       ? `<div class="table-scroll"><table class="data-table">
-          <thead><tr><th>Cliente</th><th>Data</th><th>Stato</th></tr></thead>
+          <thead>
+            <tr><th>Cliente</th><th>Data</th><th>Stato</th></tr>
+          </thead>
           <tbody>${data.map(x => `
             <tr>
               <td>${esc(x.full_name || x.name || x.customer_name || '—')}</td>
@@ -407,7 +433,9 @@ async function loadRecent() {
 
   } catch (e) {
     const el = $('#recentBookings');
-    if (el) el.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
+    if (el) {
+      el.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
+    }
   }
 }
 
@@ -420,14 +448,18 @@ function uploadPanel(kind) {
     </div>
     <div class="upload-box">
       <label class="field">Scegli foto dal telefono
-        <input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp">
+        <input id="mediaFile" type="file"
+          accept="image/jpeg,image/png,image/webp">
       </label>
-      <button id="uploadBtn" class="gold-btn">Carica su Supabase</button>
+      <button id="uploadBtn" class="gold-btn">
+        Carica su Supabase
+      </button>
       <p id="uploadStatus" class="help">
         JPG, PNG o WebP. Massimo 8 MB. Bucket:
         ${esc(cfg.STORAGE_BUCKET || 'nababi-media')}.
       </p>
-      <img id="uploadPreview" class="preview-img" hidden alt="Anteprima immagine">
+      <img id="uploadPreview" class="preview-img"
+        hidden alt="Anteprima immagine">
       <div id="uploadedUrl"></div>
     </div>
   </section>`;
@@ -446,7 +478,8 @@ async function uploadHandler() {
 
   if (!['image/jpeg','image/png','image/webp'].includes(file.type) ||
       file.size > 8 * 1024 * 1024) {
-    status.textContent = 'Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.';
+    status.textContent =
+      'Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.';
     return;
   }
 
@@ -480,7 +513,10 @@ async function uploadHandler() {
       <p class="success-text">Caricamento completato.</p>
       <input class="search-input" id="uploadedUrlInput" readonly>
       <button class="outline-btn" id="copyUrl">Copia URL</button>
-      <p class="help">Il file è nello Storage. Per visualizzarlo nella Gallery o come Logo bisogna anche salvare il relativo record nelle tabelle del sito.</p>`;
+      <p class="help">
+        Il file è nello Storage. Per visualizzarlo nella Gallery
+        o come Logo bisogna anche salvare il relativo record.
+      </p>`;
 
     $('#uploadedUrlInput').value = pub.publicUrl;
 
@@ -510,7 +546,8 @@ function categoryPage() {
     <div class="section-title"><h2>Nuova categoria</h2></div>
     <form id="categoryForm" class="form-grid">
       <label class="field">Nome categoria
-        <input name="name" required placeholder="Antipasti" maxlength="100">
+        <input name="name" required
+          placeholder="Antipasti" maxlength="100">
       </label>
       <div style="align-self:end">
         <button class="gold-btn">Salva categoria</button>
@@ -535,13 +572,17 @@ async function categoryLoad() {
     host.innerHTML = data?.length
       ? data.map(x => `
           <p>• ${esc(x.name)}
-            <button class="outline-btn" data-delete-category="${esc(x.id)}">Elimina</button>
+            <button class="outline-btn"
+              data-delete-category="${esc(x.id)}">
+              Elimina
+            </button>
           </p>
         `).join('')
       : 'Nessuna categoria.';
 
   } catch (e) {
-    host.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
+    host.innerHTML =
+      `<span class="error-text">${esc(e.message)}</span>`;
   }
 }
 
@@ -555,7 +596,8 @@ function menuPage() {
         <input name="name" required maxlength="150">
       </label>
       <label class="field">Prezzo (€)
-        <input name="price" type="number" min="0" step="0.01" required>
+        <input name="price" type="number"
+          min="0" step="0.01" required>
       </label>
       <label class="field">Categoria
         <input name="category" maxlength="100">
@@ -564,7 +606,8 @@ function menuPage() {
         <textarea name="description"></textarea>
       </label>
       <label class="field">Foto del piatto
-        <input name="image" type="file" accept="image/jpeg,image/png,image/webp">
+        <input name="image" type="file"
+          accept="image/jpeg,image/png,image/webp">
       </label>
       <label class="field">Disponibile
         <select name="is_available">
@@ -576,6 +619,7 @@ function menuPage() {
     </form>
     <p id="dishStatus" class="help" aria-live="polite"></p>
   </section>
+
   <section class="section-card">
     <h2>Menu Items</h2>
     <div id="dishList" class="help">Caricamento…</div>
@@ -596,7 +640,12 @@ async function dishLoad() {
 
     host.innerHTML = data?.length
       ? `<div class="table-scroll"><table class="data-table">
-          <thead><tr><th>Nome</th><th>Prezzo</th><th>Categoria</th><th>Disponibile</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Nome</th><th>Prezzo</th>
+              <th>Categoria</th><th>Disponibile</th>
+            </tr>
+          </thead>
           <tbody>${data.map(x => `
             <tr>
               <td>${esc(x.name)}</td>
@@ -609,25 +658,28 @@ async function dishLoad() {
       : 'Nessun piatto inserito.';
 
   } catch (e) {
-    host.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
+    host.innerHTML =
+      `<span class="error-text">${esc(e.message)}</span>`;
   }
 }
 
-/* STAFF MANAGEMENT */
+/* STAFF PERMISSIONS */
 
 function permissionOptions(selected = {}) {
   const permissions = permissionObject(selected);
 
   return MODULES.map(([id,,label]) => `
     <label class="field" style="display:flex;gap:8px;align-items:center">
-      <input type="checkbox" name="perm" value="${esc(id)}"
-        ${permissions[id] ? 'checked' : ''} style="width:auto">
+      <input type="checkbox" name="perm"
+        value="${esc(id)}"
+        ${permissions[id] ? 'checked' : ''}
+        style="width:auto">
       ${esc(label)}
     </label>
   `).join('');
 }
 
-
+/* STAFF MANAGEMENT — TWO ACCOUNT TYPES */
 
 function staffPage() {
   return `
@@ -637,18 +689,20 @@ function staffPage() {
       </div>
 
       <p class="help">
-        Create a staff login account. The staff member can log in
-        using their own email and password. Select only the modules
-        they are allowed to access.
+        Crea un account Staff con nome, email e password.
+        Il dipendente potrà accedere con le proprie credenziali.
+        Seleziona solo i moduli autorizzati.
       </p>
 
       <form id="fullStaffForm" class="form-grid">
         <label class="field">Staff Name
-          <input name="full_name" required maxlength="120">
+          <input name="full_name" required maxlength="120"
+            placeholder="Nome del dipendente">
         </label>
 
         <label class="field">Email
-          <input name="email" type="email" required maxlength="254">
+          <input name="email" type="email" required maxlength="254"
+            autocomplete="off">
         </label>
 
         <label class="field">Phone
@@ -663,7 +717,7 @@ function staffPage() {
         <div class="section-card">
           <h3>Module Permissions</h3>
           <p class="help">
-            Only selected modules will appear in this staff account.
+            Seleziona i moduli che questo dipendente può utilizzare.
           </p>
           <div class="form-grid">
             ${permissionOptions({})}
@@ -671,13 +725,15 @@ function staffPage() {
         </div>
 
         <div>
-          <button id="createFullStaffBtn" class="gold-btn" type="submit">
+          <button id="createFullStaffBtn"
+            class="gold-btn" type="submit">
             Create Full Staff Account
           </button>
         </div>
       </form>
 
-      <p id="fullStaffStatus" class="help" aria-live="polite"></p>
+      <p id="fullStaffStatus" class="help"
+        aria-live="polite"></p>
     </section>
 
     <section class="section-card">
@@ -686,8 +742,8 @@ function staffPage() {
       </div>
 
       <p class="help">
-        This account is only for QR Check-in / Check-out.
-        No email or password is required.
+        Crea un profilo per il QR Check-in / Check-out.
+        Non servono email o password.
       </p>
 
       <form id="staffForm" class="form-grid">
@@ -710,23 +766,136 @@ function staffPage() {
         </label>
 
         <div>
-          <button id="createStaffBtn" class="gold-btn" type="submit">
+          <button id="createStaffBtn"
+            class="gold-btn" type="submit">
             Create Attendance Account
           </button>
         </div>
       </form>
 
-      <p id="staffStatus" class="help" aria-live="polite"></p>
+      <p id="staffStatus" class="help"
+        aria-live="polite"></p>
     </section>
 
     <section class="section-card">
-      <div class="section-title"><h2>Staff Accounts</h2></div>
+      <div class="section-title">
+        <h2>Staff Accounts</h2>
+      </div>
       <div id="staffList">Loading…</div>
     </section>
   `;
 }
 
+async function staffLoad() {
+  const host = $('#staffList');
+  if (!host) return;
 
+  try {
+    const {data,error} = await db
+      .from('staff')
+      .select(
+        'id,full_name,photo_url,email,phone,role,auth_user_id,permissions,is_active'
+      )
+      .order('full_name');
+
+    if (error) throw error;
+
+    host.innerHTML = data?.length
+      ? data.map(x => {
+          const permissions = permissionObject(x.permissions);
+
+          const checks = MODULES.map(([id,,label]) => `
+            <label class="field"
+              style="display:flex;gap:8px;align-items:center">
+              <input type="checkbox"
+                data-edit-perm="${esc(id)}"
+                data-staff-id="${esc(x.id)}"
+                ${permissions[id] ? 'checked' : ''}
+                style="width:auto">
+              ${esc(label)}
+            </label>
+          `).join('');
+
+          return `<article class="section-card">
+            <div style="display:flex;gap:14px;align-items:center">
+              ${
+                x.photo_url
+                  ? `<img src="${esc(x.photo_url)}"
+                      alt="${esc(x.full_name)}"
+                      style="width:76px;height:76px;
+                      object-fit:cover;border-radius:50%">`
+                  : ''
+              }
+
+              <div>
+                <b>${esc(x.full_name || 'Staff')}</b>
+                <p class="help">${esc(x.email || 'No email')}</p>
+                <p class="help">${esc(x.phone || 'No phone')}</p>
+                <p class="help">
+                  ${x.auth_user_id
+                    ? 'Full Staff Account — Email Login'
+                    : 'Attendance-only Account — PIN'}
+                </p>
+              </div>
+            </div>
+
+            <p>
+              <b>Status:</b>
+              ${x.is_active === true ? 'Active' : 'Disabled'}
+            </p>
+
+            ${
+              x.auth_user_id ? `
+                <details>
+                  <summary>Manage module permissions</summary>
+                  <div class="form-grid">${checks}</div>
+                  <button class="gold-btn"
+                    data-save-perms="${esc(x.id)}">
+                    Save Permissions
+                  </button>
+                </details>
+
+                <details>
+                  <summary>Reset Staff Password</summary>
+                  <label class="field">
+                    New Password (minimum 10 characters)
+                    <input type="password" minlength="10"
+                      autocomplete="new-password"
+                      data-reset-password="${esc(x.id)}">
+                  </label>
+                  <button class="gold-btn"
+                    data-reset-staff="${esc(x.id)}">
+                    Update Password
+                  </button>
+                </details>
+              ` : `
+                <p class="help">
+                  Attendance is managed with the personal PIN.
+                </p>
+              `
+            }
+
+            <button class="outline-btn"
+              data-toggle-staff="${esc(x.id)}"
+              data-active="${x.is_active === true ? 'true' : 'false'}">
+              ${x.is_active === true ? 'Disable' : 'Enable'}
+            </button>
+
+            <button class="outline-btn"
+              data-remove-staff="${esc(x.id)}">
+              Remove Staff Profile
+            </button>
+          </article>`;
+        }).join('')
+      : '<p class="empty-state">No staff accounts found.</p>';
+
+  } catch (e) {
+    host.innerHTML =
+      `<span class="error-text">${esc(e.message)}</span>`;
+  }
+}
+
+/* CREATE FULL STAFF ACCOUNT */
 
 async function createFullStaff(e) {
   e.preventDefault();
@@ -761,12 +930,13 @@ async function createFullStaff(e) {
   }
 
   const permissions = {};
+
   MODULES.forEach(([id]) => {
     permissions[id] = false;
   });
 
   form.querySelectorAll('input[name="perm"]:checked').forEach(box => {
-    if (Object.prototype.hasOwnProperty.call(permissions, box.value)) {
+    if (Object.prototype.hasOwnProperty.call(permissions,box.value)) {
       permissions[box.value] = true;
     }
   });
@@ -810,99 +980,7 @@ async function createFullStaff(e) {
   }
 }
 
-
-async function staffLoad() {
-  const host = $('#staffList');
-  if (!host) return;
-
-  try {
-    const {data,error} = await db
-      .from('staff')
-      .select('id,full_name,photo_url,email,phone,role,auth_user_id,permissions,is_active')
-      .order('full_name');
-
-    if (error) throw error;
-
-    host.innerHTML = data?.length
-      ? data.map(x => {
-          const permissions = permissionObject(x.permissions);
-
-          const checks = MODULES.map(([id,,label]) => `
-            <label class="field" style="display:flex;gap:8px;align-items:center">
-              <input type="checkbox"
-                data-edit-perm="${esc(id)}"
-                data-staff-id="${esc(x.id)}"
-                ${permissions[id] ? 'checked' : ''}
-                style="width:auto">
-              ${esc(label)}
-            </label>
-          `).join('');
-
-          return `<article class="section-card">
-            <div style="display:flex;gap:14px;align-items:center">
-              ${
-                x.photo_url
-                  ? `<img src="${esc(x.photo_url)}"
-                      alt="${esc(x.full_name)}"
-                      style="width:76px;height:76px;object-fit:cover;border-radius:50%">`
-                  : ''
-              }
-              <div>
-                <b>${esc(x.full_name || 'Staff')}</b>
-                <p class="help">${esc(x.phone || 'No phone')}</p>
-                <p class="help">${x.auth_user_id ? 'Auth account linked' : 'PIN attendance account'}</p>
-              </div>
-            </div>
-
-            <p><b>Status:</b> ${x.is_active === true ? 'Active' : 'Disabled'}</p>
-
-            ${
-              x.auth_user_id ? `
-                <details>
-                  <summary>Manage module permissions</summary>
-                  <div class="form-grid">${checks}</div>
-                  <button class="gold-btn" data-save-perms="${esc(x.id)}">
-                    Save Permissions
-                  </button>
-                </details>
-
-                <details>
-                  <summary>Reset Staff Password</summary>
-                  <label class="field">New Password (minimum 10 characters)
-                    <input type="password" minlength="10"
-                      autocomplete="new-password"
-                      data-reset-password="${esc(x.id)}">
-                  </label>
-                  <button class="gold-btn" data-reset-staff="${esc(x.id)}">
-                    Update Password
-                  </button>
-                </details>
-              ` : `
-                <p class="help">
-                  Staff attendance is managed with the personal PIN.
-                </p>
-              `
-            }
-
-            <button class="outline-btn"
-              data-toggle-staff="${esc(x.id)}"
-              data-active="${x.is_active === true ? 'true' : 'false'}">
-              ${x.is_active === true ? 'Disable' : 'Enable'}
-            </button>
-
-            <button class="outline-btn" data-remove-staff="${esc(x.id)}">
-              Remove Staff Profile
-            </button>
-          </article>`;
-        }).join('')
-      : '<p class="empty-state">No staff accounts found.</p>';
-
-  } catch (e) {
-    host.innerHTML = `<span class="error-text">${esc(e.message)}</span>`;
-  }
-}
-
-
+/* CREATE ATTENDANCE PIN ACCOUNT */
 
 async function createStaff(e) {
   e.preventDefault();
@@ -935,11 +1013,10 @@ async function createStaff(e) {
     return;
   }
 
-  if (
-    !['image/jpeg','image/png','image/webp'].includes(file.type) ||
-    file.size > 8 * 1024 * 1024
-  ) {
-    status.textContent = 'Use JPG, PNG or WebP. Maximum size: 8 MB.';
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type) ||
+      file.size > 8 * 1024 * 1024) {
+    status.textContent =
+      'Use JPG, PNG or WebP. Maximum size: 8 MB.';
     return;
   }
 
@@ -991,8 +1068,11 @@ async function createStaff(e) {
     );
 
     if (error) throw error;
+
     if (!data?.ok) {
-      throw new Error(data?.message || 'Staff account creation failed.');
+      throw new Error(
+        data?.message || 'Staff account creation failed.'
+      );
     }
 
     status.textContent =
@@ -1002,7 +1082,6 @@ async function createStaff(e) {
     await staffLoad();
 
   } catch (err) {
-    // Remove an uploaded photo if account creation failed.
     if (uploadedPath) {
       try {
         await db.storage.from(bucket).remove([uploadedPath]);
@@ -1013,10 +1092,11 @@ async function createStaff(e) {
 
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Create Staff Account';
+    btn.textContent = 'Create Attendance Account';
   }
 }
 
+/* RESET STAFF PASSWORD */
 
 async function resetStaffPassword(id) {
   if (userRole !== 'admin') {
@@ -1035,9 +1115,12 @@ async function resetStaffPassword(id) {
 
   if (!confirm('Change this Staff account password?')) return;
 
-  const {data,error} = await db.functions.invoke('reset-staff-password', {
-    body:{staff_id:id,password}
-  });
+  const {data,error} = await db.functions.invoke(
+    'reset-staff-password',
+    {
+      body:{staff_id:id,password}
+    }
+  );
 
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
@@ -1045,6 +1128,8 @@ async function resetStaffPassword(id) {
   input.value = '';
   alert(data?.message || 'Password updated successfully.');
 }
+
+/* SAVE STAFF PERMISSIONS */
 
 async function savePermissions(staffId) {
   if (userRole !== 'admin') {
@@ -1055,6 +1140,7 @@ async function savePermissions(staffId) {
     .filter(b => b.dataset.staffId === String(staffId));
 
   const permissions = {};
+
   MODULES.forEach(([id]) => {
     permissions[id] = boxes.some(b =>
       b.dataset.editPerm === id && b.checked
@@ -1072,6 +1158,8 @@ async function savePermissions(staffId) {
   alert('Staff permissions updated.');
 }
 
+/* ENABLE / DISABLE STAFF */
+
 async function toggleStaff(id,currentlyActive) {
   if (userRole !== 'admin') {
     throw new Error('Only Super Admin can change Staff status.');
@@ -1083,11 +1171,11 @@ async function toggleStaff(id,currentlyActive) {
     .eq('id',id);
 
   if (error) throw error;
+
   await staffLoad();
 }
 
-/* PERMANENT STAFF ACCOUNT REMOVAL */
-
+/* REMOVE STAFF */
 
 async function removeStaffLink(id) {
   if (userRole !== 'admin') {
@@ -1105,7 +1193,7 @@ async function removeStaffLink(id) {
   const {data,error} = await db.functions.invoke(
     'delete-staff-account',
     {
-      body: { staff_id: id }
+      body:{staff_id:id}
     }
   );
 
@@ -1119,7 +1207,6 @@ async function removeStaffLink(id) {
 
   await staffLoad();
 }
-
 
 /* STAFF ATTENDANCE + SHARED QR */
 
@@ -1142,16 +1229,15 @@ async function attendancePage() {
 
       <p class="help">
         Tutto il personale può utilizzare questo unico QR Code.
-        Ogni persona deve selezionare il proprio nome e inserire il
-        proprio PIN personale.
+        Ogni persona deve selezionare il proprio nome e inserire
+        il proprio PIN personale.
       </p>
 
       <div style="text-align:center;padding:20px">
-        <img
-          src="${STAFF_QR_IMAGE}"
+        <img src="${STAFF_QR_IMAGE}"
           alt="Nababi Staff Attendance QR Code"
-          style="width:280px;max-width:100%;height:auto;background:white;padding:10px;border-radius:12px"
-        >
+          style="width:280px;max-width:100%;height:auto;
+          background:white;padding:10px;border-radius:12px">
 
         <p><b>NABABI RISTORANTE</b></p>
         <p class="help">Staff Check In / Check Out</p>
@@ -1238,6 +1324,14 @@ async function render(id) {
       host.innerHTML = staffPage();
       await staffLoad();
 
+      $('#fullStaffForm').onsubmit = async e => {
+        try {
+          await createFullStaff(e);
+        } catch (err) {
+          $('#fullStaffStatus').textContent = err.message;
+        }
+      };
+
       $('#staffForm').onsubmit = async e => {
         try {
           await createStaff(e);
@@ -1245,6 +1339,7 @@ async function render(id) {
           $('#staffStatus').textContent = err.message;
         }
       };
+
       return;
     }
 
@@ -1261,7 +1356,10 @@ async function render(id) {
         if (!file) return;
 
         const img = $('#uploadPreview');
-        if (img.dataset.objectUrl) URL.revokeObjectURL(img.dataset.objectUrl);
+
+        if (img.dataset.objectUrl) {
+          URL.revokeObjectURL(img.dataset.objectUrl);
+        }
 
         const objectUrl = URL.createObjectURL(file);
         img.src = objectUrl;
@@ -1280,10 +1378,15 @@ async function render(id) {
       $('#categoryForm').onsubmit = async e => {
         e.preventDefault();
 
-        const name = String(new FormData(e.target).get('name') || '').trim();
+        const name = String(
+          new FormData(e.target).get('name') || ''
+        ).trim();
+
         if (!name) return;
 
-        const {error} = await db.from('categories').insert({name});
+        const {error} = await db
+          .from('categories')
+          .insert({name});
 
         if (error) {
           alert(error.message);
@@ -1292,6 +1395,7 @@ async function render(id) {
           await categoryLoad();
         }
       };
+
       return;
     }
 
@@ -1304,7 +1408,10 @@ async function render(id) {
 
         const fd = new FormData(e.target);
         const status = $('#dishStatus');
-        const submit = e.target.querySelector('button[type="submit"],button:not([type])');
+
+        const submit = e.target.querySelector(
+          'button[type="submit"],button:not([type])'
+        );
 
         if (submit) submit.disabled = true;
 
@@ -1315,7 +1422,9 @@ async function render(id) {
           if (file?.size) {
             if (!['image/jpeg','image/png','image/webp'].includes(file.type) ||
                 file.size > 8 * 1024 * 1024) {
-              throw new Error('Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.');
+              throw new Error(
+                'Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.'
+              );
             }
 
             const ext = file.type === 'image/png' ? 'png'
@@ -1330,7 +1439,9 @@ async function render(id) {
 
             if (error) throw error;
 
-            image_url = db.storage.from(bucket).getPublicUrl(data.path).data.publicUrl;
+            image_url = db.storage
+              .from(bucket)
+              .getPublicUrl(data.path).data.publicUrl;
           }
 
           const payload = {
@@ -1343,11 +1454,16 @@ async function render(id) {
 
           if (image_url) payload.image_url = image_url;
 
-          if (!payload.name || !Number.isFinite(payload.price) || payload.price < 0) {
+          if (!payload.name ||
+              !Number.isFinite(payload.price) ||
+              payload.price < 0) {
             throw new Error('Controlla il nome e il prezzo del piatto.');
           }
 
-          const {error} = await db.from('menu_items').insert(payload);
+          const {error} = await db
+            .from('menu_items')
+            .insert(payload);
+
           if (error) throw error;
 
           status.textContent = 'Piatto salvato.';
@@ -1355,11 +1471,13 @@ async function render(id) {
           await dishLoad();
 
         } catch (err) {
-          status.textContent = err.message || 'Salvataggio non riuscito.';
+          status.textContent =
+            err.message || 'Salvataggio non riuscito.';
         } finally {
           if (submit) submit.disabled = false;
         }
       };
+
       return;
     }
 
@@ -1368,10 +1486,13 @@ async function render(id) {
     host.innerHTML = `<section class="section-card">
       <div class="section-title">
         <h2>${esc(moduleInfo(id))}</h2>
-        <span class="help">${esc(descriptions[id] || 'Gestione Nababi')}</span>
+        <span class="help">
+          ${esc(descriptions[id] || 'Gestione Nababi')}
+        </span>
       </div>
       ${body}
     </section>
+
     ${[
       'secret','menu_public','social','hours','contact','settings',
       'reports','performance','attendance','activity','tables',
@@ -1395,52 +1516,77 @@ async function render(id) {
         fileInput.onchange = () => {
           const file = fileInput.files?.[0];
           if (!file) return;
+
           const img = $('#uploadPreview');
           img.src = URL.createObjectURL(file);
           img.hidden = false;
         };
       }
 
-      if (uploadButton) uploadButton.onclick = uploadHandler;
+      if (uploadButton) {
+        uploadButton.onclick = uploadHandler;
+      }
     }
 
   } catch (err) {
     host.innerHTML = `<section class="section-card">
       <h2>${esc(moduleInfo(id))}</h2>
-      <p class="error-text">${esc(err.message || 'Errore durante il caricamento.')}</p>
+      <p class="error-text">
+        ${esc(err.message || 'Errore durante il caricamento.')}
+      </p>
     </section>`;
   }
 }
 
 async function genericTable(id) {
   const table = tableMap[id];
+
   if (!table) {
     return '<div class="empty-state">Modulo pronto per configurazione.</div>';
   }
 
   try {
-    const {data,error} = await db.from(table).select('*').limit(50);
+    const {data,error} = await db
+      .from(table)
+      .select('*')
+      .limit(50);
+
     if (error) throw error;
 
     if (!data?.length) {
-      return `<div class="empty-state">Nessun record trovato nella tabella <b>${esc(table)}</b>.</div>`;
+      return `<div class="empty-state">
+        Nessun record trovato nella tabella <b>${esc(table)}</b>.
+      </div>`;
     }
 
     const cols = Object.keys(data[0]).slice(0,5);
 
-    return `<div class="table-scroll"><table class="data-table">
-      <thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
-      <tbody>${data.map(row => `
-        <tr>${cols.map(c => `<td>${esc(
-          typeof row[c] === 'object' ? JSON.stringify(row[c]) : row[c]
-        )}</td>`).join('')}</tr>
-      `).join('')}</tbody>
-    </table></div>`;
+    return `<div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${data.map(row => `
+            <tr>
+              ${cols.map(c => `<td>${esc(
+                typeof row[c] === 'object'
+                  ? JSON.stringify(row[c])
+                  : row[c]
+              )}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
 
   } catch (e) {
     return `<div class="empty-state">
       <span class="error-text">${esc(e.message)}</span>
-      <p class="help">La tabella ${esc(table)} potrebbe non essere disponibile o accessibile.</p>
+      <p class="help">
+        La tabella ${esc(table)} potrebbe non essere disponibile
+        o accessibile.
+      </p>
     </div>`;
   }
 }
@@ -1456,7 +1602,6 @@ $('#sideNav').addEventListener('click', e => {
 
 $('#pageContent').addEventListener('click', async e => {
   try {
-    // PRINT STAFF QR CODE
     const printQR = e.target.closest('[data-print-attendance-qr]');
 
     if (printQR) {
@@ -1501,25 +1646,24 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    // DELETE CATEGORY
     const categoryButton = e.target.closest('[data-delete-category]');
 
     if (categoryButton) {
       const categoryId = categoryButton.dataset.deleteCategory;
 
       if (confirm('Eliminare questa categoria?')) {
-        const { error } = await db
+        const {error} = await db
           .from('categories')
           .delete()
-          .eq('id', categoryId);
+          .eq('id',categoryId);
 
         if (error) throw error;
         await categoryLoad();
       }
+
       return;
     }
 
-    // SAVE STAFF PERMISSIONS
     const saveButton = e.target.closest('[data-save-perms]');
 
     if (saveButton) {
@@ -1527,7 +1671,6 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    // ENABLE / DISABLE STAFF
     const toggleButton = e.target.closest('[data-toggle-staff]');
 
     if (toggleButton) {
@@ -1538,7 +1681,6 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    // PERMANENTLY REMOVE STAFF LOGIN
     const removeButton = e.target.closest('[data-remove-staff]');
 
     if (removeButton) {
@@ -1546,7 +1688,6 @@ $('#pageContent').addEventListener('click', async e => {
       return;
     }
 
-    // RESET STAFF PASSWORD
     const resetButton = e.target.closest('[data-reset-staff]');
 
     if (resetButton) {
@@ -1559,7 +1700,8 @@ $('#pageContent').addEventListener('click', async e => {
   }
 });
 
-// MOBILE MENU
+/* MOBILE MENU */
+
 $('#menuToggle').onclick = () => {
   $('#sidebar').classList.toggle('open');
 };
@@ -1573,7 +1715,8 @@ $('#mobileNav').addEventListener('click', e => {
   if (button) render(button.dataset.page);
 });
 
-// LOGOUT
+/* LOGOUT */
+
 $('#logoutBtn').onclick = async () => {
   try {
     await db?.auth.signOut();
@@ -1609,7 +1752,7 @@ $('#logoutBtn').onclick = async () => {
   );
 
   try {
-    const { data, error } = await db.auth.getSession();
+    const {data,error} = await db.auth.getSession();
 
     if (error) throw error;
 
