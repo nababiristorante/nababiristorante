@@ -1261,7 +1261,6 @@ $('#pageContent').addEventListener('click',async e => {
     }
 
     const categoryButton = e.target.closest('[data-delete-category]');
-    const categoryButton = e.target.closest('[data-delete-category]');
 
     if (categoryButton) {
       const categoryId = categoryButton.dataset.deleteCategory;
