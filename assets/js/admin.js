@@ -1619,6 +1619,51 @@ function showCouponFireworks(discount,code) {
   playCouponCelebration();
 }
 
+function showCouponErrorScreen(message) {
+  const existing = document.getElementById('couponErrorScreen');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'couponErrorScreen';
+  overlay.setAttribute('role', 'alertdialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.style.cssText = [
+    'position:fixed',
+    'inset:0',
+    'z-index:999999',
+    'background:#b5121b',
+    'color:#fff',
+    'display:flex',
+    'align-items:center',
+    'justify-content:center',
+    'text-align:center',
+    'padding:24px',
+    'box-sizing:border-box'
+  ].join(';');
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'width:min(100%,620px);font-family:Arial,sans-serif';
+
+  const heading = document.createElement('div');
+  heading.textContent = message;
+  heading.style.cssText = 'font-size:clamp(34px,8vw,64px);font-weight:900;letter-spacing:2px;margin-bottom:18px';
+
+  const detail = document.createElement('p');
+  detail.textContent = 'This coupon has already been used. It cannot be used again.';
+  detail.style.cssText = 'font-size:clamp(18px,4vw,25px);line-height:1.5;margin:0 0 30px';
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'CLOSE';
+  close.style.cssText = 'background:#fff;color:#9d1018;border:0;border-radius:8px;padding:14px 30px;font-size:16px;font-weight:800;cursor:pointer';
+  close.addEventListener('click', () => overlay.remove());
+
+  panel.append(heading, detail, close);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  close.focus();
+}
+
 async function redeemSecretCoupon(e) {
   e.preventDefault();
 
@@ -1672,6 +1717,10 @@ async function redeemSecretCoupon(e) {
     ].includes(message.toUpperCase())
       ? message.toUpperCase()
       : message;
+
+    if (message.toUpperCase() === 'ALREADY USED') {
+      showCouponErrorScreen('ALREADY USED');
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = 'Collect Coupon';
