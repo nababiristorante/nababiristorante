@@ -2498,6 +2498,153 @@ async function deleteBreakingNews(id) {
   await loadBreakingNews();
 }
 
+
+/* FOOD DELIVERY LINK MANAGER */
+let editingDeliveryLinkId = null;
+
+function deliveryLinksPage() {
+  return `
+    <section class="section-card delivery-manager-card">
+      <div class="section-title"><h2 id="deliveryLinkFormTitle">Aggiungi piattaforma</h2></div>
+      <form id="deliveryLinkForm" class="form-grid">
+        <label class="field">Nome piattaforma
+          <input name="name" required maxlength="80" placeholder="Es. Deliveroo">
+        </label>
+        <label class="field">Link ordine
+          <input name="url" type="url" required maxlength="1000" placeholder="https://...">
+        </label>
+        <label class="field">Visibilità sul sito
+          <select name="is_active">
+            <option value="true">Mostra sul sito</option>
+            <option value="false">Nascondi dal sito</option>
+          </select>
+        </label>
+        <label class="field">Ordine di visualizzazione
+          <input name="sort_order" type="number" min="0" max="999" value="0">
+        </label>
+        <div class="delivery-form-actions">
+          <button id="deliveryLinkSave" class="gold-btn" type="submit">Salva link</button>
+          <button id="deliveryLinkCancel" class="outline-btn" type="button" hidden>Annulla</button>
+        </div>
+      </form>
+      <p id="deliveryLinkStatus" class="help" aria-live="polite"></p>
+      <p class="help">Sul sito vengono mostrati soltanto i link attivi. Se elimini un link, il relativo pulsante scompare.</p>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Link salvati</h2></div>
+      <div id="deliveryLinksAdminList" class="delivery-links-admin-list">
+        <p class="empty-state">Caricamento…</p>
+      </div>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Ordini Food Delivery</h2></div>
+      ${await genericTable('delivery')}
+    </section>
+  `;
+}
+
+function resetDeliveryLinkForm() {
+  const form = $('#deliveryLinkForm');
+  if (!form) return;
+  form.reset();
+  form.elements.sort_order.value = '0';
+  editingDeliveryLinkId = null;
+  $('#deliveryLinkFormTitle').textContent = 'Aggiungi piattaforma';
+  $('#deliveryLinkSave').textContent = 'Salva link';
+  $('#deliveryLinkCancel').hidden = true;
+  $('#deliveryLinkStatus').textContent = '';
+}
+
+async function loadDeliveryLinksAdmin() {
+  const list = $('#deliveryLinksAdminList');
+  const {data,error} = await db.from('food_delivery_links')
+    .select('*').order('sort_order').order('created_at');
+  if (error) throw error;
+  if (!data?.length) {
+    list.innerHTML = '<p class="empty-state">Nessun link aggiunto. Aggiungi il primo link qui sopra.</p>';
+    return;
+  }
+  list.innerHTML = data.map(item => `
+    <article class="delivery-link-admin-row">
+      <div class="delivery-link-admin-info">
+        <strong>${esc(item.name)}</strong>
+        <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.url)}</a>
+        <small>${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'} · Ordine: ${Number(item.sort_order)||0}</small>
+      </div>
+      <div class="delivery-link-admin-actions">
+        <button class="outline-btn" type="button" data-edit-delivery="${esc(item.id)}">Modifica</button>
+        <button class="news-delete-btn" type="button" data-delete-delivery="${esc(item.id)}">Elimina</button>
+      </div>
+    </article>
+  `).join('');
+  list.querySelectorAll('[data-edit-delivery]').forEach(button => {
+    button.onclick = () => {
+      const item = data.find(row => String(row.id) === button.dataset.editDelivery);
+      if (!item) return;
+      editingDeliveryLinkId = item.id;
+      const form = $('#deliveryLinkForm');
+      form.elements.name.value = item.name || '';
+      form.elements.url.value = item.url || '';
+      form.elements.is_active.value = String(item.is_active === true);
+      form.elements.sort_order.value = Number(item.sort_order)||0;
+      $('#deliveryLinkFormTitle').textContent = 'Modifica piattaforma';
+      $('#deliveryLinkSave').textContent = 'Aggiorna link';
+      $('#deliveryLinkCancel').hidden = false;
+      $('#deliveryLinkStatus').textContent = '';
+      form.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+  list.querySelectorAll('[data-delete-delivery]').forEach(button => {
+    button.onclick = async () => {
+      if (!confirm('Eliminare questo link Food Delivery?')) return;
+      const {error:deleteError} = await db.from('food_delivery_links').delete().eq('id',button.dataset.deleteDelivery);
+      if (deleteError) {
+        $('#deliveryLinkStatus').textContent = deleteError.message;
+        return;
+      }
+      if (String(editingDeliveryLinkId) === button.dataset.deleteDelivery) resetDeliveryLinkForm();
+      await loadDeliveryLinksAdmin();
+    };
+  });
+}
+
+async function saveDeliveryLink(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = $('#deliveryLinkStatus');
+  const button = $('#deliveryLinkSave');
+  const values = new FormData(form);
+  const url = String(values.get('url')||'').trim();
+  if (!/^https?:\\/\\//i.test(url)) {
+    status.textContent = 'Inserisci un link valido che inizi con https://';
+    return;
+  }
+  const payload = {
+    name:String(values.get('name')||'').trim(),
+    url,
+    is_active:values.get('is_active') === 'true',
+    sort_order:Math.max(0,Number(values.get('sort_order'))||0)
+  };
+  if (!payload.name) return;
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+  try {
+    const request = editingDeliveryLinkId
+      ? db.from('food_delivery_links').update(payload).eq('id',editingDeliveryLinkId)
+      : db.from('food_delivery_links').insert(payload);
+    const {error} = await request;
+    if (error) throw error;
+    status.textContent = 'Link salvato.';
+    resetDeliveryLinkForm();
+    status.textContent = 'Link salvato.';
+    await loadDeliveryLinksAdmin();
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -2691,6 +2838,14 @@ async function render(id) {
         }
         $('#newsStatus').textContent = '';
       };
+      return;
+    }
+
+    if (id === 'delivery') {
+      host.innerHTML = deliveryLinksPage();
+      await loadDeliveryLinksAdmin();
+      $('#deliveryLinkForm').onsubmit = saveDeliveryLink;
+      $('#deliveryLinkCancel').onclick = resetDeliveryLinkForm;
       return;
     }
 
