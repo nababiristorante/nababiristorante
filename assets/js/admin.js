@@ -2501,6 +2501,7 @@ async function deleteBreakingNews(id) {
 
 /* FOOD DELIVERY LINK MANAGER */
 let editingDeliveryLinkId = null;
+let editingSocialLinkId = null;
 
 async function deliveryLinksPage() {
   return `
@@ -2638,6 +2639,153 @@ async function saveDeliveryLink(event) {
     resetDeliveryLinkForm();
     status.textContent = 'Link salvato.';
     await loadDeliveryLinksAdmin();
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+/* SOCIAL LINKS MANAGER */
+function socialLinksPage() {
+  return \`
+    <section class="section-card">
+      <div class="section-title"><h2 id="socialLinkFormTitle">Aggiungi social</h2></div>
+      <form id="socialLinkForm" class="form-grid">
+        <label class="field">Piattaforma
+          <select name="platform" required>
+            <option value="Facebook">Facebook</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+          </select>
+        </label>
+        <label class="field">Link del profilo
+          <input name="url" type="url" required maxlength="1000" placeholder="https://...">
+        </label>
+        <label class="field">Visibilità sul sito
+          <select name="is_active">
+            <option value="true">Mostra sul sito</option>
+            <option value="false">Nascondi dal sito</option>
+          </select>
+        </label>
+        <div class="delivery-form-actions">
+          <button id="socialLinkSave" class="gold-btn" type="submit">Salva social</button>
+          <button id="socialLinkCancel" class="outline-btn" type="button" hidden>Annulla</button>
+        </div>
+      </form>
+      <p id="socialLinkStatus" class="help" aria-live="polite"></p>
+      <p class="help">Sul sito appariranno soltanto i social attivi.</p>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Social salvati</h2></div>
+      <div id="socialLinksAdminList" class="delivery-links-admin-list">
+        <p class="empty-state">Caricamento…</p>
+      </div>
+    </section>
+  \`;
+}
+
+function resetSocialLinkForm() {
+  const form = $('#socialLinkForm');
+  if (!form) return;
+  form.reset();
+  editingSocialLinkId = null;
+  $('#socialLinkFormTitle').textContent = 'Aggiungi social';
+  $('#socialLinkSave').textContent = 'Salva social';
+  $('#socialLinkCancel').hidden = true;
+  $('#socialLinkStatus').textContent = '';
+}
+
+async function loadSocialLinksAdmin() {
+  const list = $('#socialLinksAdminList');
+  const {data,error} = await db.from('social_links').select('*').order('created_at');
+  if (error) throw error;
+  if (!data?.length) {
+    list.innerHTML = '<p class="empty-state">Nessun social aggiunto. Aggiungi il primo link qui sopra.</p>';
+    return;
+  }
+  list.innerHTML = data.map(item => \`
+    <article class="delivery-link-admin-row">
+      <div class="delivery-link-admin-info">
+        <strong>\${esc(item.platform || item.name || 'Social')}</strong>
+        <a href="\${esc(item.url)}" target="_blank" rel="noopener noreferrer">\${esc(item.url)}</a>
+        <small>\${item.is_active ? 'Visibile sul sito' : 'Nascosto sul sito'}</small>
+      </div>
+      <div class="delivery-link-admin-actions">
+        <button class="outline-btn" type="button" data-edit-social="\${esc(item.id)}">Modifica</button>
+        <button class="news-delete-btn" type="button" data-delete-social="\${esc(item.id)}">Elimina</button>
+      </div>
+    </article>
+  \`).join('');
+  list.querySelectorAll('[data-edit-social]').forEach(button => {
+    button.onclick = () => {
+      const item = data.find(row => String(row.id) === button.dataset.editSocial);
+      if (!item) return;
+      editingSocialLinkId = item.id;
+      const form = $('#socialLinkForm');
+      form.elements.platform.value = item.platform || item.name || 'Facebook';
+      form.elements.url.value = item.url || '';
+      form.elements.is_active.value = String(item.is_active !== false);
+      $('#socialLinkFormTitle').textContent = 'Modifica social';
+      $('#socialLinkSave').textContent = 'Aggiorna social';
+      $('#socialLinkCancel').hidden = false;
+      $('#socialLinkStatus').textContent = '';
+      form.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+  list.querySelectorAll('[data-delete-social]').forEach(button => {
+    button.onclick = async () => {
+      if (!confirm('Eliminare questo link social?')) return;
+      const {error:deleteError} = await db.from('social_links').delete().eq('id',button.dataset.deleteSocial);
+      if (deleteError) {
+        $('#socialLinkStatus').textContent = deleteError.message;
+        return;
+      }
+      if (String(editingSocialLinkId) === button.dataset.deleteSocial) resetSocialLinkForm();
+      await loadSocialLinksAdmin();
+      $('#socialLinkStatus').textContent = 'Link social eliminato.';
+    };
+  });
+}
+
+async function saveSocialLink(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = $('#socialLinkStatus');
+  const button = $('#socialLinkSave');
+  const values = new FormData(form);
+  const url = String(values.get('url') || '').trim();
+  let parsed;
+  try { parsed = new URL(url); } catch (_) {
+    status.textContent = 'Inserisci un indirizzo web valido.';
+    return;
+  }
+  if (!['https:', 'http:'].includes(parsed.protocol)) {
+    status.textContent = 'Usa un link che inizi con https://';
+    return;
+  }
+  const payload = {
+    platform: String(values.get('platform') || '').trim(),
+    url: parsed.href,
+    is_active: values.get('is_active') === 'true'
+  };
+  if (!['Facebook','Instagram','TikTok','YouTube'].includes(payload.platform)) {
+    status.textContent = 'Seleziona una piattaforma valida.';
+    return;
+  }
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+  try {
+    const request = editingSocialLinkId
+      ? db.from('social_links').update(payload).eq('id', editingSocialLinkId)
+      : db.from('social_links').insert(payload);
+    const {error} = await request;
+    if (error) throw error;
+    resetSocialLinkForm();
+    await loadSocialLinksAdmin();
+    $('#socialLinkStatus').textContent = 'Social salvato correttamente.';
   } catch (error) {
     status.textContent = error.message || 'Salvataggio non riuscito.';
   } finally {
@@ -2838,6 +2986,14 @@ async function render(id) {
         }
         $('#newsStatus').textContent = '';
       };
+      return;
+    }
+
+    if (id === 'social') {
+      host.innerHTML = socialLinksPage();
+      await loadSocialLinksAdmin();
+      $('#socialLinkForm').onsubmit = saveSocialLink;
+      $('#socialLinkCancel').onclick = resetSocialLinkForm;
       return;
     }
 
