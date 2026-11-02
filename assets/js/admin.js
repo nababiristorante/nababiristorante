@@ -2831,6 +2831,29 @@ async function logoManagementPage() {
   </section>
   ${uploadPanel('logo')}`;
 }
+function gmailReplyUrl(row) {
+  const subject = row.subject
+    ? 'Re: ' + row.subject
+    : 'Grazie per aver contattato Nababi Ristorante';
+  const body = `Gentile ${row.full_name || 'Cliente'},
+
+Grazie per aver contattato Nababi Ristorante.
+Abbiamo ricevuto il tuo messaggio e ti risponderemo appena possibile.
+
+Cordiali saluti,
+Nababi Ristorante
+Via Vespasiano 73/75/77, Roma
+Tel. +39 393 3805350`;
+  const params = new URLSearchParams({
+    view: 'cm',
+    fs: '1',
+    to: row.email,
+    su: subject,
+    body
+  });
+  return 'https://mail.google.com/mail/?' + params.toString();
+}
+
 /* CONTACT MESSAGE INBOX */
 
 async function contactMessagesPage() {
@@ -2865,6 +2888,9 @@ async function contactMessagesPage() {
           <p>Telefono: ${row.phone ? esc(row.phone) : 'Non indicato'}</p>
           <p class="help">${esc(row.created_at ? new Date(row.created_at).toLocaleString('it-IT') : '')}</p>
           <p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(row.message)}</p>
+          ${row.email
+            ? `<a class="gold-btn" href="${esc(gmailReplyUrl(row))}" target="_blank" rel="noopener noreferrer">Rispondi con Gmail</a>`
+            : '<p class="help">Per rispondere via Gmail serve l’indirizzo email del cliente.</p>'}
           ${row.is_read ? '' : `<button class="outline-btn" type="button" data-mark-contact="${esc(row.id)}">Segna come letto</button>`}
         </article>
       `).join('')}
