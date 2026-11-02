@@ -865,23 +865,32 @@ async function toggleStaff(id,currentlyActive) {
 
 async function removeStaffLink(id) {
   if (userRole !== 'admin') {
-    throw new Error('Only Super Admin can remove a Staff link.');
+    throw new Error('Only Super Admin can remove Staff accounts.');
   }
 
-  if (!confirm('Remove this Staff link? The Auth user itself will not be deleted.')) {
-    return;
-  }
+  const confirmed = confirm(
+    'Permanently remove this Staff login account? ' +
+    'They will no longer be able to log in. ' +
+    'Attendance and historical records will be preserved.'
+  );
 
-  const {error} = await db
-    .from('staff')
-    .update({
-      auth_user_id:null,
-      permissions:{},
-      is_active:false
-    })
-    .eq('id',id);
+  if (!confirmed) return;
+
+  const {data,error} = await db.functions.invoke(
+    'delete-staff-account',
+    {
+      body: { staff_id: id }
+    }
+  );
 
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+
+  alert(
+    data?.message ||
+    'Staff login account permanently removed.'
+  );
+
   await staffLoad();
 }
 /* STAFF ATTENDANCE + SHARED QR */
