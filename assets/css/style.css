@@ -236,3 +236,161 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .whatsapp-floating:focus-visible,.whatsapp-cta:focus-visible{outline:3px solid #f6d77d;outline-offset:3px}
 @media(max-width:600px){.whatsapp-booking-card{align-items:stretch;flex-direction:column;gap:13px;margin:20px 0 4px;padding:16px;border-radius:15px}.whatsapp-booking-copy strong{font-size:19px}.whatsapp-cta{width:100%;min-height:48px}.whatsapp-floating{right:13px;bottom:calc(14px + env(safe-area-inset-bottom));min-height:50px;padding:10px 15px;font-size:13px}.whatsapp-floating svg{width:23px;height:23px}}
 @media(prefers-reduced-motion:reduce){.whatsapp-floating,.whatsapp-cta{transition:none}}
+
+
+/* NABABI HOMEPAGE — ROYAL BLACK & GOLD VISUAL REFRESH */
+.site-body{
+  color:#f5efe0;
+  background:
+    radial-gradient(ellipse at 12% 12%,rgba(40,74,54,.22),transparent 34%),
+    radial-gradient(ellipse at 90% 46%,rgba(126,76,24,.12),transparent 30%),
+    #050809;
+  font-family:Arial,Helvetica,sans-serif;
+}
+.site-header{
+  min-height:76px;
+  padding:10px clamp(18px,5vw,76px);
+  background:rgba(3,6,7,.97);
+  border-bottom:1px solid rgba(224,184,82,.58);
+  box-shadow:0 8px 28px #0008;
+}
+.site-logo{color:#f1c95d;font:700 27px Georgia,serif;letter-spacing:.2px}
+.site-logo small{color:#f7e5ae;font-size:10px;letter-spacing:2.5px}
+.site-header nav{gap:clamp(12px,2vw,28px)}
+.site-header nav a{
+  position:relative;padding:12px 0;color:#f4efe4;font-size:13px;font-weight:700;
+  transition:color .2s ease;
+}
+.site-header nav a:hover,.site-header nav a:focus-visible{color:#f3ca61}
+.site-header nav a::after{
+  content:"";position:absolute;left:0;right:100%;bottom:4px;height:2px;
+  background:#eac15b;transition:right .2s ease;
+}
+.site-header nav a:hover::after,.site-header nav a:focus-visible::after{right:0}
+.site-phone{color:#f3d276;font-weight:700}
+.site-header>.gold-btn{padding:10px 18px}
+.site-hero{
+  min-height:520px;padding:clamp(48px,7vw,92px) clamp(22px,8vw,120px);
+  position:relative;isolation:isolate;
+  background:
+    linear-gradient(90deg,rgba(3,8,7,.96) 0%,rgba(3,8,7,.78) 37%,rgba(3,8,7,.12) 100%),
+    linear-gradient(0deg,rgba(3,8,7,.28),transparent 40%),
+    url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90') center 54%/cover;
+  border-bottom:1px solid rgba(226,184,83,.55);
+}
+.site-hero::after{
+  content:"";position:absolute;z-index:-1;inset:16px;
+  border:1px solid rgba(232,193,91,.17);pointer-events:none;
+}
+.site-hero .eyebrow{
+  color:#f0ce70;font-size:12px;font-weight:800;letter-spacing:4px;
+}
+.site-hero h1{
+  color:#f4d77f;font:clamp(42px,6.7vw,78px)/1.04 Georgia,serif;
+  text-shadow:0 4px 24px #000b;letter-spacing:-1.5px;
+}
+.site-hero h2{
+  margin:12px 0 16px!important;font-size:clamp(19px,2.2vw,27px)!important;
+  line-height:1.35;
+}
+.site-hero p:not(.eyebrow){max-width:490px;color:#f8f4eb;line-height:1.75}
+.gold-btn,.outline-btn{
+  min-height:44px;padding:12px 22px;border-radius:999px;
+  font-weight:800;letter-spacing:.15px;transition:transform .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.gold-btn{
+  color:#171107;background:linear-gradient(110deg,#dcae43,#ffe18b 55%,#d5a83e);
+  border:1px solid #f8dc91;box-shadow:0 6px 20px rgba(213,168,62,.2);
+}
+.gold-btn:hover{transform:translateY(-2px);box-shadow:0 9px 25px rgba(213,168,62,.32)}
+.outline-btn{color:#f4d77f;border:1px solid #d8b76a;background:rgba(3,8,7,.7)}
+.outline-btn:hover{background:#173528}
+.site-body>section.site-section{
+  padding:clamp(34px,4.5vw,62px) clamp(18px,5vw,76px);
+  border-bottom:1px solid rgba(216,183,106,.25);
+  background:linear-gradient(135deg,rgba(10,19,18,.97),rgba(5,9,10,.98));
+}
+.site-body>section.site-section:nth-of-type(even){
+  background:linear-gradient(125deg,rgba(15,29,24,.96),rgba(5,9,10,.98));
+}
+.site-section h2{
+  color:#f1cf70;font:clamp(27px,3.2vw,38px)/1.15 Georgia,serif;
+  text-align:left;margin:0 0 13px;letter-spacing:.1px;
+}
+.site-section>p{color:#d7d1c3;line-height:1.7;max-width:760px}
+#liveNewsSection{background:linear-gradient(100deg,#081419,#0b2019)!important}
+#liveNewsSection h2{font-size:25px}
+.site-cards{gap:16px;margin-top:24px}
+.site-card,.news-card{
+  border:1px solid rgba(218,181,91,.4);border-radius:15px;
+  background:linear-gradient(145deg,#13221d,#091114);
+  box-shadow:0 12px 28px rgba(0,0,0,.24);
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.site-card:hover,.news-card:hover{
+  transform:translateY(-3px);border-color:#e5bd62;
+  box-shadow:0 16px 32px rgba(0,0,0,.35);
+}
+.site-card img,.news-card img{height:190px;object-fit:cover}
+.site-card>div{padding:15px}
+.site-card h3,.site-card h4{color:#f3d37c;font:21px Georgia,serif}
+.site-card p,.news-card p{color:#d9d4c8;line-height:1.55}
+.site-price,.review-stars{color:#f2cc67}
+#menu .site-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+#gallery .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+#events .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+#reservation,#contact{background:linear-gradient(135deg,#071411,#080c0e 65%,#11100b)!important}
+#reservation>p,#contact>p{margin-bottom:12px}
+.site-form{
+  max-width:860px;padding:clamp(18px,3vw,30px);
+  border:1px solid rgba(216,183,106,.42);border-radius:18px;
+  background:rgba(7,14,13,.78);box-shadow:0 16px 40px #0005;
+}
+.site-form label{color:#e8cb7b;font-size:13px;font-weight:700}
+.site-form input,.site-form select,.site-form textarea{
+  min-height:46px;border:1px solid #6d5b35;border-radius:9px;
+  background:#f8f4e9;color:#182019;
+}
+.site-form input:focus,.site-form select:focus,.site-form textarea:focus{
+  outline:2px solid #e3bb5d;outline-offset:2px;
+}
+.google-review-btn{background:#173528}
+.site-footer{
+  color:#d9cfb7;background:#030607;border-top:1px solid rgba(216,183,106,.4);
+}
+#about,#reviews{background:linear-gradient(120deg,#0d1915,#070b0d)!important}
+#about>p,#reviews>p{line-height:1.8}
+#contact a{color:#f0ce70}
+#faq{border-top:1px solid rgba(216,183,106,.2)}
+.whatsapp-booking-card{background:linear-gradient(115deg,#102d24,#07110e);border-color:#b8954c}
+@media(min-width:761px){
+  .site-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .site-body>.site-header,.site-body>.site-hero,
+  .site-body>#liveNewsSection,.site-body>#customerCouponSection,
+  .site-body>#menu,.site-body>#reservation,.site-body>#contact,
+  .site-body>.site-footer{grid-column:1/-1}
+  .site-body>#gallery,.site-body>#events,
+  .site-body>#about,.site-body>#reviews{grid-column:span 1}
+  #gallery .site-cards,#events .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #about,#reviews{min-height:290px}
+}
+@media(max-width:760px){
+  .site-header{min-height:64px}
+  .site-logo{font-size:23px}
+  .site-hero{min-height:430px;background-position:58% center}
+  .site-hero::after{inset:9px}
+  .site-hero h1{font-size:clamp(39px,11vw,54px)}
+  .site-body>section.site-section{padding:36px 18px}
+  #menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  .site-hero{min-height:390px;padding:38px 20px;background-position:61% center}
+  .site-hero p:not(.eyebrow){font-size:14px}
+  .site-hero .gold-btn,.site-hero .outline-btn{display:inline-flex;margin:5px 5px 0 0}
+  #menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:minmax(0,1fr)}
+  .site-card img,.news-card img{height:185px}
+  .site-section h2{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){
+  .site-card,.news-card,.gold-btn,.outline-btn,.site-header nav a::after{transition:none}
+}
