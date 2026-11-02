@@ -1352,10 +1352,16 @@ $('#logoutBtn').onclick = async () => {
   }
 };
 
+
+
 /* SESSION RESTORE */
 
 (async () => {
-  if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+  if (
+    !window.supabase ||
+    !cfg.SUPABASE_URL ||
+    !cfg.SUPABASE_ANON_KEY
+  ) {
     showLoginMessage('Supabase config non disponibile.');
     return;
   }
@@ -1366,7 +1372,8 @@ $('#logoutBtn').onclick = async () => {
   );
 
   try {
-    const {data,error} = await db.auth.getSession();
+    const { data, error } = await db.auth.getSession();
+
     if (error) throw error;
 
     if (data.session?.user) {
@@ -1379,50 +1386,14 @@ $('#logoutBtn').onclick = async () => {
     staffPermissions = {};
     sessionUser = null;
 
-    showLoginMessage(e.message || 'Sessione non valida.');
+    showLoginMessage(
+      e.message || 'Sessione non valida.'
+    );
 
     try {
       await db.auth.signOut();
     } catch (_) {}
   }
+})();
 
-
-if (printQR) {
-  const printWindow = window.open('', '_blank');
-
-  if (!printWindow) {
-    alert('Please allow pop-ups to print the QR Code.');
-    return;
-  }
-
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Nababi Staff Attendance QR</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          text-align: center;
-          padding: 35px;
-        }
-        img {
-          width: 300px;
-          max-width: 90%;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>NABABI RISTORANTE</h1>
-      <h2>Staff Attendance</h2>
-      <img src="${STAFF_QR_IMAGE}" alt="Staff QR Code">
-      <p>Scan to Check In / Check Out</p>
-      <p>Select your name and enter your personal PIN.</p>
-      <script>
-        window.onload = () => {
-          window.print();
-        };
-      <\/script>
-    </body>
-    </html>
-  `);
+})();
