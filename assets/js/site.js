@@ -219,7 +219,7 @@
       try { parsed = new URL(item.url); } catch (_) { return ''; }
       if (!['https:', 'http:'].includes(parsed.protocol)) return '';
       const label = item.platform || item.name;
-      return \`<a class="social-link" href="\${escapeHTML(parsed.href)}" target="_blank" rel="noopener noreferrer">\${escapeHTML(label)}</a>\`;
+      return `<a class="social-link" href="${escapeHTML(parsed.href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`;
     }).join('');
     container.hidden = !container.innerHTML;
   }
