@@ -45,3 +45,23 @@
  .menu-form-actions button{min-height:44px}
  .menu-photo-field input{padding:10px 0}
 }
+
+
+/* TAVOLO — RESTAURANT TABLE MANAGEMENT */
+.restaurant-table-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.restaurant-table-card{padding:17px;border:1px solid #6b542d;border-radius:15px;background:linear-gradient(145deg,#14231e,#0b1213);min-width:0}
+.restaurant-table-card.is-disabled{opacity:.72;border-color:#55413b}
+.restaurant-table-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.restaurant-table-icon{font-size:25px;color:var(--gold)}
+.restaurant-table-state{font-size:11px;font-weight:800;border-radius:30px;padding:5px 9px}
+.restaurant-table-state.on{background:#173d2b;color:#a7efbd}
+.restaurant-table-state.off{background:#482522;color:#ffc0b7}
+.restaurant-table-card h3{font:22px Georgia,serif;color:var(--gold2);margin:13px 0 6px;overflow-wrap:anywhere}
+.restaurant-table-capacity{color:#eee;margin:0 0 7px}
+.restaurant-table-notes{font-size:12px;color:#aaa69a;margin:0 0 12px;overflow-wrap:anywhere}
+.restaurant-table-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.restaurant-table-actions button{flex:1;min-height:39px;font-size:12px}
+.table-delete-btn{background:transparent;color:#ffaaa5;border:1px solid #9d3b36;border-radius:999px;padding:8px 14px}
+.table-form-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:1000px){.restaurant-table-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.restaurant-table-grid{grid-template-columns:1fr}.table-form-actions button{min-height:44px;flex:1}}
