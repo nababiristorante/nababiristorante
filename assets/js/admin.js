@@ -3183,7 +3183,8 @@ async function deleteReview(id) {
   await loadReviewsAdmin();
 }
 
-\n/* MODULE RENDERING */
+
+/* MODULE RENDERING */
 
 async function render(id) {
   if (!canSee(id)) {
