@@ -2995,7 +2995,195 @@ async function saveOpeningHours(event) {
   }
 }
 
-/* MODULE RENDERING */
+
+/* REVIEWS MANAGEMENT */
+
+async function reviewsPage() {
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Gestione Reviews</h2>
+        <p class="help">Aggiungi recensioni e scegli quali pubblicare sul sito.</p>
+      </div>
+      <form id="reviewForm" class="admin-form">
+        <input type="hidden" name="id" id="reviewId">
+        <label for="reviewCustomerName">Nome cliente</label>
+        <input id="reviewCustomerName" name="customer_name" maxlength="120" required>
+        <label for="reviewRating">Valutazione</label>
+        <select id="reviewRating" name="rating" required>
+          <option value="5">★★★★★ — 5</option>
+          <option value="4">★★★★☆ — 4</option>
+          <option value="3">★★★☆☆ — 3</option>
+          <option value="2">★★☆☆☆ — 2</option>
+          <option value="1">★☆☆☆☆ — 1</option>
+        </select>
+        <label for="reviewText">Testo della recensione</label>
+        <textarea id="reviewText" name="review_text" rows="4" maxlength="3000" required></textarea>
+        <label class="checkbox-row">
+          <input type="checkbox" name="is_approved" id="reviewApproved">
+          Pubblica sul sito
+        </label>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit" id="reviewSaveButton">Salva recensione</button>
+          <button class="btn btn-secondary" type="button" id="reviewCancelButton">Annulla modifica</button>
+        </div>
+        <p id="reviewStatus" class="help" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Recensioni ricevute</h2></div>
+      <div id="reviewsAdminList"><p class="help">Caricamento recensioni…</p></div>
+    </section>
+  `;
+}
+
+function resetReviewForm() {
+  const form = $('#reviewForm');
+  if (!form) return;
+  form.reset();
+  $('#reviewId').value = '';
+  $('#reviewRating').value = '5';
+  $('#reviewApproved').checked = false;
+  $('#reviewSaveButton').textContent = 'Salva recensione';
+  $('#reviewStatus').textContent = '';
+}
+
+async function loadReviewsAdmin() {
+  const host = $('#reviewsAdminList');
+  if (!host) return;
+
+  const { data, error } = await db
+    .from('reviews')
+    .select('id,customer_name,rating,review_text,is_approved,created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+
+  if (!data?.length) {
+    host.innerHTML = '<p class="empty-state">Nessuna recensione trovata.</p>';
+    return;
+  }
+
+  host.innerHTML = `
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr>
+          <th>Cliente</th><th>Valutazione</th><th>Recensione</th><th>Stato</th><th>Azioni</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(row => `
+            <tr>
+              <td>${esc(row.customer_name)}</td>
+              <td>${'★'.repeat(Number(row.rating))}${'☆'.repeat(5-Number(row.rating))}</td>
+              <td>${esc(row.review_text)}</td>
+              <td>${row.is_approved ? 'Pubblicata' : 'In attesa'}</td>
+              <td>
+                <button type="button" class="btn btn-secondary" data-edit-review="${esc(row.id)}">Modifica</button>
+                <button type="button" class="btn btn-secondary" data-toggle-review="${esc(row.id)}" data-approved="${row.is_approved ? 'true' : 'false'}">${row.is_approved ? 'Nascondi' : 'Approva'}</button>
+                <button type="button" class="btn btn-danger" data-delete-review="${esc(row.id)}">Elimina</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  host.dataset.rows = JSON.stringify(data);
+}
+
+async function saveReview(event) {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const status = $('#reviewStatus');
+  const button = $('#reviewSaveButton');
+  const values = new FormData(form);
+  const id = String(values.get('id') || '').trim();
+  const customerName = String(values.get('customer_name') || '').trim();
+  const reviewText = String(values.get('review_text') || '').trim();
+  const rating = Number(values.get('rating'));
+  const isApproved = $('#reviewApproved').checked;
+
+  if (!customerName || !reviewText || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+    status.textContent = 'Inserisci nome, recensione e una valutazione da 1 a 5.';
+    return;
+  }
+
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+
+  try {
+    const payload = {
+      customer_name: customerName,
+      rating,
+      review_text: reviewText,
+      is_approved: isApproved
+    };
+
+    const result = id
+      ? await db.from('reviews').update(payload).eq('id', id).select('id').maybeSingle()
+      : await db.from('reviews').insert(payload).select('id').maybeSingle();
+
+    if (result.error) throw result.error;
+    if (!result.data) throw new Error('Nessuna riga salvata. Controlla le policy RLS di Supabase.');
+
+    resetReviewForm();
+    status.textContent = 'Recensione salvata.';
+    await loadReviewsAdmin();
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function editReview(id) {
+  const host = $('#reviewsAdminList');
+  const rows = JSON.parse(host?.dataset.rows || '[]');
+  const row = rows.find(item => item.id === id);
+  if (!row) throw new Error('Recensione non trovata.');
+
+  $('#reviewId').value = row.id;
+  $('#reviewCustomerName').value = row.customer_name || '';
+  $('#reviewRating').value = String(row.rating || 5);
+  $('#reviewText').value = row.review_text || '';
+  $('#reviewApproved').checked = row.is_approved === true;
+  $('#reviewSaveButton').textContent = 'Aggiorna recensione';
+  $('#reviewStatus').textContent = 'Stai modificando una recensione.';
+  $('#reviewCustomerName').focus();
+}
+
+async function toggleReviewApproval(id, currentlyApproved) {
+  const { data, error } = await db
+    .from('reviews')
+    .update({ is_approved: !currentlyApproved })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw new Error('Nessuna riga aggiornata. Controlla la policy UPDATE di reviews in Supabase.');
+  await loadReviewsAdmin();
+}
+
+async function deleteReview(id) {
+  if (!confirm('Vuoi eliminare definitivamente questa recensione?')) return;
+
+  const { data, error } = await db
+    .from('reviews')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) throw new Error('Nessuna riga eliminata. Controlla la policy DELETE di reviews in Supabase.');
+  await loadReviewsAdmin();
+}
+
+\n/* MODULE RENDERING */
 
 async function render(id) {
   if (!canSee(id)) {
@@ -3012,6 +3200,18 @@ async function render(id) {
   host.innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   try {
+    if (id === 'reviews') {
+      if (userRole !== 'admin') {
+        host.innerHTML = '<p>Solo l’amministratore può gestire le recensioni.</p>';
+        return;
+      }
+      host.innerHTML = await reviewsPage();
+      $('#reviewForm').onsubmit = saveReview;
+      $('#reviewCancelButton').onclick = resetReviewForm;
+      await loadReviewsAdmin();
+      return;
+    }
+
     if (id === 'contact') {
       host.innerHTML = await contactMessagesPage();
       return;
@@ -3370,6 +3570,28 @@ $('#pageContent').addEventListener('click', async e => {
         .eq('id', markContactButton.dataset.markContact);
       if (error) throw error;
       await render('contact');
+      return;
+    }
+
+
+    const editReviewButton = e.target.closest('[data-edit-review]');
+    if (editReviewButton) {
+      await editReview(editReviewButton.dataset.editReview);
+      return;
+    }
+
+    const toggleReviewButton = e.target.closest('[data-toggle-review]');
+    if (toggleReviewButton) {
+      await toggleReviewApproval(
+        toggleReviewButton.dataset.toggleReview,
+        toggleReviewButton.dataset.approved === 'true'
+      );
+      return;
+    }
+
+    const deleteReviewButton = e.target.closest('[data-delete-review]');
+    if (deleteReviewButton) {
+      await deleteReview(deleteReviewButton.dataset.deleteReview);
       return;
     }
 
