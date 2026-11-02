@@ -1355,49 +1355,6 @@ $('#logoutBtn').onclick = async () => {
 /* SESSION RESTORE */
 
 (async () => {
-  if (
-    !window.supabase ||
-    !cfg.SUPABASE_URL ||
-    !cfg.SUPABASE_ANON_KEY
-  ) {
-    showLoginMessage('Supabase config non disponibile.');
-    return;
-  }
-
-  db = window.supabase.createClient(
-    cfg.SUPABASE_URL,
-    cfg.SUPABASE_ANON_KEY
-  );
-
-  try {
-    const { data, error } = await db.auth.getSession();
-
-    if (error) throw error;
-
-    if (data.session?.user) {
-      await verifyAdmin(data.session.user);
-      openApp(data.session.user.email);
-    }
-
-  } catch (e) {
-    userRole = 'guest';
-    staffPermissions = {};
-    sessionUser = null;
-
-    showLoginMessage(e.message || 'Sessione non valida.');
-
-    try {
-      await db.auth.signOut();
-    } catch (_) {}
-  }
-})();
-
-})();
-
-        
-/* SESSION RESTORE */
-
-(async () => {
   if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
     showLoginMessage('Supabase config non disponibile.');
     return;
