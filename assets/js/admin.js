@@ -1301,16 +1301,40 @@ async function attendancePage() {
 
 function secretPage() {
   return `
-    <section class="section-card">
-      <div class="section-title">
-        <h2>🎁 Secret Coupon Box</h2>
-      </div>
+    <section class="coupon-redeem-card">
+      <div class="coupon-brand">♛ NABABI RISTORANTE</div>
+      <p class="coupon-eyebrow">EXCLUSIVE CUSTOMER REWARD</p>
+      <div class="coupon-gift">🎁</div>
+      <h2>Secret Coupon Box</h2>
+      <p class="coupon-instruction">
+        Enter the secret number given by the customer.
+      </p>
 
-      ${
-        userRole === 'admin' ? `
+      <form id="redeemSecretForm" class="coupon-redeem-form">
+        <label for="secretCouponCode">CUSTOMER COUPON NUMBER</label>
+        <input id="secretCouponCode" name="code" type="text"
+          inputmode="numeric" pattern="[0-9]{5,9}"
+          minlength="5" maxlength="9" autocomplete="off"
+          placeholder="Enter coupon number" required>
+        <button type="submit" id="redeemSecretBtn"
+          class="coupon-collect-btn">
+          COLLECT COUPON
+        </button>
+      </form>
+
+      <p id="redeemSecretStatus" class="coupon-status"
+        aria-live="polite"></p>
+      <p class="coupon-footnote">
+        Each coupon can be used only once.
+      </p>
+    </section>
+
+    ${
+      userRole === 'admin' ? `
+        <section class="section-card">
           <h3>Generate New Coupon</h3>
           <p class="help">
-            Admin only. Each coupon can be redeemed once.
+            Admin only. Create a new customer coupon code.
           </p>
           <button type="button" id="generateSecretCoupon"
             class="gold-btn">
@@ -1318,33 +1342,9 @@ function secretPage() {
           </button>
           <div id="generatedCoupon" class="help"
             aria-live="polite"></div>
-        ` : ''
-      }
-
-      <div class="divider"></div>
-
-      <h3>Redeem Customer Coupon</h3>
-      <p class="help">
-        Enter the numeric coupon code provided by the customer.
-      </p>
-
-      <form id="redeemSecretForm" class="form-grid">
-        <label class="field">Coupon Code
-          <input name="code" inputmode="numeric"
-            pattern="[0-9]{5,9}" minlength="5" maxlength="9"
-            placeholder="Enter 5–9 digit code" required>
-        </label>
-        <div>
-          <button type="submit" id="redeemSecretBtn"
-            class="gold-btn">
-            Collect Coupon
-          </button>
-        </div>
-      </form>
-
-      <p id="redeemSecretStatus" class="help"
-        aria-live="polite"></p>
-    </section>
+        </section>
+      ` : ''
+    }
 
     <section class="section-card">
       <div class="section-title">
@@ -2241,6 +2241,12 @@ $('#sideNav').addEventListener('click', e => {
 
 $('#pageContent').addEventListener('click', async e => {
   try {
+    const pageButton = e.target.closest('[data-page]');
+    if (pageButton) {
+      render(pageButton.dataset.page);
+      return;
+    }
+
     const printQR = e.target.closest('[data-print-attendance-qr]');
 
     if (printQR) {
