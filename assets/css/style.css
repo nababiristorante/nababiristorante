@@ -493,3 +493,75 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
   .site-header nav{display:none;flex:1 0 100%;width:100%}
   .site-header nav.is-open{display:flex}
 }
+
+
+/* CONTACT SECTION — ROYAL CONTACT CARDS */
+#contact{position:relative;overflow:hidden}
+#contact::before{
+  content:"";position:absolute;top:-150px;right:-130px;width:340px;height:340px;
+  border:1px solid rgba(222,185,94,.12);border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 34px rgba(222,185,94,.025),0 0 0 70px rgba(222,185,94,.018);
+}
+#contact .contact-heading,#contact .contact-info-grid,
+#contact .contact-hours-panel,#contact .contact-directions-btn,
+#contact .contact-form-heading,#contact .site-form{position:relative;z-index:1}
+#contact .contact-heading{margin:0 0 25px}
+#contact .contact-eyebrow,#contact .contact-card-label{
+  display:block;color:#d8b76a;font-size:10px;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase
+}
+#contact .contact-heading h2{margin:8px 0 9px;font-size:clamp(30px,4vw,43px)}
+#contact .contact-heading>p{margin:0;color:#d7d1c3;line-height:1.7}
+#contact .contact-info-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;
+  max-width:980px;margin:0 0 18px
+}
+#contact .contact-info-card{
+  display:flex;align-items:flex-start;gap:14px;min-width:0;
+  padding:19px 18px;border:1px solid rgba(216,183,106,.34);
+  border-radius:15px;background:linear-gradient(140deg,rgba(22,42,33,.94),rgba(7,15,13,.96));
+  box-shadow:0 12px 26px rgba(0,0,0,.2)
+}
+#contact .contact-info-icon{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+  border:1px solid rgba(216,183,106,.5);border-radius:12px;
+  color:#f1cf70;background:rgba(216,183,106,.09);font-size:22px
+}
+#contact .contact-info-card h3,#contact .contact-hours-heading h3{
+  margin:5px 0 5px;color:#f4e5bb;font:600 19px Georgia,serif
+}
+#contact .contact-info-card p{margin:0;color:#d9d1bf;line-height:1.55;overflow-wrap:anywhere}
+#contact .contact-info-card a{color:#f0ce70;text-decoration:none}
+#contact .contact-info-card a:hover{text-decoration:underline}
+#contact .contact-whatsapp-card{border-color:rgba(58,190,112,.5)}
+#contact .contact-whatsapp-card .contact-info-icon{
+  color:#70dfa0;border-color:rgba(58,190,112,.55);background:rgba(36,160,87,.1)
+}
+#contact .contact-hours-panel{
+  max-width:980px;margin:0 0 17px;padding:20px;
+  border:1px solid rgba(216,183,106,.38);border-radius:16px;
+  background:linear-gradient(120deg,rgba(17,34,27,.96),rgba(7,12,12,.97))
+}
+#contact .contact-hours-heading{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+#contact .contact-hours-heading h3{margin-bottom:0}
+#contact #liveHours{color:#e5ddca;line-height:1.65}
+#contact #liveHours p{margin:5px 0}
+#contact #liveHours ul{margin:8px 0 0;padding-left:19px}
+#contact .contact-directions-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:46px;margin:0 0 38px;padding:12px 20px;border-radius:999px;
+  border:1px solid #d8b76a;color:#171107!important;
+  background:linear-gradient(110deg,#dcae43,#ffe18b 55%,#d5a83e);
+  font-size:13px;font-weight:800;text-decoration:none;
+  box-shadow:0 8px 22px rgba(213,168,62,.16)
+}
+#contact .contact-directions-btn:hover{transform:translateY(-2px)}
+#contact .contact-form-heading{margin:0 0 15px}
+#contact .contact-form-heading h2{margin:7px 0 0}
+#contact>p:has(+.site-form){color:#d7d1c3}
+@media(max-width:560px){
+  #contact .contact-info-grid{grid-template-columns:1fr;gap:10px}
+  #contact .contact-info-card{padding:16px}
+  #contact .contact-hours-panel{padding:16px}
+  #contact .contact-directions-btn{width:100%;margin-bottom:30px}
+}
