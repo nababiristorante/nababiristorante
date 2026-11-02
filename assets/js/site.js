@@ -803,6 +803,105 @@
 
   }
 
+
+  /* WEBSITE LANGUAGE SWITCHER */
+  function setupLanguageSwitcher() {
+    const selector = $('#siteLanguage');
+    if (!selector) return;
+
+    const translations = {
+      en: {
+        nav: ['Home','Menu','About us','Gallery','Events','Book a table','Contact'],
+        hero: ['A royal journey of flavours','Authentic Indian cuisine in the heart of Rome'],
+        sections: {
+          menu: 'Our Menu', about: 'Our Story', gallery: 'Gallery',
+          events: 'Events', reservation: 'Book a table', reviews: 'What our guests say',
+          contact: 'Visit us', faq: 'Frequently asked questions'
+        },
+        contact: ['WHERE WE ARE','Our restaurant','PHONE','Call us','WHATSAPP','Message us directly','EMAIL','Send us an email','OPENING HOURS','Get directions','We are here for you','Send us a message','Fill in the form and our team will receive your message.','Full name *','Email','Phone','Subject','Message *','Send message'],
+        buttons: { review: '⭐ Write a Google review', directions: '➤ Get directions ↗', whatsapp: 'Message us on WhatsApp' },
+        about: 'Nababi Ristorante brings the authentic flavours of India to Rome, with dishes prepared using traditional recipes and a modern touch.',
+        reviewIntro: 'Our guests’ satisfaction is our greatest reward.',
+        contactIntro: 'We look forward to welcoming you for an authentic Indian dining experience.',
+        hours: 'Opening hours: please contact us to confirm.',
+        faqIntro: 'Answers to the most common questions about Nababi Ristorante.',
+        footer: 'Authentic Indian cuisine in the heart of Rome.',
+        form: ['Name and surname *','Email','Phone','Subject','Message *','Send message']
+      },
+      bn: {
+        nav: ['হোম','মেনু','আমাদের পরিচয়','গ্যালারি','অনুষ্ঠান','টেবিল বুকিং','যোগাযোগ'],
+        hero: ['স্বাদের রাজকীয় ভ্রমণ','রোমের হৃদয়ে আসল ভারতীয় খাবার'],
+        sections: {
+          menu: 'আমাদের মেনু', about: 'আমাদের গল্প', gallery: 'গ্যালারি',
+          events: 'অনুষ্ঠান', reservation: 'টেবিল বুকিং', reviews: 'গ্রাহকদের মতামত',
+          contact: 'আমাদের ঠিকানা', faq: 'সাধারণ প্রশ্ন'
+        },
+        contact: ['আমাদের ঠিকানা','আমাদের রেস্টুরেন্ট','ফোন','কল করুন','হোয়াটসঅ্যাপ','সরাসরি মেসেজ করুন','ইমেইল','ইমেইল পাঠান','খোলার সময়','দিকনির্দেশনা','আমরা আপনার জন্য আছি','আমাদের মেসেজ পাঠান','ফর্ম পূরণ করুন, আমাদের টিম আপনার মেসেজ পাবে।','নাম ও পদবি *','ইমেইল','ফোন','বিষয়','মেসেজ *','মেসেজ পাঠান'],
+        buttons: { review: '⭐ Google-এ রিভিউ লিখুন', directions: '➤ যাওয়ার দিকনির্দেশনা ↗', whatsapp: 'WhatsApp-এ মেসেজ করুন' },
+        about: 'Nababi Ristorante রোমে নিয়ে এসেছে ভারতের আসল স্বাদ—ঐতিহ্যবাহী রেসিপি ও আধুনিক পরিবেশনায় তৈরি খাবার।',
+        reviewIntro: 'আমাদের অতিথিদের সন্তুষ্টিই আমাদের সবচেয়ে বড় প্রাপ্তি।',
+        contactIntro: 'আসল ভারতীয় খাবারের অভিজ্ঞতার জন্য আপনাকে স্বাগত জানাই।',
+        hours: 'খোলার সময় নিশ্চিত করতে আমাদের সঙ্গে যোগাযোগ করুন।',
+        faqIntro: 'Nababi Ristorante সম্পর্কে সাধারণ প্রশ্নের উত্তর।',
+        footer: 'রোমের হৃদয়ে আসল ভারতীয় খাবার।',
+        form: ['নাম ও পদবি *','ইমেইল','ফোন','বিষয়','মেসেজ *','মেসেজ পাঠান']
+      }
+    };
+
+    const original = {
+      nav: Array.from($('#mainNavigation')?.querySelectorAll('a') || []).map(a => a.textContent),
+      headings: {
+        menu: $('#menu h2')?.textContent, about: $('#about h2')?.textContent,
+        gallery: $('#gallery h2')?.textContent, events: $('#events h2')?.textContent,
+        reservation: $('#reservation h2')?.textContent, reviews: $('#reviews h2')?.textContent,
+        contact: $('#contact > .contact-heading h2')?.textContent, faq: $('#faq h2')?.textContent
+      },
+      about: $('#about > p')?.textContent, reviewIntro: $('#reviews > p')?.textContent,
+      contactIntro: $('#contact .contact-heading > p')?.textContent,
+      faqIntro: $('#faq .faq-intro')?.textContent,
+      footer: document.querySelector('.site-footer > p:last-of-type')?.textContent
+    };
+
+    function applyLanguage(lang) {
+      const t = translations[lang];
+      document.documentElement.lang = lang;
+      if (!t) {
+        selector.value = 'it';
+        document.documentElement.lang = 'it';
+        $('#mainNavigation')?.querySelectorAll('a').forEach((a,i)=>a.textContent=original.nav[i] || a.textContent);
+        Object.entries(original.headings).forEach(([key,value])=>{const el=key==='contact'?$('#contact > .contact-heading h2'):$(`#${key} h2`);if(el&&value)el.textContent=value;});
+        if($('#about > p'))$('#about > p').textContent=original.about;
+        if($('#reviews > p'))$('#reviews > p').textContent=original.reviewIntro;
+        if($('#contact .contact-heading > p'))$('#contact .contact-heading > p').textContent=original.contactIntro;
+        if($('#faq .faq-intro'))$('#faq .faq-intro').textContent=original.faqIntro;
+        if(document.querySelector('.site-footer > p:last-of-type'))document.querySelector('.site-footer > p:last-of-type').textContent=original.footer;
+        document.querySelectorAll('#contact .contact-info-card').forEach((card,i)=>{const h=card.querySelector('h3');const p=card.querySelector('.contact-card-label');if(h)h.textContent=['Il nostro ristorante','Chiamaci','Scrivici direttamente','Mandaci un’email'][i];if(p)p.textContent=['DOVE SIAMO','TELEFONO','WHATSAPP','EMAIL'][i];});
+        const hoursTitle=$('#contact .contact-hours-heading h3');if(hoursTitle)hoursTitle.textContent='Orari di apertura';
+        const form=$('#contactForm');if(form){const labels=form.querySelectorAll('label');const names=['Nome e cognome *','Email','Telefono','Oggetto','Messaggio *'];labels.forEach((label,i)=>{if(names[i]){const input=label.querySelector('input,textarea');label.childNodes[0].textContent=names[i];}});const btn=form.querySelector('button[type="submit"]');if(btn)btn.textContent='Invia messaggio';}
+        const directions=$('#contact .contact-directions-btn');if(directions)directions.innerHTML='<span aria-hidden="true">➤</span> Indicazioni stradali <span aria-hidden="true">↗</span>';
+        return;
+      }
+      $('#mainNavigation')?.querySelectorAll('a').forEach((a,i)=>{if(t.nav[i])a.textContent=t.nav[i];});
+      Object.entries(t.sections).forEach(([key,value])=>{const el=key==='contact'?$('#contact > .contact-heading h2'):$(`#${key} h2`);if(el)el.textContent=value;});
+      if($('#about > p'))$('#about > p').textContent=t.about;
+      if($('#reviews > p'))$('#reviews > p').textContent=t.reviewIntro;
+      if($('#contact .contact-heading > p'))$('#contact .contact-heading > p').textContent=t.contactIntro;
+      if($('#faq .faq-intro'))$('#faq .faq-intro').textContent=t.faqIntro;
+      if(document.querySelector('.site-footer > p:last-of-type'))document.querySelector('.site-footer > p:last-of-type').textContent=t.footer;
+      const cards=Array.from(document.querySelectorAll('#contact .contact-info-card'));
+      cards.forEach((card,i)=>{const label=card.querySelector('.contact-card-label'),heading=card.querySelector('h3');if(label)label.textContent=t.contact[i*2];if(heading)heading.textContent=t.contact[i*2+1];});
+      const hoursTitle=$('#contact .contact-hours-heading h3');if(hoursTitle)hoursTitle.textContent=t.contact[9];
+      const directions=$('#contact .contact-directions-btn');if(directions)directions.innerHTML=t.buttons.directions;
+      const form=$('#contactForm');if(form){const labels=form.querySelectorAll('label');labels.forEach((label,i)=>{const input=label.querySelector('input,textarea');if(input){label.childNodes[0].textContent=t.form[i] || label.childNodes[0].textContent;}});const btn=form.querySelector('button[type="submit"]');if(btn)btn.textContent=t.form[5];}
+      try{localStorage.setItem('nababi-language',lang);}catch(_){}
+    }
+
+    let saved='it';try{saved=localStorage.getItem('nababi-language')||'it';}catch(_){}
+    selector.value=['it','en','bn'].includes(saved)?saved:'it';
+    selector.addEventListener('change',()=>applyLanguage(selector.value));
+    applyLanguage(selector.value);
+  }
+
   /* INITIALIZATION */
 
   async function initializeWebsite() {
@@ -810,6 +909,7 @@
     setupBooking();
     setupContactForm();
     setupMobileNavigation();
+    setupLanguageSwitcher();
 
     if (!db) {
 
