@@ -490,6 +490,7 @@
     const rows = await getRows(
       'reviews',
       query => query
+        .eq('is_approved', true)
         .order('created_at', { ascending: false })
         .limit(6)
     );
