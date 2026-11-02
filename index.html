@@ -389,40 +389,25 @@
 <body class="site-body">
 
 <header class="site-header">
-
   <a class="site-logo" href="#home" aria-label="Nababi Ristorante - Home">
     <img id="siteHeaderLogo" alt="Nababi Ristorante" hidden>
-    <span id="siteHeaderLogoFallback">
-      ♛ Nababi
-      <small>RISTORANTE</small>
+    <span id="siteHeaderLogoFallback" class="site-logo-fallback">
+      <span class="site-logo-crown" aria-hidden="true">♛</span>
+      <span class="site-logo-words"><strong>Nababi</strong><small>RISTORANTE</small></span>
     </span>
   </a>
-
-  <button
-    id="mobileMenuButton"
-    class="outline-btn"
-    type="button"
-    aria-expanded="false"
-    aria-controls="mainNavigation">
-    Menu ☰
-  </button>
-
+  <button id="mobileMenuButton" class="outline-btn" type="button" aria-expanded="false" aria-controls="mainNavigation" aria-label="Apri il menu">☰</button>
   <nav id="mainNavigation" aria-label="Navigazione principale">
-    <a href="#home">Home</a>
-    <a href="#menu">Menu</a>
-    <a href="#about">Chi siamo</a>
-    <a href="#gallery">Gallery</a>
-    <a href="#events">Eventi</a>
-    <a href="#reservation">Prenota</a>
-    <a href="#contact">Contatti</a>
+    <a href="#home">Home</a><a href="#menu">Menu</a><a href="#about">Chi siamo</a>
+    <a href="#gallery">Gallery</a><a href="#events">Eventi</a>
+    <a href="#reservation">Prenota</a><a href="#contact">Contatti</a>
   </nav>
-
-  <span class="site-phone">☎ +39 393 3805350</span>
-
-  <a class="gold-btn" href="admin.html">Admin</a>
-
+  <div class="site-header-actions">
+    <a class="site-phone" href="tel:+393933805350">☎ +39 393 3805350</a>
+    <a class="site-header-whatsapp" href="https://wa.me/393337687319?text=Buongiorno%2C%20vorrei%20avere%20informazioni%20su%20Nababi%20Ristorante." target="_blank" rel="noopener noreferrer" aria-label="Contatta Nababi su WhatsApp">◉</a>
+    <a class="site-admin-link" href="admin.html">Admin</a>
+  </div>
 </header>
-
 <section class="site-hero" id="home">
   <div>
     <p class="eyebrow">BENVENUTI DA</p>
