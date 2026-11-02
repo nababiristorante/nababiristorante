@@ -587,89 +587,67 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 }
 
 
-/* REVIEWS ADMIN — LIGHT CARD DESIGN */
-.section-card:has(#reviewForm),
-.section-card:has(#reviewsAdminList){
-  background:#f7f3e9;
-  border:1px solid #d8b76a;
-  border-radius:16px;
-  color:#202820;
-  box-shadow:0 8px 22px rgba(0,0,0,.16);
+/* REVIEWS ADMIN — MATCH BREAKING NEWS ADMIN STYLE */
+.reviews-manager-card,
+.reviews-list-card{
+  background:#0c1317;
+  border:1px solid #35312a;
+  border-radius:15px;
+  padding:17px;
+  margin:15px 0;
+  color:#eee;
 }
-.section-card:has(#reviewForm) .section-title h2,
-.section-card:has(#reviewsAdminList) .section-title h2{
-  color:#173528;
+.reviews-manager-card .section-title h2,
+.reviews-list-card .section-title h2{
+  color:var(--gold2);
 }
-.section-card:has(#reviewForm) .help,
-.section-card:has(#reviewsAdminList) .help{
-  color:#596258;
+.reviews-manager-card .section-title .help,
+.reviews-list-card .help{color:#a8a49a}
+.reviews-form .field{display:block;min-width:0;color:#eee}
+.reviews-form .field input,
+.reviews-form .field select,
+.reviews-form .field textarea{
+  display:block;
+  width:100%;
+  margin-top:8px;
+  padding:12px 13px;
+  color:#eee;
+  background:#10191d;
+  border:1px solid #514126;
+  border-radius:10px;
+  font:inherit;
 }
-#reviewForm label{
-  color:#24352a;
-  font-weight:700;
-}
-#reviewForm input:not([type="hidden"]),
-#reviewForm select,
-#reviewForm textarea{
-  background:#fff;
-  color:#202820;
-  border:1px solid #c9b77f;
-  border-radius:9px;
-  padding:10px 12px;
-  max-width:100%;
-}
-#reviewForm input:focus,
-#reviewForm select:focus,
-#reviewForm textarea:focus{
+.reviews-form .field input:focus,
+.reviews-form .field select:focus,
+.reviews-form .field textarea:focus{
   outline:2px solid #d8b76a;
   outline-offset:1px;
 }
-#reviewForm .checkbox-row{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-}
-#reviewForm .form-actions{
+.reviews-form .reviews-publish-field .checkbox-row{
   display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+  align-items:center;
+  gap:9px;
+  margin-top:9px;
 }
-#reviewForm .btn,
-#reviewsAdminList .btn{
-  border-radius:8px;
-  padding:8px 12px;
-  font-weight:700;
+.reviews-form .reviews-publish-field input[type="checkbox"]{
+  width:17px;height:17px;margin:0;accent-color:#d8b76a;
 }
-#reviewsAdminList .table-scroll{
-  border:1px solid #d8cda9;
+.reviews-form-actions{align-items:center}
+.reviews-form-actions button{min-height:42px}
+.reviews-list-card .table-scroll{
+  max-width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid #35312a;
   border-radius:10px;
-  background:#fff;
 }
-#reviewsAdminList .data-table{
-  color:#202820;
-}
-#reviewsAdminList .data-table th{
-  color:#73551a;
-  background:#eee5cf;
-}
-#reviewsAdminList .data-table td{
-  color:#263329;
-  border-bottom:1px solid #e5decf;
-}
-#reviewsAdminList .data-table tr:last-child td{
-  border-bottom:0;
-}
-#reviewsAdminList .empty-state{
-  color:#596258;
-  border-color:#c9b77f;
-}
-@media(max-width:700px){
-  .section-card:has(#reviewForm),
-  .section-card:has(#reviewsAdminList){padding:15px}
-  #reviewForm input:not([type="hidden"]),
-  #reviewForm select,
-  #reviewForm textarea{width:100%;min-height:42px}
-  #reviewForm .form-actions .btn{flex:1;min-height:42px}
-  #reviewsAdminList .data-table{min-width:650px}
-  #reviewsAdminList .btn{margin:2px}
+.reviews-list-card .data-table{color:#eee}
+.reviews-list-card .data-table th{color:var(--gold);background:#111a1e}
+.reviews-list-card .data-table td{color:#ddd;border-bottom:1px solid #273036}
+.reviews-list-card .data-table .btn{margin:2px}
+@media(max-width:760px){
+  .reviews-manager-card,.reviews-list-card{padding:15px}
+  .reviews-form{grid-template-columns:minmax(0,1fr)}
+  .reviews-form-actions button{flex:1}
+  .reviews-list-card .data-table{min-width:650px}
 }
