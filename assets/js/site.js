@@ -176,6 +176,24 @@
   }
 
 
+
+  function brandLogoUrl(name, type = 'social') {
+    const key = String(name || '').trim().toLowerCase().replace(/\s+/g, '');
+    const logos = type === 'delivery' ? {
+      deliveroo: ['deliveroo','00CCBC'],
+      glovo: ['glovo','FFC244'],
+      justeat: ['justeat','F36D00'],
+      'just-eat': ['justeat','F36D00']
+    } : {
+      facebook: ['facebook','0866FF'],
+      instagram: ['instagram','E4405F'],
+      tiktok: ['tiktok','000000'],
+      youtube: ['youtube','FF0000']
+    };
+    const item = logos[key];
+    return item ? 'https://cdn.simpleicons.org/' + item[0] + '/' + item[1] : '';
+  }
+
   /* FOOD DELIVERY LINKS — only admin-enabled links are shown */
   async function loadFoodDeliveryLinks() {
     const section = $('#foodDelivery');
@@ -193,7 +211,8 @@
     container.innerHTML = rows.map(item => `
       <a class="delivery-link" href="${escapeHTML(item.url)}"
         target="_blank" rel="noopener noreferrer">
-        Ordina su ${escapeHTML(item.name)}
+        <img class="brand-logo" src="${brandLogoUrl(item.name,'delivery')}" alt="" onerror="this.hidden=true">
+        <span>Ordina su ${escapeHTML(item.name)}</span>
       </a>
     `).join('');
     section.hidden = false;
@@ -219,7 +238,7 @@
       try { parsed = new URL(item.url); } catch (_) { return ''; }
       if (!['https:', 'http:'].includes(parsed.protocol)) return '';
       const label = item.platform || item.name;
-      return `<a class="social-link" href="${escapeHTML(parsed.href)}" target="_blank" rel="noopener noreferrer">${escapeHTML(label)}</a>`;
+      return `<a class="social-link" href="${escapeHTML(parsed.href)}" target="_blank" rel="noopener noreferrer"><img class="brand-logo" src="${brandLogoUrl(label)}" alt="" onerror="this.hidden=true"><span>${escapeHTML(label)}</span></a>`;
     }).join('');
     container.hidden = !container.innerHTML;
   }
