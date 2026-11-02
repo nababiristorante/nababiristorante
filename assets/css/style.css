@@ -105,3 +105,66 @@
 .delivery-link-admin-row{display:flex;gap:14px}
 .delivery-link-admin-info{display:flex;flex-wrap:wrap;gap:8px}
 .social-link .brand-logo,.delivery-link .brand-logo{width:30px;height:30px;flex-basis:30px}
+
+
+/* RESPONSIVE POLISH — ADMIN + PUBLIC SITE */
+html{scroll-behavior:smooth}
+img,video,iframe{max-width:100%}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+.site-body,.admin-body{overflow-x:hidden}
+.site-header{min-width:0}
+.site-logo{min-width:0}
+.site-hero>div{width:100%;max-width:720px}
+.site-form label,.form-grid>*{min-width:0}
+.site-form input,.site-form select,.site-form textarea,
+.field input,.field select,.field textarea{max-width:100%;min-width:0}
+@media(min-width:1001px){
+  .sidebar{width:258px;flex-basis:258px}
+  .content{padding-left:clamp(24px,3vw,46px);padding-right:clamp(24px,3vw,46px)}
+  .site-header{gap:clamp(12px,1.5vw,24px)}
+  .site-header nav{gap:clamp(12px,1.6vw,25px)}
+}
+@media(max-width:760px){
+  .content{padding:18px 13px calc(105px + env(safe-area-inset-bottom))}
+  .page-heading{align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .page-heading h1{font-size:clamp(25px,7vw,30px)}
+  .section-card{min-width:0}
+  .section-title{align-items:flex-start;flex-wrap:wrap}
+  .form-grid,.two-col,.module-grid{grid-template-columns:minmax(0,1fr)}
+  .form-grid>*{min-width:0}
+  .field input,.field select,.field textarea,
+  .login-card input{min-height:44px}
+  .section-card button,.section-card .gold-btn,.section-card .outline-btn{min-height:42px}
+  .table-scroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .data-table{min-width:560px}
+  .mobile-nav button{min-height:44px}
+  .admin-footer{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .hero-card{align-items:flex-start}
+  .hero-art{flex:0 0 auto}
+  .site-header{flex-wrap:wrap;gap:10px}
+  .site-header nav{min-width:0}
+  .site-hero{background-position:center}
+  .site-section{padding:38px 18px}
+  .site-section h2{font-size:clamp(25px,7vw,32px)}
+  .site-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .site-card{min-width:0}
+  .site-card img{height:clamp(105px,30vw,150px)}
+  .site-card div{padding:11px}
+  .site-form{grid-template-columns:minmax(0,1fr);gap:12px}
+  .site-form .wide{grid-column:auto}
+  .site-form button{min-height:46px}
+  .delivery-popup{width:calc(100% - 24px);max-width:420px}
+}
+@media(max-width:480px){
+  .login-card{padding:24px 19px}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-card{min-width:0}
+  .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .site-cards{grid-template-columns:minmax(0,1fr)}
+  .site-card img{height:190px}
+  .site-hero{min-height:350px;padding:32px 18px}
+  .site-hero h1{font-size:clamp(34px,10vw,48px)}
+  .site-section{padding:34px 15px}
+  .mobile-nav{padding-left:5px;padding-right:5px}
+  .mobile-nav small{font-size:9px}
+}
