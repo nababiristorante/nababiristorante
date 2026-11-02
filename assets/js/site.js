@@ -199,6 +199,31 @@
     section.hidden = false;
   }
 
+  /* SOCIAL LINKS */
+  async function loadSocialLinks() {
+    const container = $('#publicSocialLinks');
+    if (!container) return;
+    const rows = await getRows(
+      'social_links',
+      query => query.eq('is_active', true).order('created_at')
+    );
+    const allowed = new Set(['Facebook','Instagram','TikTok','YouTube']);
+    const links = rows.filter(item => allowed.has(item.platform || item.name));
+    if (!links.length) {
+      container.hidden = true;
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = links.map(item => {
+      let parsed;
+      try { parsed = new URL(item.url); } catch (_) { return ''; }
+      if (!['https:', 'http:'].includes(parsed.protocol)) return '';
+      const label = item.platform || item.name;
+      return \`<a class="social-link" href="\${escapeHTML(parsed.href)}" target="_blank" rel="noopener noreferrer">\${escapeHTML(label)}</a>\`;
+    }).join('');
+    container.hidden = !container.innerHTML;
+  }
+
   /* BREAKING NEWS */
 
   async function loadNews() {
@@ -694,6 +719,8 @@
       loadNews(),
 
       loadFoodDeliveryLinks(),
+
+      loadSocialLinks(),
 
       loadCustomerCouponOffer(),
 
