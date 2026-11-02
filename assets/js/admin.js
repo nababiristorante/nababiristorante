@@ -728,6 +728,88 @@ function staffPage() {
 
 
 
+async function createFullStaff(e) {
+  e.preventDefault();
+
+  if (userRole !== 'admin') {
+    throw new Error('Only Super Admin can create Staff accounts.');
+  }
+
+  const form = e.target;
+  const btn = $('#createFullStaffBtn');
+  const status = $('#fullStaffStatus');
+  const fd = new FormData(form);
+
+  const full_name = String(fd.get('full_name') || '').trim();
+  const email = String(fd.get('email') || '').trim().toLowerCase();
+  const phone = String(fd.get('phone') || '').trim();
+  const password = String(fd.get('password') || '');
+
+  if (full_name.length < 2) {
+    status.textContent = 'Enter a valid Staff name.';
+    return;
+  }
+
+  if (!email) {
+    status.textContent = 'Enter a valid email address.';
+    return;
+  }
+
+  if (password.length < 10) {
+    status.textContent = 'Password must be at least 10 characters.';
+    return;
+  }
+
+  const permissions = {};
+  MODULES.forEach(([id]) => {
+    permissions[id] = false;
+  });
+
+  form.querySelectorAll('input[name="perm"]:checked').forEach(box => {
+    if (Object.prototype.hasOwnProperty.call(permissions, box.value)) {
+      permissions[box.value] = true;
+    }
+  });
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
+  status.textContent = 'Creating Full Staff Account…';
+
+  try {
+    const {data,error} = await db.functions.invoke(
+      'create-staff-account',
+      {
+        body: {
+          full_name,
+          email,
+          phone,
+          password,
+          permissions
+        }
+      }
+    );
+
+    if (error) throw error;
+    if (data?.error) throw new Error(data.error);
+
+    if (!data?.success) {
+      throw new Error('Staff account creation was not confirmed.');
+    }
+
+    status.textContent =
+      data.message || 'Full Staff Account created successfully.';
+
+    form.reset();
+    await staffLoad();
+
+  } catch (err) {
+    status.textContent = err.message || 'Account creation failed.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create Full Staff Account';
+  }
+}
+
 
 async function staffLoad() {
   const host = $('#staffList');
