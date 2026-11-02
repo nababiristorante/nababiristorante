@@ -175,6 +175,30 @@
     `).join('');
   }
 
+
+  /* FOOD DELIVERY LINKS — only admin-enabled links are shown */
+  async function loadFoodDeliveryLinks() {
+    const section = $('#foodDelivery');
+    const container = $('#publicDeliveryLinks');
+    if (!section || !container) return;
+    const rows = await getRows(
+      'food_delivery_links',
+      query => query.eq('is_active', true).order('sort_order').order('created_at')
+    );
+    if (!rows.length) {
+      section.hidden = true;
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = rows.map(item => `
+      <a class="delivery-link" href="${escapeHTML(item.url)}"
+        target="_blank" rel="noopener noreferrer">
+        Ordina su ${escapeHTML(item.name)}
+      </a>
+    `).join('');
+    section.hidden = false;
+  }
+
   /* BREAKING NEWS */
 
   async function loadNews() {
@@ -669,6 +693,8 @@
 
       loadNews(),
 
+      loadFoodDeliveryLinks(),
+
       loadCustomerCouponOffer(),
 
       loadEvents(),
@@ -681,6 +707,7 @@
 
     // Refresh Breaking News so scheduled start/end times apply while the page stays open.
     window.setInterval(loadNews, 30000);
+    window.setInterval(loadFoodDeliveryLinks, 60000);
 
     console.log('Nababi public website initialized.');
 
