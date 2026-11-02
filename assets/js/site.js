@@ -91,6 +91,30 @@
     }
   }
 
+  /* RESTAURANT LOGO */
+  async function loadRestaurantLogo() {
+    if (!db) return;
+    try {
+      const { data, error } = await db.from('site_settings').select('setting_value').eq('setting_key', 'restaurant_logo_url').maybeSingle();
+      if (error) throw error;
+      const url = data?.setting_value;
+      const headerImage = $('#siteHeaderLogo');
+      const footerImage = $('#siteFooterLogo');
+      const headerFallback = $('#siteHeaderLogoFallback');
+      const footerFallback = $('#siteFooterLogoFallback');
+      [headerImage, footerImage].forEach(image => {
+        if (!image) return;
+        if (url) { image.src = url; image.hidden = false; } else image.hidden = true;
+      });
+      if (headerFallback) headerFallback.hidden = Boolean(url);
+      if (footerFallback) footerFallback.hidden = Boolean(url);
+      if (url) {
+        let favicon = $('#siteFavicon');
+        if (!favicon) { favicon = document.createElement('link'); favicon.id = 'siteFavicon'; favicon.rel = 'icon'; document.head.appendChild(favicon); }
+        favicon.href = url;
+      }
+    } catch (error) { console.error('Nababi logo could not be loaded:', error.message); }
+  }
   /* MENU */
 
   async function loadMenu() {
@@ -735,6 +759,8 @@
     }
 
     await Promise.allSettled([
+
+      loadRestaurantLogo(),
 
       loadMenu(),
 
