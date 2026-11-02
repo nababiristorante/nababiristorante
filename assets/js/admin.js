@@ -831,6 +831,182 @@ async function deleteDish(id) {
   await dishLoad();
 }
 
+
+/* RESTAURANT TABLE MANAGEMENT — TAVOLO */
+
+let editingTableId = null;
+
+function tablesPage() {
+  return `
+    <section class="section-card table-manager-card">
+      <div class="section-title">
+        <h2 id="tableFormTitle">Aggiungi tavolo</h2>
+      </div>
+      <form id="restaurantTableForm" class="form-grid">
+        <label class="field">Nome / Numero tavolo
+          <input name="name" required maxlength="80"
+            placeholder="Es. Tavolo 1">
+        </label>
+        <label class="field">Numero posti
+          <input name="capacity" type="number" min="1"
+            max="100" step="1" required placeholder="Es. 4">
+        </label>
+        <label class="field">Note
+          <textarea name="notes" maxlength="500"
+            placeholder="Es. Vicino alla finestra"></textarea>
+        </label>
+        <label class="field">Stato del tavolo
+          <select name="is_active">
+            <option value="true">Attivo</option>
+            <option value="false">Disattivato</option>
+          </select>
+        </label>
+        <div class="table-form-actions">
+          <button id="tableSaveBtn" class="gold-btn" type="submit">Salva tavolo</button>
+          <button id="tableCancelEdit" class="outline-btn" type="button" hidden>Annulla modifica</button>
+        </div>
+      </form>
+      <p id="tableStatus" class="help" aria-live="polite"></p>
+    </section>
+
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Tutti i tavoli</h2>
+        <span id="tableCount" class="help"></span>
+      </div>
+      <div id="restaurantTableList" class="help">Caricamento…</div>
+    </section>
+  `;
+}
+
+async function loadRestaurantTables() {
+  const host = $('#restaurantTableList');
+  if (!host) return;
+
+  try {
+    const {data,error} = await db
+      .from('restaurant_tables')
+      .select('id,name,capacity,is_active,notes,created_at')
+      .order('id',{ascending:true});
+
+    if (error) throw error;
+    const rows = data || [];
+    const count = $('#tableCount');
+    if (count) count.textContent = rows.length + ' tavoli';
+
+    host.innerHTML = rows.length
+      ? `<div class="restaurant-table-grid">${rows.map(t => `
+          <article class="restaurant-table-card ${t.is_active === false ? 'is-disabled' : ''}">
+            <div class="restaurant-table-top">
+              <span class="restaurant-table-icon">▤</span>
+              <span class="restaurant-table-state ${t.is_active === false ? 'off' : 'on'}">
+                ${t.is_active === false ? 'Disattivato' : 'Attivo'}
+              </span>
+            </div>
+            <h3>${esc(t.name)}</h3>
+            <p class="restaurant-table-capacity">♙ ${esc(t.capacity)} posti</p>
+            ${t.notes ? `<p class="restaurant-table-notes">${esc(t.notes)}</p>` : ''}
+            <div class="restaurant-table-actions">
+              <button type="button" class="outline-btn"
+                data-edit-table="${esc(t.id)}">Modifica</button>
+              <button type="button" class="table-delete-btn"
+                data-delete-table="${esc(t.id)}">Elimina</button>
+            </div>
+          </article>
+        `).join('')}</div>`
+      : '<div class="empty-state">Nessun tavolo ancora inserito. Aggiungi il primo tavolo qui sopra.</div>';
+  } catch (e) {
+    host.innerHTML = `<p class="error-text">${esc(e.message || 'Impossibile caricare i tavoli.')}</p>`;
+  }
+}
+
+function resetTableForm() {
+  const form = $('#restaurantTableForm');
+  if (!form) return;
+  form.reset();
+  editingTableId = null;
+  $('#tableFormTitle').textContent = 'Aggiungi tavolo';
+  $('#tableSaveBtn').textContent = 'Salva tavolo';
+  $('#tableCancelEdit').hidden = true;
+  $('#tableStatus').textContent = '';
+}
+
+async function editRestaurantTable(id) {
+  const status = $('#tableStatus');
+  try {
+    const {data,error} = await db
+      .from('restaurant_tables')
+      .select('id,name,capacity,is_active,notes')
+      .eq('id',id)
+      .single();
+    if (error) throw error;
+
+    const form = $('#restaurantTableForm');
+    form.elements.name.value = data.name || '';
+    form.elements.capacity.value = data.capacity ?? 1;
+    form.elements.notes.value = data.notes || '';
+    form.elements.is_active.value = data.is_active === false ? 'false' : 'true';
+    editingTableId = id;
+    $('#tableFormTitle').textContent = 'Modifica tavolo';
+    $('#tableSaveBtn').textContent = 'Salva modifiche';
+    $('#tableCancelEdit').hidden = false;
+    status.textContent = 'Modifica i dati e premi Salva modifiche.';
+    form.scrollIntoView({behavior:'smooth',block:'start'});
+  } catch (e) {
+    status.textContent = e.message || 'Impossibile aprire il tavolo.';
+  }
+}
+
+async function saveRestaurantTable(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const status = $('#tableStatus');
+  const btn = $('#tableSaveBtn');
+
+  const name = String(fd.get('name') || '').trim();
+  const capacity = Number(fd.get('capacity'));
+  const notes = String(fd.get('notes') || '').trim() || null;
+  const is_active = fd.get('is_active') === 'true';
+
+  if (!name || !Number.isInteger(capacity) || capacity < 1 || capacity > 100) {
+    status.textContent = 'Inserisci un nome e un numero di posti valido (1–100).';
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = 'Salvataggio in corso…';
+  try {
+    const payload = {name,capacity,notes,is_active};
+    const request = editingTableId
+      ? db.from('restaurant_tables').update(payload).eq('id',editingTableId)
+      : db.from('restaurant_tables').insert(payload);
+    const {error} = await request;
+    if (error) throw error;
+
+    status.textContent = editingTableId
+      ? 'Tavolo aggiornato correttamente.'
+      : 'Tavolo aggiunto correttamente.';
+    resetTableForm();
+    await loadRestaurantTables();
+  } catch (err) {
+    status.textContent = err.message || 'Salvataggio non riuscito.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteRestaurantTable(id) {
+  if (!confirm('Vuoi eliminare definitivamente questo tavolo?')) return;
+  const {error} = await db
+    .from('restaurant_tables')
+    .delete()
+    .eq('id',id);
+  if (error) throw error;
+  if (String(editingTableId) === String(id)) resetTableForm();
+  await loadRestaurantTables();
+}
+
 /* STAFF PERMISSIONS */
 
 function permissionOptions(selected = {}) {
@@ -2228,6 +2404,14 @@ async function render(id) {
       return;
     }
 
+    if (id === 'tables') {
+      host.innerHTML = tablesPage();
+      await loadRestaurantTables();
+      $('#restaurantTableForm').onsubmit = saveRestaurantTable;
+      $('#tableCancelEdit').onclick = resetTableForm;
+      return;
+    }
+
     const body = await genericTable(id);
 
     host.innerHTML = `<section class="section-card">
@@ -2396,6 +2580,18 @@ $('#pageContent').addEventListener('click', async e => {
       `);
 
       printWindow.document.close();
+      return;
+    }
+
+    const editTableButton = e.target.closest('[data-edit-table]');
+    if (editTableButton) {
+      await editRestaurantTable(editTableButton.dataset.editTable);
+      return;
+    }
+
+    const deleteTableButton = e.target.closest('[data-delete-table]');
+    if (deleteTableButton) {
+      await deleteRestaurantTable(deleteTableButton.dataset.deleteTable);
       return;
     }
 
