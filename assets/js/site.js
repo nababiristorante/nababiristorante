@@ -929,7 +929,7 @@
     const originals = new Map();
     function remember(node) {
       if (node && !originals.has(node)) {
-        originals.set(node, { html: node.innerHTML });
+        originals.set(node, { html: node.innerHTML, placeholder: node.getAttribute('placeholder') });
       }
     }
     function setText(selector, value) {
@@ -955,7 +955,11 @@
     }
     function restore() {
       originals.forEach((value, node) => {
-        if (node.isConnected) node.innerHTML = value.html;
+        if (node.isConnected) {
+          node.innerHTML = value.html;
+          if (value.placeholder === null) node.removeAttribute('placeholder');
+          else if (value.placeholder !== undefined) node.setAttribute('placeholder', value.placeholder);
+        }
       });
     }
 
