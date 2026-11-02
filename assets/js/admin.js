@@ -1216,8 +1216,7 @@ $('#sideNav').addEventListener('click',e => {
 
 $('#pageContent').addEventListener('click',async e => {
    try {
-    const printQR = e.target.closest('[data-print-attendance-qr]');
-
+ 
     if (printQR) {
       const printWindow = window.open('', '_blank');
 
