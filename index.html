@@ -635,6 +635,39 @@
     </a>
   </p>
 
+  <h2>Scrivici un messaggio</h2>
+  <p>Compila il modulo: il nostro staff riceverà il tuo messaggio.</p>
+
+  <form id="contactForm" class="site-form">
+    <label>
+      Nome e cognome *
+      <input name="full_name" autocomplete="name" required maxlength="120">
+    </label>
+
+    <label>
+      Email
+      <input name="email" type="email" autocomplete="email" maxlength="160">
+    </label>
+
+    <label>
+      Telefono
+      <input name="phone" type="tel" autocomplete="tel" maxlength="40">
+    </label>
+
+    <label>
+      Oggetto
+      <input name="subject" maxlength="160">
+    </label>
+
+    <label class="wide">
+      Messaggio *
+      <textarea name="message" rows="5" required maxlength="4000"></textarea>
+    </label>
+
+    <button class="gold-btn wide" type="submit">Invia messaggio</button>
+    <p id="contactMessage" class="notice" aria-live="polite"></p>
+  </form>
+
 </section>
 
 <footer class="site-footer">
