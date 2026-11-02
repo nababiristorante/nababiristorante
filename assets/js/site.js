@@ -550,6 +550,53 @@
     }).join('');
   }
 
+  async function setupReviewForm() {
+    const form = $('#customerReviewForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const status = $('#customerReviewStatus');
+      const button = form.querySelector('button[type="submit"]');
+      const values = new FormData(form);
+      const customerName = String(values.get('customer_name') || '').trim();
+      const reviewText = String(values.get('review_text') || '').trim();
+      const rating = Number(values.get('rating'));
+
+      // Quiet honeypot field for basic bot protection.
+      if (String(values.get('website') || '').trim()) return;
+
+      if (!db) {
+        message(status, 'Il servizio recensioni non è disponibile al momento.', 'error');
+        return;
+      }
+      if (customerName.length < 2 || reviewText.length < 5 ||
+          !Number.isInteger(rating) || rating < 1 || rating > 5) {
+        message(status, 'Inserisci il nome, una recensione di almeno 5 caratteri e una valutazione.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      message(status, 'Invio in corso…');
+      try {
+        const { error } = await db.from('reviews').insert({
+          customer_name: customerName,
+          rating,
+          review_text: reviewText,
+          is_approved: false
+        });
+        if (error) throw error;
+        form.reset();
+        message(status, 'Grazie! La tua recensione è stata inviata e sarà pubblicata dopo la verifica.', 'success');
+      } catch (error) {
+        console.error('Nababi review submission failed:', error);
+        message(status, 'Non è stato possibile inviare la recensione. Riprova più tardi.', 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   /* OPENING HOURS */
 
   async function loadOpeningHours() {
@@ -839,6 +886,9 @@
           '#about > p': 'Nababi Ristorante brings the authentic flavours of India to Rome, with dishes prepared using traditional recipes and a modern touch.',
           '#reviews > h2': 'What our guests say',
           '#reviews > p': 'Our guests’ satisfaction is our greatest reward.',
+          '#reviewFormHeading': 'Share your experience',
+          '#reviewFormIntro': 'Tell us about your visit. Your review will be published after our team checks it.',
+          '#customerReviewForm button[type="submit"]': 'Submit review',
           '.google-review-btn': '⭐ Write a Google review',
           '#contact .contact-heading h2': 'Visit us',
           '#contact .contact-heading > p': 'We look forward to welcoming you for an authentic Indian dining experience.',
@@ -860,6 +910,7 @@
           '.site-footer > p:last-of-type': 'Authentic Indian cuisine in the heart of Rome.'
         },
         bookingLabels: ['Full name *', 'Phone *', 'Email', 'Number of guests *', 'Date *', 'Time *', 'Booking type', 'Notes'],
+        reviewLabels: ['Your name *', 'Rating *', 'Your review *'],
         bookingTypes: ['Table', 'Birthday', 'Special event'],
         bookingPlaceholder: 'Special requests (optional)',
         contactLabels: ['Full name *', 'Email', 'Phone', 'Subject', 'Message *'],
@@ -896,6 +947,9 @@
           '#about > p': 'Nababi Ristorante রোমে নিয়ে এসেছে ভারতের আসল স্বাদ—ঐতিহ্যবাহী রেসিপি ও আধুনিক পরিবেশনায় তৈরি খাবার।',
           '#reviews > h2': 'আমাদের সম্পর্কে অতিথিদের মতামত',
           '#reviews > p': 'আমাদের অতিথিদের সন্তুষ্টিই আমাদের সবচেয়ে বড় প্রাপ্তি।',
+          '#reviewFormHeading': 'আপনার অভিজ্ঞতা লিখুন',
+          '#reviewFormIntro': 'আপনার অভিজ্ঞতা আমাদের জানান। যাচাইয়ের পর রিভিউ ওয়েবসাইটে প্রকাশ করা হবে।',
+          '#customerReviewForm button[type="submit"]': 'রিভিউ জমা দিন',
           '.google-review-btn': '⭐ Google-এ রিভিউ লিখুন',
           '#contact .contact-heading h2': 'আমাদের ঠিকানা',
           '#contact .contact-heading > p': 'আসল ভারতীয় খাবারের অভিজ্ঞতার জন্য আপনাকে স্বাগত জানাই।',
@@ -917,6 +971,7 @@
           '.site-footer > p:last-of-type': 'রোমের হৃদয়ে আসল ভারতীয় খাবার।'
         },
         bookingLabels: ['নাম ও পদবি *', 'ফোন *', 'ইমেইল', 'অতিথির সংখ্যা *', 'তারিখ *', 'সময় *', 'বুকিংয়ের ধরন', 'বিশেষ নোট'],
+        reviewLabels: ['আপনার নাম *', 'রেটিং *', 'আপনার রিভিউ *'],
         bookingTypes: ['টেবিল', 'জন্মদিন', 'বিশেষ অনুষ্ঠান'],
         bookingPlaceholder: 'বিশেষ অনুরোধ (ঐচ্ছিক)',
         contactLabels: ['নাম ও পদবি *', 'ইমেইল', 'ফোন', 'বিষয়', 'মেসেজ *'],
@@ -980,6 +1035,8 @@
       Object.entries(t.text).forEach(([selectorText, value]) => setText(selectorText, value));
       setLabelText($('#bookingForm'), t.bookingLabels);
       setLabelText($('#contactForm'), t.contactLabels);
+      setLabelText($('#customerReviewForm'), t.reviewLabels);
+      if ($('#customerReviewForm button[type="submit"]')) setText('#customerReviewForm button[type="submit"]', t.text['#customerReviewForm button[type="submit"]']);
 
       const bookingType = $('#bookingForm select[name="booking_type"]');
       if (bookingType) {
