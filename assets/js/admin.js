@@ -3494,6 +3494,12 @@ async function bookingsPage() {
       .booking-calendar-stat{padding:10px;border:1px solid rgba(216,183,106,.22);border-radius:10px;text-align:center}
       .booking-calendar-stat strong{display:block;color:#f1cf70;font-size:22px}
       .booking-calendar-stat span{font-size:11px;color:#d3c9b3}
+      .booking-calendar-stat.is-pending{background:rgba(217,165,45,.13);border-color:#d9a52d}
+      .booking-calendar-stat.is-pending strong{color:#ffd36b}
+      .booking-calendar-stat.is-confirmed{background:rgba(35,145,85,.15);border-color:#319b62}
+      .booking-calendar-stat.is-confirmed strong{color:#72dfa0}
+      .booking-calendar-stat.is-cancelled{background:rgba(190,55,55,.15);border-color:#bd4848}
+      .booking-calendar-stat.is-cancelled strong{color:#ff9292}
       @media(max-width:620px){.booking-calendar-tools{grid-template-columns:1fr 1fr}.booking-calendar-tools label{grid-column:1/-1}}
     </style>
     <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
@@ -3503,8 +3509,9 @@ async function bookingsPage() {
         <input id="bookingCalendarDate" type="date" value="${esc(today)}">
       </label>
       <div class="booking-calendar-stat"><strong id="bookingDayTotal">${countFor(today)}</strong><span>Prenotazioni del giorno</span></div>
-      <div class="booking-calendar-stat"><strong>${rows.filter(row => ['pending','new'].includes(String(row.status || 'pending').toLowerCase())).length}</strong><span>In attesa</span></div>
-      <div class="booking-calendar-stat"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'confirmed').length}</strong><span>Confermate</span></div>
+      <div class="booking-calendar-stat is-pending"><strong>${rows.filter(row => ['pending','new'].includes(String(row.status || 'pending').toLowerCase())).length}</strong><span>In attesa · Giallo</span></div>
+      <div class="booking-calendar-stat is-confirmed"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'confirmed').length}</strong><span>Confermate · Verde</span></div>
+      <div class="booking-calendar-stat is-cancelled"><strong>${rows.filter(row => ['rejected','cancelled'].includes(String(row.status || '').toLowerCase())).length}</strong><span>Annullate · Rosso</span></div>
     </div>
     <p id="bookingCalendarNote" class="help" aria-live="polite">${countFor(today)} prenotazioni per la data selezionata.</p>
     <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="bookingCalendarRows">
