@@ -289,6 +289,14 @@
       color:#ff9a9a;
     }
 
+    .floor-room { margin:18px 0; padding:16px; border:1px solid rgba(216,183,106,.28); border-radius:14px; background:rgba(16,45,36,.35); }
+    .floor-room h4 { margin:0 0 12px; color:#d8b76a; }
+    .floor-table-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:10px; }
+    .floor-table { display:flex; flex-direction:column; gap:5px; padding:12px 8px; border:1px solid #d8b76a; border-radius:10px; background:#183e31; color:#f7f1e5; cursor:pointer; }
+    .floor-table small { font-size:11px; }
+    .floor-table.is-selected { outline:3px solid #d8b76a; background:#285a42; }
+    .floor-table.is-unavailable,.floor-table:disabled { opacity:.48; cursor:not-allowed; border-color:#888; }
+
     .site-footer {
       text-align:center;
       padding:32px 6%;
