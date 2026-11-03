@@ -759,8 +759,8 @@ function qrMenuAdminPage() {
   <section class="section-card">
     <h2>QR Code del ristorante</h2>
     <p class="help">Stampa questo codice e posizionalo sui tavoli. Tutti i tavoli aprono lo stesso menu digitale.</p>
-    <img style="width:220px;max-width:100%;background:white;padding:10px;border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fnababi-ristorante.vercel.app%2Fqr-menu.html" alt="QR Menu">
-    <p><a href="https://nababi-ristorante.vercel.app/qr-menu.html" target="_blank" rel="noopener">Apri QR Menu</a></p>
+    <img style="width:220px;max-width:100%;background:white;padding:10px;border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fnababiristorante.vercel.app%2Fqr-menu.html" alt="QR Menu">
+    <p><a href="https://nababiristorante.vercel.app/qr-menu.html" target="_blank" rel="noopener">Apri QR Menu</a></p>
   </section>`;
 }
 
