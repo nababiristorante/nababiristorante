@@ -78,3 +78,42 @@ create policy "Public can view active Nababi floor tables"
   using (is_active = true);
 
 grant select on public.booking_floor_tables to anon, authenticated;
+
+
+-- Public availability: exposes only table identifiers and free/busy state,
+-- never customer names or contact details.
+create or replace function public.nababi_available_floor_tables(
+  p_date date,
+  p_time time
+)
+returns table (
+  id uuid,
+  table_code text,
+  room_name text,
+  seats integer,
+  is_available boolean
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    t.id,
+    t.table_code,
+    t.room_name,
+    t.seats,
+    not exists (
+      select 1
+      from public.bookings b
+      where b.selected_table_id = t.id
+        and b.booking_date = p_date
+        and b.booking_time = p_time
+        and coalesce(lower(b.status::text), '') <> 'cancelled'
+    ) as is_available
+  from public.booking_floor_tables t
+  where t.is_active = true
+  order by t.display_order;
+$$;
+
+revoke all on function public.nababi_available_floor_tables(date,time) from public;
+grant execute on function public.nababi_available_floor_tables(date,time) to anon, authenticated;
