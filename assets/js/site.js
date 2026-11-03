@@ -956,6 +956,21 @@
     });
   }
 
+function shortWeekdayLabel(value) {
+  const normalized = String(value || '').trim().toLocaleLowerCase('it')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const labels = {
+    lunedi:'Lun', monday:'Mon',
+    martedi:'Mar', tuesday:'Tue',
+    mercoledi:'Mer', wednesday:'Wed',
+    giovedi:'Gio', thursday:'Thu',
+    venerdi:'Ven', friday:'Fri',
+    sabato:'Sab', saturday:'Sat',
+    domenica:'Dom', sunday:'Sun'
+  };
+  return labels[normalized] || String(value || '').trim().slice(0,3);
+}
+
   /* OPENING HOURS */
 
   async function loadOpeningHours() {
@@ -991,7 +1006,7 @@
 
       return `
         <p>
-          <strong>${escapeHTML(day)}</strong> —
+          <strong>${escapeHTML(shortWeekdayLabel(day))}</strong> —
           ${
             closed
               ? 'Chiuso'
