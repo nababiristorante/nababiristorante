@@ -36,12 +36,42 @@ Deno.serve(async (req) => {
     const gameKey = typeof body?.game_key === "string" ? body.game_key.trim() : "";
     const visitorToken = typeof body?.visitor_token === "string" ? body.visitor_token : "";
     const choice = typeof body?.choice === "string" ? body.choice.trim().slice(0, 40) : "";
+    const turnstileToken = typeof body?.turnstile_token === "string" ? body.turnstile_token : "";
 
     if (!/^[a-z0-9_-]{2,80}$/i.test(gameKey)) {
       return json({ error: "Invalid game" }, 400);
     }
     if (visitorToken.length < 8 || visitorToken.length > 200) {
       return json({ error: "Invalid visitor token" }, 400);
+    }
+    if (!turnstileToken || turnstileToken.length > 2048) {
+      return json({ error: "Please complete the security check." }, 400);
+    }
+
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    if (!turnstileSecret) {
+      console.error("Turnstile secret is not configured.");
+      return json({ error: "Security verification is not configured" }, 500);
+    }
+
+    const verificationBody = new URLSearchParams({
+      secret: turnstileSecret,
+      response: turnstileToken,
+    });
+    const verificationResponse = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      { method: "POST", body: verificationBody },
+    );
+    if (!verificationResponse.ok) {
+      console.error("Turnstile verification service returned an error.");
+      return json({ error: "Security verification is temporarily unavailable." }, 502);
+    }
+    const verification = await verificationResponse.json();
+    if (
+      verification?.success !== true ||
+      verification?.hostname !== "nababiristorante.vercel.app"
+    ) {
+      return json({ error: "Security check failed. Please try again." }, 403);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
