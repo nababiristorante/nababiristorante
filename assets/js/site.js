@@ -580,7 +580,7 @@
       };
       const gameControl = key => {
         if (key === 'find_golden_n') return '<div class="game-choice-grid" aria-label="Choose a letter">' +
-          ['A','B','C','D','E','F'].map((v,i)=>'<button type="button" class="game-choice-button" data-choice="'+v+'" aria-label="Choose letter '+v+'">'+v+'</button>').join('') + '</div>';
+          ['A','N','B','A','B','I'].map((v,i)=>'<button type="button" class="game-choice-button" data-choice="'+v+'" aria-label="Choose letter '+v+'">'+v+'</button>').join('') + '</div>';
         if (key === 'food_quiz') return '<p class="game-question">Which dish is traditionally made with rice and aromatic spices?</p><div class="game-choice-list">' +
           ['Biryani','Margherita Pizza','Tiramisu'].map(v=>'<button type="button" class="game-choice-button" data-choice="'+v+'">'+v+'</button>').join('') + '</div>';
         if (key === 'mystery_gift') return '<div class="game-choice-grid game-gift-grid">' +
@@ -665,7 +665,11 @@
           try {
             const visitorToken = getVisitorToken();
             const {data,error} = await db.functions.invoke('claim-game-reward', {
-              body: { game_key: button.dataset.gameKey, visitor_token: visitorToken }
+              body: {
+                game_key: button.dataset.gameKey,
+                visitor_token: visitorToken,
+                choice: card.querySelector('.game-choice-button.is-selected')?.dataset.choice || ''
+              }
             });
             if (error) {
               let detail = error.message || 'Game could not be played.';
