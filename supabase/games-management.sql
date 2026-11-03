@@ -1,7 +1,7 @@
 -- NABABI RISTORANTE: Games Management schema extension
 -- Safe to run more than once. Existing games and their current enabled state are preserved.
 
-alter table public.games
+alter table public.nababi_games
   add column if not exists description text,
   add column if not exists reward_type text not null default 'none',
   add column if not exists reward_value numeric(10,2),
@@ -11,32 +11,32 @@ alter table public.games
   add column if not exists ends_at timestamptz,
   add column if not exists updated_at timestamptz not null default now();
 
-alter table public.games
+alter table public.nababi_games
   drop constraint if exists games_reward_type_check;
-alter table public.games
+alter table public.nababi_games
   add constraint games_reward_type_check
   check (reward_type in ('none','discount_percent','discount_euro','free_food','free_drink','custom'));
 
-alter table public.games
+alter table public.nababi_games
   drop constraint if exists games_reward_value_check;
-alter table public.games
+alter table public.nababi_games
   add constraint games_reward_value_check
   check (reward_value is null or reward_value >= 0);
 
-alter table public.games
+alter table public.nababi_games
   drop constraint if exists games_max_claims_check;
-alter table public.games
+alter table public.nababi_games
   add constraint games_max_claims_check
   check (max_claims is null or max_claims > 0);
 
-alter table public.games
+alter table public.nababi_games
   drop constraint if exists games_validity_window_check;
-alter table public.games
+alter table public.nababi_games
   add constraint games_validity_window_check
   check (starts_at is null or ends_at is null or ends_at > starts_at);
 
 create index if not exists games_public_enabled_idx
-  on public.games (is_enabled, starts_at, ends_at);
+  on public.nababi_games (is_enabled, starts_at, ends_at);
 
 -- Claims are written only by a trusted server-side function using the service role.
 -- No anon/authenticated INSERT, UPDATE or DELETE policy is created here.
@@ -98,7 +98,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_game public.games%rowtype;
+  v_game public.nababi_games%rowtype;
   v_claim_count integer;
   v_code text;
   v_expiry timestamptz;
@@ -114,7 +114,7 @@ begin
   perform pg_advisory_xact_lock(hashtext(p_game_key));
 
   select * into v_game
-  from public.games
+  from public.nababi_games
   where game_key = p_game_key
   for share;
 
@@ -169,12 +169,12 @@ grant execute on function public.issue_game_claim(text,text,text) to service_rol
 
 
 -- One anonymous play per browser token and game. No customer phone or login is required.
-alter table public.games
+alter table public.nababi_games
   add column if not exists win_probability numeric(5,2) not null default 20;
 
-alter table public.games
+alter table public.nababi_games
   drop constraint if exists games_win_probability_check;
-alter table public.games
+alter table public.nababi_games
   add constraint games_win_probability_check
   check (win_probability >= 0 and win_probability <= 100);
 
@@ -211,7 +211,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_game public.games%rowtype;
+  v_game public.nababi_games%rowtype;
   v_claim_count integer;
   v_won boolean;
   v_code text;
@@ -228,7 +228,7 @@ begin
   perform pg_advisory_xact_lock(hashtext(p_game_key));
 
   select * into v_game
-  from public.games
+  from public.nababi_games
   where game_key = p_game_key
   for share;
 
