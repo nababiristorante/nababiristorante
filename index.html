@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="assets/js/config.js"></script>
   <script defer src="assets/js/site.js?v=20261103-games-play"></script>
 
@@ -475,6 +476,7 @@
       <strong id="customerCouponCodeValue"
         style="display:block;font-size:30px;letter-spacing:5px;color:#d8b76a"></strong>
       <p id="customerCouponExpiry"></p>
+      <div id="customerCouponQr" aria-label="QR Code del coupon" style="display:flex;justify-content:center;margin:18px auto;padding:12px;background:#fff;width:max-content;max-width:100%;border-radius:12px"></div>
       <p id="customerCouponExpiryNotice" class="help">Attenzione: dopo la data di scadenza, il coupon non sarà più utilizzabile.</p>
       <button id="copyCustomerCoupon" class="outline-btn" type="button">
         Copia codice
