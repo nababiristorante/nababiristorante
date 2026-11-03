@@ -550,7 +550,7 @@
   }
 
 
-  /* PUBLIC GAMES */
+  /* PUBLIC GAMES — server decides the outcome and issues coupons only for wins */
   async function loadGames() {
     const container = $('#liveGames');
     const section = $('#gamesSection');
@@ -570,7 +570,15 @@
         return;
       }
       if (section) section.hidden = false;
+      const gameInfo = {
+        find_golden_n: {icon:'🔎', action:'Find the Golden N', hint:'Tap Play and see if you find the golden prize.'},
+        food_quiz: {icon:'🍛', action:'Start Food Quiz', hint:'Answer the challenge and try your luck.'},
+        mystery_gift: {icon:'🎁', action:'Open Mystery Gift', hint:'Open your mystery gift to reveal the result.'},
+        scratch_win: {icon:'✨', action:'Scratch & Win', hint:'Reveal your chance to win a Nababi reward.'},
+        spin_win: {icon:'🎡', action:'Spin to Win', hint:'Spin the wheel and discover your result.'}
+      };
       container.innerHTML = rows.map(game => {
+        const info = gameInfo[game.game_key] || {icon:'🎮',action:'Play Now',hint:'Try your luck and discover your reward.'};
         let reward = game.reward_label || '';
         if (!reward) {
           if (game.reward_type === 'discount_percent' && game.reward_value != null) reward = game.reward_value + '% discount';
@@ -580,16 +588,75 @@
           else if (game.reward_type === 'custom') reward = 'Special reward';
         }
         return `
-          <article class="site-card live-card game-card">
+          <article class="site-card live-card game-card" data-game-card="${escapeHTML(game.game_key)}">
             ${game.image_url ? `<img src="${escapeHTML(game.image_url)}" alt="${escapeHTML(game.title || 'Nababi game')}" loading="lazy">` : ''}
             <div>
+              <p class="game-icon" aria-hidden="true" style="font-size:34px">${info.icon}</p>
               <h3>${escapeHTML(game.title || game.game_key)}</h3>
-              <p>${escapeHTML(game.description || '')}</p>
+              <p>${escapeHTML(game.description || info.hint)}</p>
               ${reward ? `<p class="site-price">${escapeHTML(reward)}</p>` : ''}
-              <p class="help">Game coming soon. Play will be enabled when the game is ready.</p>
+              <button type="button" class="gold-btn game-play-button" data-game-key="${escapeHTML(game.game_key)}">${escapeHTML(info.action)}</button>
+              <p class="game-play-status help" aria-live="polite"></p>
+              <div class="game-result" hidden aria-live="polite"></div>
             </div>
           </article>`;
       }).join('');
+
+      if (!container.dataset.playHandler) {
+        container.dataset.playHandler = 'true';
+        container.addEventListener('click', async event => {
+          const button = event.target.closest('.game-play-button');
+          if (!button || button.disabled) return;
+          const card = button.closest('.game-card');
+          const status = card?.querySelector('.game-play-status');
+          const resultPanel = card?.querySelector('.game-result');
+          button.disabled = true;
+          button.textContent = 'Playing…';
+          if (status) status.textContent = 'Checking your game result…';
+          if (resultPanel) { resultPanel.hidden = true; resultPanel.textContent = ''; }
+          try {
+            const visitorToken = getVisitorToken();
+            const {data,error} = await db.functions.invoke('claim-game-reward', {
+              body: { game_key: button.dataset.gameKey, visitor_token: visitorToken }
+            });
+            if (error) {
+              let detail = error.message || 'Game could not be played.';
+              try { const payload = await error.context?.json?.(); if (payload?.error) detail = payload.error; } catch (_) {}
+              throw new Error(detail);
+            }
+            if (!data?.success) throw new Error(data?.error || 'Game is unavailable.');
+            if (data.won && data.code) {
+              if (resultPanel) resultPanel.innerHTML = '<strong>🎉 Congratulations! You won!</strong><p>Your coupon code:</p><strong class="game-coupon-code"></strong><p class="game-expiry"></p><button type="button" class="outline-btn game-copy-button">Copy coupon</button>';
+              const code = resultPanel?.querySelector('.game-coupon-code');
+              const expiry = resultPanel?.querySelector('.game-expiry');
+              if (code) code.textContent = data.code;
+              if (expiry) expiry.textContent = data.expires_at ? 'Valid until ' + new Date(data.expires_at).toLocaleString() : '';
+              if (resultPanel) resultPanel.hidden = false;
+              if (status) status.textContent = data.reward_label || 'Show your coupon to our staff.';
+              button.textContent = 'Played';
+            } else {
+              if (resultPanel) {
+                resultPanel.innerHTML = '<strong>Thanks for playing!</strong><p>Not a winner this time. You can try another game.</p>';
+                resultPanel.hidden = false;
+              }
+              if (status) status.textContent = '';
+              button.textContent = 'Played';
+            }
+          } catch (error) {
+            console.error('Nababi game play failed:', error);
+            if (status) status.textContent = error.message || 'Please try again later.';
+            button.disabled = false;
+            button.textContent = 'Try Again';
+          }
+        });
+        container.addEventListener('click', async event => {
+          const copy = event.target.closest('.game-copy-button');
+          if (!copy) return;
+          const code = copy.closest('.game-result')?.querySelector('.game-coupon-code')?.textContent || '';
+          try { await navigator.clipboard.writeText(code); copy.textContent = 'Copied!'; }
+          catch (_) { copy.textContent = code || 'Copy unavailable'; }
+        });
+      }
     } catch (error) {
       console.error('Nababi games could not be loaded:', error);
       if (section) section.hidden = true;
