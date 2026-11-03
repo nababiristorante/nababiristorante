@@ -1554,7 +1554,85 @@ function staffPage() {
       </div>
       <div id="staffList">Loading…</div>
     </section>
+
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Staff Check-in Popup Announcements</h2>
+      </div>
+      <p class="help">Pubblica qui un messaggio che apparirà ai dipendenti dopo un Check-in completato. Questa sezione è gestita dal Main Admin Panel.</p>
+      <form id="staffAnnouncementForm" class="form-grid">
+        <label class="field">Titolo
+          <input name="title" required maxlength="180" placeholder="Es. Istruzioni per oggi">
+        </label>
+        <label class="field">Messaggio
+          <textarea name="message" rows="4" required maxlength="2000" placeholder="Scrivi le istruzioni per il personale"></textarea>
+        </label>
+        <div class="form-grid">
+          <label class="field">Mostra dal
+            <input name="starts_at" type="datetime-local">
+          </label>
+          <label class="field">Nascondi dal
+            <input name="ends_at" type="datetime-local">
+          </label>
+        </div>
+        <button class="gold-btn" type="submit">Pubblica messaggio Staff</button>
+      </form>
+      <p id="staffAnnouncementStatus" class="help" aria-live="polite"></p>
+      <div id="staffAnnouncementList" class="help">Caricamento messaggi…</div>
+    </section>
   `;
+}
+
+async function staffLoadAnnouncements() {
+  const host = $('#staffAnnouncementList');
+  if (!host) return;
+  const {data,error} = await db.from('staff_announcements')
+    .select('id,title,message,starts_at,ends_at,is_active')
+    .order('starts_at',{ascending:false}).limit(50);
+  if (error) {
+    host.textContent = error.message;
+    return;
+  }
+  host.innerHTML = (data || []).length ? (data || []).map(row => `
+    <article class="section-card">
+      <b>${esc(row.title)}</b>
+      <p>${esc(row.message)}</p>
+      <p class="help">${row.is_active ? 'Attivo' : 'Disattivato'} · Inizio: ${esc(row.starts_at ? new Date(row.starts_at).toLocaleString('it-IT') : 'Subito')} · Fine: ${esc(row.ends_at ? new Date(row.ends_at).toLocaleString('it-IT') : 'Nessuna')}</p>
+      ${row.is_active ? `<button type="button" class="outline-btn" data-disable-staff-announcement="${esc(row.id)}">Disattiva</button>` : ''}
+    </article>
+  `).join('') : '<p class="empty-state">Nessun messaggio Staff pubblicato.</p>';
+  host.querySelectorAll('[data-disable-staff-announcement]').forEach(button => {
+    button.onclick = async () => {
+      if (!confirm('Disattivare questo messaggio?')) return;
+      const {error} = await db.from('staff_announcements')
+        .update({is_active:false}).eq('id',button.dataset.disableStaffAnnouncement);
+      if (error) {
+        $('#staffAnnouncementStatus').textContent = error.message;
+        return;
+      }
+      await staffLoadAnnouncements();
+    };
+  });
+}
+
+async function publishStaffAnnouncement(e) {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const title = String(fd.get('title') || '').trim();
+  const message = String(fd.get('message') || '').trim();
+  if (!title || !message) return;
+  const {error} = await db.from('staff_announcements').insert({
+    title, message,
+    starts_at: fd.get('starts_at') ? new Date(fd.get('starts_at')).toISOString() : new Date().toISOString(),
+    ends_at: fd.get('ends_at') ? new Date(fd.get('ends_at')).toISOString() : null,
+    is_active: true
+  });
+  $('#staffAnnouncementStatus').textContent = error ? error.message : 'Messaggio Staff pubblicato.';
+  if (!error) {
+    form.reset();
+    await staffLoadAnnouncements();
+  }
 }
 
 async function staffLoad() {
@@ -3815,6 +3893,8 @@ async function render(id) {
 
       host.innerHTML = staffPage();
       await staffLoad();
+      await staffLoadAnnouncements();
+      $('#staffAnnouncementForm').onsubmit = publishStaffAnnouncement;
 
       $('#fullStaffForm').onsubmit = async e => {
         try {
