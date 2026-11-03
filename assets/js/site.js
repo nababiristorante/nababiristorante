@@ -219,6 +219,107 @@
   }
 
 
+  /* NABABI GALLERY LIGHTBOX */
+  function setupGalleryLightbox() {
+    const gallery = $('#liveGallery');
+    if (!gallery) return;
+
+    let images = [];
+    let activeIndex = 0;
+    let startX = 0;
+    let overlay = $('#galleryLightbox');
+
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'galleryLightbox';
+      overlay.className = 'gallery-lightbox';
+      overlay.hidden = true;
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Gallery image viewer');
+      overlay.innerHTML = `
+        <button class="gallery-lightbox-close" type="button" aria-label="Close image viewer">×</button>
+        <button class="gallery-lightbox-prev" type="button" aria-label="Previous image">‹</button>
+        <figure class="gallery-lightbox-figure">
+          <img class="gallery-lightbox-image" alt="">
+          <figcaption class="gallery-lightbox-caption"></figcaption>
+        </figure>
+        <button class="gallery-lightbox-next" type="button" aria-label="Next image">›</button>
+        <div class="gallery-lightbox-count" aria-live="polite"></div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    const largeImage = $('.gallery-lightbox-image', overlay);
+    const caption = $('.gallery-lightbox-caption', overlay);
+    const counter = $('.gallery-lightbox-count', overlay);
+    const closeButton = $('.gallery-lightbox-close', overlay);
+
+    function collectImages() {
+      images = Array.from(gallery.querySelectorAll('.site-card img'))
+        .filter(image => image.src && image.src !== window.location.href);
+    }
+
+    function showImage(index) {
+      if (!images.length) return;
+      activeIndex = (index + images.length) % images.length;
+      const image = images[activeIndex];
+      largeImage.src = image.currentSrc || image.src;
+      largeImage.alt = image.alt || 'Nababi Ristorante gallery image';
+      const title = image.closest('.site-card')?.querySelector('h3')?.textContent?.trim();
+      caption.textContent = title || image.alt || '';
+      counter.textContent = (activeIndex + 1) + ' / ' + images.length;
+      $('.gallery-lightbox-prev', overlay).hidden = images.length < 2;
+      $('.gallery-lightbox-next', overlay).hidden = images.length < 2;
+    }
+
+    function openImage(image) {
+      collectImages();
+      activeIndex = images.indexOf(image);
+      if (activeIndex < 0) return;
+      showImage(activeIndex);
+      overlay.hidden = false;
+      document.body.classList.add('gallery-lightbox-open');
+      closeButton.focus();
+    }
+
+    function closeImage() {
+      overlay.hidden = true;
+      document.body.classList.remove('gallery-lightbox-open');
+    }
+
+    gallery.addEventListener('click', event => {
+      const image = event.target.closest('.site-card img');
+      if (!image) return;
+      event.preventDefault();
+      openImage(image);
+    });
+
+    $('.gallery-lightbox-prev', overlay).addEventListener('click', () => showImage(activeIndex - 1));
+    $('.gallery-lightbox-next', overlay).addEventListener('click', () => showImage(activeIndex + 1));
+    closeButton.addEventListener('click', closeImage);
+    overlay.addEventListener('click', event => {
+      if (event.target === overlay) closeImage();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (overlay.hidden) return;
+      if (event.key === 'Escape') closeImage();
+      if (event.key === 'ArrowLeft') showImage(activeIndex - 1);
+      if (event.key === 'ArrowRight') showImage(activeIndex + 1);
+    });
+
+    overlay.addEventListener('touchstart', event => {
+      startX = event.changedTouches[0]?.clientX || 0;
+    }, {passive:true});
+    overlay.addEventListener('touchend', event => {
+      const endX = event.changedTouches[0]?.clientX || 0;
+      const delta = endX - startX;
+      if (Math.abs(delta) > 45) showImage(activeIndex + (delta < 0 ? 1 : -1));
+    }, {passive:true});
+  }
+
+
 
   function brandLogoUrl(name, type = 'social') {
     const key = String(name || '').trim().toLowerCase().replace(/\s+/g, '');
@@ -1195,6 +1296,7 @@
     setupContactForm();
     setupMobileNavigation();
     setupLanguageSwitcher();
+    setupGalleryLightbox();
 
     if (!db) {
 
