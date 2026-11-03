@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d24">
+<title>QR Menu | Nababi Ristorante</title>
+<style>
+:root{color-scheme:dark;--green:#102d24;--gold:#d8b76a;--cream:#f7f1e5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07110d,#102d24);color:var(--cream);font-family:Georgia,serif}
+header{text-align:center;padding:28px 16px 20px;border-bottom:1px solid #d8b76a55}
+.brand{font-size:28px;color:var(--gold);letter-spacing:1px}header p{margin:7px 0 0;font:11px Arial,sans-serif;letter-spacing:4px}
+main{max-width:820px;margin:auto;padding:20px 14px 48px}
+#status{text-align:center;color:#e8d8b5;font:15px Arial,sans-serif;padding:22px}
+.pages{display:grid;gap:16px}.menu-page{display:block;width:100%;height:auto;border-radius:10px;box-shadow:0 8px 28px #0008;background:#fff;cursor:zoom-in}
+.viewer{position:fixed;inset:0;background:#050706f5;display:none;align-items:center;justify-content:center;padding:12px;z-index:5}
+.viewer.open{display:flex}.viewer img{max-width:100%;max-height:94vh;object-fit:contain}
+.close{position:fixed;top:12px;right:14px;border:1px solid var(--gold);background:var(--green);color:var(--gold);font-size:26px;border-radius:50%;width:44px;height:44px}
+footer{text-align:center;color:#cbbd9f;font:12px Arial,sans-serif;padding:20px}
+</style>
+</head>
+<body>
+<header><div class="brand">♛ Nababi Ristorante</div><p>INDIAN FINE DINING · ROMA</p></header>
+<main><div id="status">Caricamento del menu…</div><div class="pages" id="menuPages"></div></main>
+<footer>Via Vespasiano 73/75/77 · Roma<br>Per informazioni: +39 393 3805350</footer>
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Menu ingrandito"><button class="close" id="closeViewer" aria-label="Chiudi">×</button><img id="viewerImage" alt="Menu ingrandito"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
+<script>
+(async()=>{
+ const status=document.getElementById('status'), host=document.getElementById('menuPages');
+ const cfg=window.NABABI_CONFIG||{};
+ if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY){status.textContent='Menu temporaneamente non disponibile.';return;}
+ const db=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+ try{
+  const {data,error}=await db.from('qr_menu_images').select('image_url').eq('is_active',true).order('sort_order',{ascending:true});
+  if(error)throw error;
+  if(!data||!data.length){status.textContent='Il menu digitale sarà disponibile a breve.';return;}
+  status.remove();
+  data.forEach((item,index)=>{
+   const img=document.createElement('img');img.className='menu-page';img.src=item.image_url;img.alt='Pagina '+(index+1)+' del menu';img.loading=index>0?'lazy':'eager';
+   img.addEventListener('click',()=>{document.getElementById('viewerImage').src=item.image_url;document.getElementById('viewer').classList.add('open')});
+   host.appendChild(img);
+  });
+ }catch(err){console.error(err);status.textContent='Menu temporaneamente non disponibile.';}
+})();
+const viewer=document.getElementById('viewer');
+document.getElementById('closeViewer').onclick=()=>viewer.classList.remove('open');
+viewer.addEventListener('click',e=>{if(e.target===viewer)viewer.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')viewer.classList.remove('open')});
+</script>
+</body></html>
