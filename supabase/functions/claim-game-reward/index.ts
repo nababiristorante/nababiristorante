@@ -67,9 +67,13 @@ Deno.serve(async (req) => {
       return json({ error: "Security verification is temporarily unavailable." }, 502);
     }
     const verification = await verificationResponse.json();
+    const allowedHostnames = new Set([
+      "nababiristorante.vercel.app",
+      "nababiristorante-git-feature-games-management-nababiristorante1.vercel.app",
+    ]);
     if (
       verification?.success !== true ||
-      verification?.hostname !== "nababiristorante.vercel.app"
+      !allowedHostnames.has(verification?.hostname)
     ) {
       return json({ error: "Security check failed. Please try again." }, 403);
     }
