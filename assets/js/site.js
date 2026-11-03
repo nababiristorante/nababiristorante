@@ -557,7 +557,7 @@
     if (!container || !db) return;
     const now = new Date().toISOString();
     try {
-      const {data,error} = await db.from('games')
+      const {data,error} = await db.from('nababi_games')
         .select('game_key,title,description,image_url,reward_type,reward_value,reward_label,starts_at,ends_at')
         .eq('is_enabled',true)
         .or('starts_at.is.null,starts_at.lte.' + now)
