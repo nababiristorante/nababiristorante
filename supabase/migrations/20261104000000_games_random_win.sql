@@ -110,7 +110,7 @@ begin
   return query select true, true, v_code, v_game.reward_type,
     v_game.reward_value, v_game.reward_label, v_expiry, null::text;
 end;
-$;
+$$;
 
 alter function public.play_game_and_issue_claim(text,text,text)
   set search_path = '';
