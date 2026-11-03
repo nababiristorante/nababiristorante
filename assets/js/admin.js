@@ -3579,6 +3579,25 @@ async function render(id) {
         return;
       }
       host.innerHTML = await bookingsPage();
+      const calendarDate = $('#bookingCalendarDate');
+      const filterBookingDay = () => {
+        if (!calendarDate) return;
+        const selected = calendarDate.value;
+        let visible = 0;
+        host.querySelectorAll('#bookingCalendarRows tr[data-booking-date]').forEach(row => {
+          const match = !selected || row.dataset.bookingDate === selected;
+          row.hidden = !match;
+          if (match) visible++;
+        });
+        const total = $('#bookingDayTotal');
+        const note = $('#bookingCalendarNote');
+        if (total) total.textContent = String(visible);
+        if (note) note.textContent = selected
+          ? visible + ' prenotazioni per ' + selected + '.'
+          : visible + ' prenotazioni visualizzate.';
+      };
+      calendarDate?.addEventListener('change', filterBookingDay);
+      filterBookingDay();
       return;
     }
 
