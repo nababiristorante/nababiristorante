@@ -3383,7 +3383,7 @@ async function bookingsPage() {
   if (!rows.length) return '<section class="section-card"><p>Nessuna prenotazione trovata.</p></section>';
   return `<section class="section-card">
     <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
-    <p class="help">Le prenotazioni iniziano in stato In attesa di conferma. Conferma o rifiuta ogni richiesta.</p>
+    <p class="help">Apri “Messaggio” per preparare una risposta personalizzata e inviarla tramite WhatsApp o email.</p>
     <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
     ${rows.map(row => `<tr>
       <td>${esc(row.full_name || row.name || row.customer_name || '—')}<br><small>${esc(row.booking_code || '')}</small></td>
@@ -3392,10 +3392,24 @@ async function bookingsPage() {
       <td>${esc(row.guests ?? '—')}</td>
       <td><span class="tag">${esc(row.status || 'pending')}</span></td>
       <td>
-        <button class="gold-btn" data-booking-status="confirmed" data-booking-id="${esc(row.id)}">Conferma</button>
-        <button class="outline-btn" data-booking-status="rejected" data-booking-id="${esc(row.id)}">Rifiuta</button>
+        <button class="outline-btn" data-booking-message data-name="${esc(row.full_name || row.name || row.customer_name || '')}" data-phone="${esc(row.phone || '')}" data-email="${esc(row.email || '')}" data-date="${esc(row.booking_date || '')}" data-time="${esc(row.booking_time || '')}" data-guests="${esc(row.guests ?? '')}" data-code="${esc(row.booking_code || '')}" data-status="${esc(row.status || 'pending')}">Messaggio</button>
+        ${row.status === 'pending' ? `<button class="gold-btn" data-booking-status="confirmed" data-booking-id="${esc(row.id)}">Conferma</button><button class="outline-btn" data-booking-status="rejected" data-booking-id="${esc(row.id)}">Rifiuta</button>` : ''}
       </td>
     </tr>`).join('')}</tbody></table></div>
+    <section class="section-card" id="bookingMessagePanel" hidden>
+      <h3>Invia un messaggio al cliente</h3>
+      <p class="help" id="bookingMessageRecipient"></p>
+      <label class="field">Lingua del messaggio
+        <select id="bookingMessageLanguage"><option value="it">Italiano</option><option value="en">English</option><option value="bn">বাংলা</option></select>
+      </label>
+      <label class="field">Messaggio personalizzato
+        <textarea id="bookingMessageText" rows="6" maxlength="2000"></textarea>
+      </label>
+      <button class="gold-btn" type="button" data-booking-send-whatsapp>Apri WhatsApp</button>
+      <button class="outline-btn" type="button" data-booking-send-email>Apri Email</button>
+      <button class="outline-btn" type="button" data-booking-message-close>Chiudi</button>
+      <p class="help">Il pulsante apre WhatsApp o la tua app email con il testo già compilato. Controlla e premi “Invia” nell’app. L’invio automatico dal sito non è ancora attivo.</p>
+    </section>
     <p id="bookingAdminStatus" class="help" aria-live="polite"></p>
   </section>`;
 }
@@ -3821,6 +3835,48 @@ $('#pageContent').addEventListener('click', async e => {
     const pageButton = e.target.closest('[data-page]');
     if (pageButton) {
       render(pageButton.dataset.page);
+      return;
+    }
+
+    const messageButton = e.target.closest('[data-booking-message]');
+    if (messageButton) {
+      const panel = $('#bookingMessagePanel');
+      const name = messageButton.dataset.name || 'Cliente';
+      const lang = $('#bookingMessageLanguage');
+      const status = messageButton.dataset.status;
+      const details = {date:messageButton.dataset.date,time:messageButton.dataset.time,guests:messageButton.dataset.guests,code:messageButton.dataset.code};
+      panel.dataset.phone = messageButton.dataset.phone || '';
+      panel.dataset.email = messageButton.dataset.email || '';
+      $('#bookingMessageRecipient').textContent = name + ' · ' + (messageButton.dataset.email || messageButton.dataset.phone || 'Contatto non disponibile');
+      const makeText = language => {
+        const when = [details.date,details.time].filter(Boolean).join(' ');
+        if (language === 'en') return `Dear ${name}, regarding your Nababi Ristorante booking (${details.code || '—'}) for ${when}, ${details.guests || '—'} guest(s): the current status is ${status}. Please contact us if you need any assistance. Thank you.`;
+        if (language === 'bn') return `প্রিয় ${name}, Nababi Ristorante-এ আপনার বুকিং (${details.code || '—'}), তারিখ ও সময়: ${when}, অতিথি: ${details.guests || '—'}। বুকিংয়ের বর্তমান অবস্থা: ${status}। কোনো সাহায্য লাগলে আমাদের সঙ্গে যোগাযোগ করুন। ধন্যবাদ।`;
+        return `Gentile ${name}, in merito alla sua prenotazione Nababi Ristorante (${details.code || '—'}) del ${when}, per ${details.guests || '—'} ospiti: lo stato attuale è ${status}. Per qualsiasi necessità, ci contatti. Grazie.`;
+      };
+      $('#bookingMessageText').value = makeText(lang.value);
+      lang.onchange = () => { $('#bookingMessageText').value = makeText(lang.value); };
+      panel.hidden = false;
+      panel.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+    if (e.target.closest('[data-booking-message-close]')) {
+      $('#bookingMessagePanel').hidden = true;
+      return;
+    }
+    if (e.target.closest('[data-booking-send-whatsapp]')) {
+      const phone = String($('#bookingMessagePanel').dataset.phone || '').replace(/[^0-9]/g,'');
+      if (!phone) { alert('Numero WhatsApp non disponibile per questo cliente.'); return; }
+      const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent($('#bookingMessageText').value);
+      window.open(url,'_blank','noopener');
+      return;
+    }
+    if (e.target.closest('[data-booking-send-email]')) {
+      const email = $('#bookingMessagePanel').dataset.email || '';
+      if (!email) { alert('Email non disponibile per questo cliente.'); return; }
+      const subject = encodeURIComponent('Nababi Ristorante — Prenotazione');
+      const body = encodeURIComponent($('#bookingMessageText').value);
+      window.location.href = 'mailto:' + encodeURIComponent(email) + '?subject=' + subject + '&body=' + body;
       return;
     }
 
