@@ -87,12 +87,6 @@ begin
     ) % 10000
   ) < round(coalesce(v_game.win_probability, 10) * 100)::bigint;
 
-  if p_game_key = 'find_golden_n' then
-    v_won := upper(coalesce(p_choice, '')) = 'N';
-  elsif p_game_key = 'food_quiz' then
-    v_won := lower(coalesce(p_choice, '')) = 'biryani';
-  end if;
-
   insert into public.game_play_attempts(game_key, visitor_hash, won)
   values (p_game_key, p_visitor_hash, v_won);
 
