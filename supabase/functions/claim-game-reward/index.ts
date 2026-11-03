@@ -34,15 +34,10 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const gameKey = typeof body?.game_key === "string" ? body.game_key.trim() : "";
-    const phone = typeof body?.phone === "string" ? body.phone.trim() : "";
     const visitorToken = typeof body?.visitor_token === "string" ? body.visitor_token : "";
 
     if (!/^[a-z0-9_-]{2,80}$/i.test(gameKey)) {
       return json({ error: "Invalid game" }, 400);
-    }
-    // Require international E.164 format, e.g. +393331234567.
-    if (!/^\+[1-9][0-9]{7,14}$/.test(phone)) {
-      return json({ error: "Enter a valid phone number with country code" }, 400);
     }
     if (visitorToken.length < 8 || visitorToken.length > 200) {
       return json({ error: "Invalid visitor token" }, 400);
@@ -53,39 +48,38 @@ Deno.serve(async (req) => {
     const hashSecret = Deno.env.get("GAME_PHONE_HASH_SECRET");
     if (!supabaseUrl || !serviceRoleKey || !hashSecret || hashSecret.length < 32) {
       console.error("Game claim function is missing required secrets.");
-      return json({ error: "Reward claims are not configured" }, 500);
+      return json({ error: "Game play is not configured" }, 500);
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const phoneHash = phone ? await keyedDigest(hashSecret, phone) : null;
     const visitorHash = await keyedDigest(hashSecret, visitorToken);
-    const { data, error } = await admin.rpc("issue_game_claim", {
+    const { data, error } = await admin.rpc("play_game_and_issue_claim", {
       p_game_key: gameKey,
-      p_phone_hash: phoneHash,
       p_visitor_hash: visitorHash,
     });
 
     if (error) {
-      console.error("Game claim database error:", error);
-      return json({ error: "Could not validate reward claim" }, 500);
+      console.error("Game play database error:", error);
+      return json({ error: "Could not process this game" }, 500);
     }
 
-    const claim = Array.isArray(data) ? data[0] : data;
-    if (!claim?.success) {
-      return json({ error: claim?.message || "Reward is not available" }, 409);
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result?.success) {
+      return json({ error: result?.message || "Game is not available" }, 409);
     }
 
     return json({
       success: true,
-      code: claim.claim_code,
-      reward_type: claim.reward_type,
-      reward_value: claim.reward_value,
-      reward_label: claim.reward_label,
-      expires_at: claim.expires_at,
-      phone_required: false,
+      won: result.won === true,
+      code: result.claim_code || null,
+      reward_type: result.reward_type || null,
+      reward_value: result.reward_value ?? null,
+      reward_label: result.reward_label || null,
+      expires_at: result.expires_at || null,
+      message: result.message || null,
     });
   } catch (error) {
     console.error("Game claim error:", error);
