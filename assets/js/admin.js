@@ -3477,8 +3477,9 @@ async function bookingsPage() {
   const {data,error} = await db.from('bookings').select('*').order('created_at',{ascending:false}).limit(100);
   if (error) throw error;
   const rows = data || [];
-  if (!rows.length) return '<section class="section-card"><p>Nessuna prenotazione trovata.</p></section>';
-  return `<section class="section-card">
+  const today = new Date().toLocaleDateString('en-CA');
+  const countFor = date => rows.filter(row => String(row.booking_date || '').slice(0,10) === date).length;
+  return `<section class="section-card booking-calendar-card">
     <style>
       .booking-row-new{background:rgba(217,165,45,.10)}
       .booking-row-confirmed{background:rgba(35,145,85,.09)}
@@ -3487,10 +3488,26 @@ async function bookingsPage() {
       .booking-status-new{background:#fff0c2;color:#805500;border:1px solid #e7c46a}
       .booking-status-confirmed{background:#d9f5e4;color:#17643a;border:1px solid #8fd2aa}
       .booking-status-rejected{background:#ffe0e0;color:#9d2424;border:1px solid #e7a0a0}
+      .booking-calendar-tools{display:grid;grid-template-columns:minmax(180px,1fr) repeat(3,minmax(90px,.7fr));gap:10px;margin:18px 0;padding:16px;border:1px solid rgba(216,183,106,.3);border-radius:14px;background:linear-gradient(135deg,rgba(22,42,33,.8),rgba(7,15,13,.9))}
+      .booking-calendar-tools label{display:grid;gap:7px;color:#e9dcbf;font-size:12px;font-weight:700}
+      .booking-calendar-tools input{min-height:42px;padding:9px 11px;border:1px solid #80683a;border-radius:9px;background:#10191d;color:#fff}
+      .booking-calendar-stat{padding:10px;border:1px solid rgba(216,183,106,.22);border-radius:10px;text-align:center}
+      .booking-calendar-stat strong{display:block;color:#f1cf70;font-size:22px}
+      .booking-calendar-stat span{font-size:11px;color:#d3c9b3}
+      @media(max-width:620px){.booking-calendar-tools{grid-template-columns:1fr 1fr}.booking-calendar-tools label{grid-column:1/-1}}
     </style>
     <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
-    <p class="help">Le nuove richieste sono evidenziate in giallo; confermate in verde e rifiutate in rosso. Apri “Messaggio” per preparare una risposta tramite WhatsApp o email.</p>
-    <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
+    <p class="help">Seleziona una data per vedere le prenotazioni del giorno. Le richieste restano evidenziate in giallo, confermate in verde e rifiutate in rosso.</p>
+    <div class="booking-calendar-tools">
+      <label>Calendario prenotazioni
+        <input id="bookingCalendarDate" type="date" value="${esc(today)}">
+      </label>
+      <div class="booking-calendar-stat"><strong id="bookingDayTotal">${countFor(today)}</strong><span>Prenotazioni del giorno</span></div>
+      <div class="booking-calendar-stat"><strong>${rows.filter(row => ['pending','new'].includes(String(row.status || 'pending').toLowerCase())).length}</strong><span>In attesa</span></div>
+      <div class="booking-calendar-stat"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'confirmed').length}</strong><span>Confermate</span></div>
+    </div>
+    <p id="bookingCalendarNote" class="help" aria-live="polite">${countFor(today)} prenotazioni per la data selezionata.</p>
+    <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="bookingCalendarRows">
     ${rows.map(row => {
       const bookingStatus = String(row.status || 'pending').toLowerCase();
       const isNew = bookingStatus === 'pending' || bookingStatus === 'new';
@@ -3499,7 +3516,7 @@ async function bookingsPage() {
       const rowClass = isNew ? 'booking-row-new' : isConfirmed ? 'booking-row-confirmed' : isRejected ? 'booking-row-rejected' : '';
       const statusClass = isNew ? 'booking-status-new' : isConfirmed ? 'booking-status-confirmed' : isRejected ? 'booking-status-rejected' : '';
       const statusLabel = isNew ? 'NUOVA · IN ATTESA' : isConfirmed ? 'CONFERMATA' : isRejected ? 'RIFIUTATA' : bookingStatus.toUpperCase();
-      return `<tr class="${rowClass}">
+      return `<tr class="${rowClass}" data-booking-date="${esc(String(row.booking_date || '').slice(0,10))}">
       <td>${esc(row.full_name || row.name || row.customer_name || '—')}<br><small>${esc(row.booking_code || '')}</small></td>
       <td>${esc(row.phone || '—')}<br>${esc(row.email || '')}</td>
       <td>${esc(row.booking_date || '—')}<br>${esc(row.booking_time || '—')}</td>
@@ -3511,6 +3528,7 @@ async function bookingsPage() {
       </td>
     </tr>`;
     }).join('')}</tbody></table></div>
+    ${rows.length ? '' : '<p class="empty-state">Nessuna prenotazione trovata.</p>'}
     <section class="section-card" id="bookingMessagePanel" hidden>
       <h3>Invia un messaggio al cliente</h3>
       <p class="help" id="bookingMessageRecipient"></p>
@@ -3523,7 +3541,7 @@ async function bookingsPage() {
       <button class="gold-btn" type="button" data-booking-send-whatsapp>Apri WhatsApp</button>
       <button class="outline-btn" type="button" data-booking-send-email>Apri Email</button>
       <button class="outline-btn" type="button" data-booking-message-close>Chiudi</button>
-      <p class="help">Il pulsante apre WhatsApp o la tua app email con il testo già compilato. Controlla e premi “Invia” nell’app. L’invio automatico dal sito non è ancora attivo.</p>
+      <p class="help">Il pulsante apre WhatsApp o la tua app email con il testo già compilato. Controlla e premi “Invia” nell’app. L’invio automatico dal sito non è attivo.</p>
     </section>
     <p id="bookingAdminStatus" class="help" aria-live="polite"></p>
   </section>`;
