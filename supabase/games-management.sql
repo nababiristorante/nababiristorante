@@ -104,7 +104,7 @@ declare
   v_expiry timestamptz;
 begin
   if p_game_key is null or length(p_game_key) > 80
-     or p_phone_hash is null or length(p_phone_hash) <> 64
+     or (p_phone_hash is not null and length(p_phone_hash) <> 64)
      or p_visitor_hash is null or length(p_visitor_hash) <> 64 then
     return query select false, null::text, null::text, null::numeric,
       null::text, null::timestamptz, 'Invalid claim details';
@@ -130,7 +130,8 @@ begin
   if exists (
     select 1 from public.game_claims
     where game_key = p_game_key
-      and (phone_hash = p_phone_hash or visitor_hash = p_visitor_hash)
+      and ((p_phone_hash is not null and phone_hash = p_phone_hash)
+        or visitor_hash = p_visitor_hash)
   ) then
     return query select false, null::text, null::text, null::numeric,
       null::text, null::timestamptz, 'A reward was already claimed for this game';
