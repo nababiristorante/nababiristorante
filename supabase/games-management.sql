@@ -258,7 +258,14 @@ begin
     return;
   end if;
 
-  v_won := random() * 100 < coalesce(v_game.win_probability, 20);
+  v_won := (
+    (
+      get_byte(gen_random_bytes(4), 0)::bigint * 16777216 +
+      get_byte(gen_random_bytes(4), 0)::bigint * 65536 +
+      get_byte(gen_random_bytes(4), 0)::bigint * 256 +
+      get_byte(gen_random_bytes(4), 0)::bigint
+    ) % 10000
+  ) < round(coalesce(v_game.win_probability, 20) * 100)::bigint;
 
   insert into public.game_play_attempts(game_key, visitor_hash, won)
   values (p_game_key, p_visitor_hash, v_won);
