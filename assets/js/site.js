@@ -266,8 +266,10 @@
       const image = images[activeIndex];
       largeImage.src = image.currentSrc || image.src;
       largeImage.alt = image.alt || 'Nababi Ristorante gallery image';
-      const title = image.closest('.site-card')?.querySelector('h3')?.textContent?.trim();
-      caption.textContent = title || image.alt || '';
+      const card = image.closest('.site-card');
+      const title = card?.querySelector('h3')?.textContent?.trim();
+      const description = card?.querySelector('p')?.textContent?.trim();
+      caption.textContent = [title || image.alt || '', description || ''].filter(Boolean).join(' — ');
       counter.textContent = (activeIndex + 1) + ' / ' + images.length;
       $('.gallery-lightbox-prev', overlay).hidden = images.length < 2;
       $('.gallery-lightbox-next', overlay).hidden = images.length < 2;
