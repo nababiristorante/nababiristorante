@@ -44,6 +44,8 @@
   const staffNoticeModal = document.getElementById("staffNoticeModal");
   const staffNoticeList = document.getElementById("staffNoticeList");
   const staffNoticeClose = document.getElementById("staffNoticeClose");
+  const staffBrandLogo = document.getElementById("staffBrandLogo");
+  const staffBrandFallback = document.getElementById("staffBrandFallback");
 
   let db = null;
   let selectedStaff = null;
@@ -64,6 +66,30 @@
     busy = value;
     button.disabled = value;
     button.textContent = value ? "PLEASE WAIT..." : originalText;
+  }
+
+  async function loadStaffBrandLogo() {
+    if (!db || !staffBrandLogo) return;
+    try {
+      const { data, error } = await db.from("site_settings")
+        .select("setting_key,setting_value")
+        .in("setting_key", ["restaurant_logo_url", "restaurant_logo_show_staff_qr"]);
+      if (error) throw error;
+      const settings = Object.fromEntries((data || []).map(row => [row.setting_key, row.setting_value]));
+      const url = safePhotoUrl(settings.restaurant_logo_url);
+      const enabled = settings.restaurant_logo_show_staff_qr !== "false";
+      if (url && enabled) {
+        staffBrandLogo.src = url;
+        staffBrandLogo.classList.remove("hidden");
+        if (staffBrandFallback) staffBrandFallback.classList.add("hidden");
+      } else {
+        staffBrandLogo.removeAttribute("src");
+        staffBrandLogo.classList.add("hidden");
+        if (staffBrandFallback) staffBrandFallback.classList.remove("hidden");
+      }
+    } catch (error) {
+      console.error("Staff QR logo could not be loaded:", error);
+    }
   }
 
   async function showActiveStaffNotices() {
