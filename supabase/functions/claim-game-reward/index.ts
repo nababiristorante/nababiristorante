@@ -12,10 +12,17 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-async function digest(value: string): Promise<string> {
-  const bytes = new TextEncoder().encode(value);
-  const hash = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(hash))
+async function keyedDigest(secret: string, value: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return Array.from(new Uint8Array(signature))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
@@ -53,8 +60,8 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const phoneHash = await digest(hashSecret + ":" + phone);
-    const visitorHash = await digest(hashSecret + ":" + visitorToken);
+    const phoneHash = await keyedDigest(hashSecret, phone);
+    const visitorHash = await keyedDigest(hashSecret, visitorToken);
     const { data, error } = await admin.rpc("issue_game_claim", {
       p_game_key: gameKey,
       p_phone_hash: phoneHash,
