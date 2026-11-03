@@ -3373,6 +3373,42 @@ async function deleteReview(id) {
 }
 
 
+
+/* BOOKING MANAGEMENT */
+async function bookingsPage() {
+  if (userRole !== 'admin') return '<p>Solo l’amministratore può gestire le prenotazioni.</p>';
+  const {data,error} = await db.from('bookings').select('*').order('created_at',{ascending:false}).limit(100);
+  if (error) throw error;
+  const rows = data || [];
+  if (!rows.length) return '<section class="section-card"><p>Nessuna prenotazione trovata.</p></section>';
+  return `<section class="section-card">
+    <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
+    <p class="help">Le prenotazioni iniziano in stato In attesa di conferma. Conferma o rifiuta ogni richiesta.</p>
+    <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
+    ${rows.map(row => `<tr>
+      <td>${esc(row.full_name || row.name || row.customer_name || '—')}<br><small>${esc(row.booking_code || '')}</small></td>
+      <td>${esc(row.phone || '—')}<br>${esc(row.email || '')}</td>
+      <td>${esc(row.booking_date || '—')}<br>${esc(row.booking_time || '—')}</td>
+      <td>${esc(row.guests ?? '—')}</td>
+      <td><span class="tag">${esc(row.status || 'pending')}</span></td>
+      <td>
+        <button class="gold-btn" data-booking-status="confirmed" data-booking-id="${esc(row.id)}">Conferma</button>
+        <button class="outline-btn" data-booking-status="rejected" data-booking-id="${esc(row.id)}">Rifiuta</button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>
+    <p id="bookingAdminStatus" class="help" aria-live="polite"></p>
+  </section>`;
+}
+async function setBookingStatus(id,status) {
+  if (!['confirmed','rejected'].includes(status)) throw new Error('Stato non valido.');
+  const label = status === 'confirmed' ? 'confermare' : 'rifiutare';
+  if (!confirm('Vuoi ' + label + ' questa prenotazione?')) return;
+  const {data,error} = await db.from('bookings').update({status}).eq('id',id).select('id').maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('Nessuna prenotazione aggiornata. Verifica la policy UPDATE della tabella bookings in Supabase.');
+  await render('bookings');
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -3390,6 +3426,15 @@ async function render(id) {
   host.innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   try {
+    if (id === 'bookings') {
+      if (userRole !== 'admin') {
+        host.innerHTML = '<p>Solo l’amministratore può gestire le prenotazioni.</p>';
+        return;
+      }
+      host.innerHTML = await bookingsPage();
+      return;
+    }
+
     if (id === 'reviews') {
       if (userRole !== 'admin') {
         host.innerHTML = '<p>Solo l’amministratore può gestire le recensioni.</p>';
@@ -3776,6 +3821,22 @@ $('#pageContent').addEventListener('click', async e => {
     const pageButton = e.target.closest('[data-page]');
     if (pageButton) {
       render(pageButton.dataset.page);
+      return;
+    }
+
+    const bookingAction = e.target.closest('[data-booking-status]');
+    if (bookingAction) {
+      bookingAction.disabled = true;
+      try {
+        await setBookingStatus(bookingAction.dataset.bookingId, bookingAction.dataset.bookingStatus);
+      } catch (err) {
+        alert(err.message || 'Impossibile aggiornare la prenotazione.');
+        bookingAction.disabled = false;
+      }
+      return;
+    }
+    if (e.target.closest('[data-refresh-bookings]')) {
+      await render('bookings');
       return;
     }
 
