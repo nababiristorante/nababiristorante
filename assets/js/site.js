@@ -549,6 +549,53 @@
     }
   }
 
+
+  /* PUBLIC GAMES */
+  async function loadGames() {
+    const container = $('#liveGames');
+    const section = $('#gamesSection');
+    if (!container || !db) return;
+    const now = new Date().toISOString();
+    try {
+      const {data,error} = await db.from('games')
+        .select('game_key,title,description,image_url,reward_type,reward_value,reward_label,starts_at,ends_at')
+        .eq('is_enabled',true)
+        .or('starts_at.is.null,starts_at.lte.' + now)
+        .or('ends_at.is.null,ends_at.gte.' + now)
+        .order('title');
+      if (error) throw error;
+      const rows = data || [];
+      if (!rows.length) {
+        if (section) section.hidden = true;
+        return;
+      }
+      if (section) section.hidden = false;
+      container.innerHTML = rows.map(game => {
+        let reward = game.reward_label || '';
+        if (!reward) {
+          if (game.reward_type === 'discount_percent' && game.reward_value != null) reward = game.reward_value + '% discount';
+          else if (game.reward_type === 'discount_euro' && game.reward_value != null) reward = money(game.reward_value) + ' discount';
+          else if (game.reward_type === 'free_food') reward = 'Free food';
+          else if (game.reward_type === 'free_drink') reward = 'Free drink';
+          else if (game.reward_type === 'custom') reward = 'Special reward';
+        }
+        return `
+          <article class="site-card live-card game-card">
+            ${game.image_url ? `<img src="${escapeHTML(game.image_url)}" alt="${escapeHTML(game.title || 'Nababi game')}" loading="lazy">` : ''}
+            <div>
+              <h3>${escapeHTML(game.title || game.game_key)}</h3>
+              <p>${escapeHTML(game.description || '')}</p>
+              ${reward ? `<p class="site-price">${escapeHTML(reward)}</p>` : ''}
+              <p class="help">Gioco in fase di attivazione. Le partite e i premi saranno disponibili dopo la verifica.</p>
+            </div>
+          </article>`;
+      }).join('');
+    } catch (error) {
+      console.error('Nababi games could not be loaded:', error);
+      if (section) section.hidden = true;
+    }
+  }
+
   /* EVENTS */
 
   async function loadEvents() {
@@ -1373,6 +1420,8 @@
       loadSocialLinks(),
 
       loadCustomerCouponOffer(),
+
+      loadGames(),
 
       loadEvents(),
 
