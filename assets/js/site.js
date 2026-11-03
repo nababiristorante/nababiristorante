@@ -91,6 +91,25 @@
     }
   }
 
+  /* ABOUT SECTION — ADMIN-MANAGED CONTENT */
+  let aboutContent={it:'',en:'',bn:'',image:''};
+  function applyAboutLanguage(language){
+    const paragraph=$('#about > p'),image=$('#aboutImage'),lang=['it','en','bn'].includes(language)?language:'it';
+    if(paragraph&&aboutContent[lang])paragraph.textContent=aboutContent[lang];
+    if(image){if(aboutContent.image){image.src=aboutContent.image;image.hidden=false;}else image.hidden=true;}
+  }
+  async function loadAboutContent(){
+    if(!db)return;
+    try{
+      const keys=['about_text_it','about_text_en','about_text_bn','about_image_url'];
+      const {data,error}=await db.from('site_settings').select('setting_key,setting_value').in('setting_key',keys);
+      if(error)throw error;
+      const v=Object.fromEntries((data||[]).map(row=>[row.setting_key,row.setting_value||'']));
+      aboutContent={it:v.about_text_it||'',en:v.about_text_en||'',bn:v.about_text_bn||'',image:v.about_image_url||''};
+      applyAboutLanguage(document.documentElement.lang||'it');
+    }catch(error){console.error('Nababi About content could not be loaded:',error.message);}
+  }
+
   /* RESTAURANT LOGO */
   async function loadRestaurantLogo() {
     if (!db) return;
@@ -1564,8 +1583,9 @@
     let saved = 'it';
     try { saved = localStorage.getItem('nababi-language') || 'it'; } catch (_) {}
     selector.value = ['it', 'en', 'bn'].includes(saved) ? saved : 'it';
-    selector.addEventListener('change', () => applyLanguage(selector.value));
+    selector.addEventListener('change',()=>{applyLanguage(selector.value);applyAboutLanguage(selector.value);});
     applyLanguage(selector.value);
+    applyAboutLanguage(selector.value);
   }
 
   /* INITIALIZATION */
@@ -1591,6 +1611,8 @@
     await Promise.allSettled([
 
       loadRestaurantLogo(),
+
+      loadAboutContent(),
 
       loadMenu(),
 
