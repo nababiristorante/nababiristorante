@@ -837,6 +837,17 @@
           if (error.code === '23505') throw new Error('Questo tavolo è appena stato prenotato per quell’orario. Scegline un altro.');
           throw error;
         }
+
+        // Notify the restaurant admin only. A mail failure never cancels the saved booking.
+        try {
+          const { error: notifyError } = await db.functions.invoke('booking-notification', {
+            body: { booking_code: booking.booking_code }
+          });
+          if (notifyError) console.warn('Admin booking email notification failed:', notifyError);
+        } catch (notifyError) {
+          console.warn('Admin booking email notification failed:', notifyError);
+        }
+
         form.reset();
         availableTables = [];
         tableInput.value = '';
