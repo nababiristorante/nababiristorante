@@ -550,7 +550,7 @@
   }
 
 
-  /* PUBLIC GAMES */
+  /* PUBLIC GAMES — one-tap coupon claim, no phone or login */
   async function loadGames() {
     const container = $('#liveGames');
     const section = $('#gamesSection');
@@ -586,10 +586,66 @@
               <h3>${escapeHTML(game.title || game.game_key)}</h3>
               <p>${escapeHTML(game.description || '')}</p>
               ${reward ? `<p class="site-price">${escapeHTML(reward)}</p>` : ''}
-              <p class="help">Gioco in fase di attivazione. Le partite e i premi saranno disponibili dopo la verifica.</p>
+              <button type="button" class="game-claim-button" data-game-key="${escapeHTML(game.game_key)}">Get My Coupon</button>
+              <p class="game-claim-status" aria-live="polite"></p>
+              <div class="game-claim-code" hidden>
+                <strong>Your coupon: <span class="game-claim-code-value"></span></strong>
+                <button type="button" class="game-copy-button">Copy code</button>
+                <small class="game-claim-expiry"></small>
+              </div>
             </div>
           </article>`;
       }).join('');
+
+      if (!container.dataset.claimHandler) {
+        container.dataset.claimHandler = 'true';
+        container.addEventListener('click', async event => {
+          const button = event.target.closest('.game-claim-button');
+          const copyButton = event.target.closest('.game-copy-button');
+          if (copyButton) {
+            const code = copyButton.closest('.game-claim-code')?.querySelector('.game-claim-code-value')?.textContent || '';
+            try {
+              await navigator.clipboard.writeText(code);
+              copyButton.textContent = 'Copied!';
+            } catch (_) {
+              copyButton.textContent = code || 'Copy unavailable';
+            }
+            return;
+          }
+          if (!button || button.disabled) return;
+
+          const card = button.closest('.game-card');
+          const status = card?.querySelector('.game-claim-status');
+          const codePanel = card?.querySelector('.game-claim-code');
+          const codeValue = card?.querySelector('.game-claim-code-value');
+          const expiry = card?.querySelector('.game-claim-expiry');
+          button.disabled = true;
+          if (status) status.textContent = 'Creating your coupon…';
+          if (codePanel) codePanel.hidden = true;
+
+          try {
+            const visitorToken = getVisitorToken();
+            const { data, error } = await db.functions.invoke('claim-game-reward', {
+              body: { game_key: button.dataset.gameKey, visitor_token: visitorToken }
+            });
+            if (error) throw error;
+            if (!data?.success || !data.code) {
+              throw new Error(data?.error || 'Coupon could not be issued. Please try again.');
+            }
+            if (codeValue) codeValue.textContent = data.code;
+            if (expiry) expiry.textContent = data.expires_at
+              ? 'Valid until ' + new Date(data.expires_at).toLocaleString()
+              : '';
+            if (codePanel) codePanel.hidden = false;
+            if (status) status.textContent = 'Your coupon is ready. Show this code to our staff.';
+            button.textContent = 'Coupon received';
+          } catch (error) {
+            console.error('Game coupon claim failed:', error);
+            if (status) status.textContent = error.message || 'Coupon unavailable. Please try again later.';
+            button.disabled = false;
+          }
+        });
+      }
     } catch (error) {
       console.error('Nababi games could not be loaded:', error);
       if (section) section.hidden = true;
