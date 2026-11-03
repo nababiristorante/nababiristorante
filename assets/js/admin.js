@@ -981,6 +981,9 @@ function menuPage() {
 
   <section class="section-card">
     <div class="section-title"><h2>Piatti salvati</h2></div>
+    <label class="field">Cerca un piatto
+      <input id="dishSearch" type="search" placeholder="Nome o categoria…">
+    </label>
     <div id="dishList" class="help">Caricamento…</div>
   </section>`;
 }
@@ -1022,7 +1025,7 @@ async function dishLoad() {
 
     host.innerHTML = data?.length
       ? `<div class="menu-dish-list">${data.map(x => `
-          <article class="menu-dish-row">
+          <article class="menu-dish-row" data-search="${esc((x.name + ' ' + (x.category || '')).toLocaleLowerCase())}">
             ${x.image_url
               ? `<img class="menu-dish-thumb" src="${esc(x.image_url)}" alt="${esc(x.name)}">`
               : '<div class="menu-dish-thumb menu-no-photo">🍽️</div>'}
@@ -1032,6 +1035,8 @@ async function dishLoad() {
               <small>${x.is_available ? 'Disponibile' : 'Non disponibile'}</small>
             </div>
             <div class="menu-dish-actions">
+              <button type="button" class="outline-btn"
+                data-toggle-dish="${esc(x.id)}" data-available="${x.is_available ? 'true' : 'false'}">${x.is_available ? 'Segna non disponibile' : 'Rendi disponibile'}</button>
               <button type="button" class="outline-btn"
                 data-edit-dish="${esc(x.id)}">Modifica</button>
               <button type="button" class="menu-delete-btn"
@@ -3900,6 +3905,44 @@ async function render(id) {
 
       $('#dishForm').onsubmit = saveDish;
       $('#dishCancelEdit').onclick = resetDishForm;
+      $('#dishSearch').oninput = () => {
+        const term = $('#dishSearch').value.trim().toLocaleLowerCase();
+        document.querySelectorAll('#dishList .menu-dish-row').forEach(row => {
+          row.hidden = !row.dataset.search.includes(term);
+        });
+      };
+      $('#dishList').onclick = async e => {
+        const toggle = e.target.closest('[data-toggle-dish]');
+        if (toggle) {
+          toggle.disabled = true;
+          try {
+            const makeAvailable = toggle.dataset.available !== 'true';
+            const {error} = await db.from('menu_items')
+              .update({is_available:makeAvailable})
+              .eq('id',toggle.dataset.toggleDish);
+            if (error) throw error;
+            await dishLoad();
+            const term = $('#dishSearch')?.value.trim().toLocaleLowerCase() || '';
+            document.querySelectorAll('#dishList .menu-dish-row').forEach(row => {
+              row.hidden = !row.dataset.search.includes(term);
+            });
+          } catch (err) {
+            alert(err.message || 'Disponibilità non aggiornata.');
+            toggle.disabled = false;
+          }
+          return;
+        }
+        const edit = e.target.closest('[data-edit-dish]');
+        if (edit) {
+          await editDish(edit.dataset.editDish);
+          return;
+        }
+        const remove = e.target.closest('[data-delete-dish]');
+        if (remove) {
+          try { await deleteDish(remove.dataset.deleteDish); }
+          catch (err) { alert(err.message || 'Impossibile eliminare il piatto.'); }
+        }
+      };
       $('#dishImage').onchange = () => {
         const file = $('#dishImage').files?.[0];
         const preview = $('#dishImagePreview');
