@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const gameKey = typeof body?.game_key === "string" ? body.game_key.trim() : "";
     const visitorToken = typeof body?.visitor_token === "string" ? body.visitor_token : "";
+    const choice = typeof body?.choice === "string" ? body.choice.trim().slice(0, 40) : "";
 
     if (!/^[a-z0-9_-]{2,80}$/i.test(gameKey)) {
       return json({ error: "Invalid game" }, 400);
@@ -59,6 +60,7 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc("play_game_and_issue_claim", {
       p_game_key: gameKey,
       p_visitor_hash: visitorHash,
+      p_choice: choice,
     });
 
     if (error) {
