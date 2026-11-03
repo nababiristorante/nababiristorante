@@ -550,7 +550,7 @@
   }
 
 
-  /* PUBLIC GAMES — server decides the outcome and issues coupons only for wins */
+  /* PUBLIC GAMES — themed interactions; server authoritatively decides win/loss */
   async function loadGames() {
     const container = $('#liveGames');
     const section = $('#gamesSection');
@@ -570,15 +570,28 @@
         return;
       }
       if (section) section.hidden = false;
+
       const gameInfo = {
-        find_golden_n: {icon:'🔎', action:'Find the Golden N', hint:'Tap Play and see if you find the golden prize.'},
-        food_quiz: {icon:'🍛', action:'Start Food Quiz', hint:'Answer the challenge and try your luck.'},
-        mystery_gift: {icon:'🎁', action:'Open Mystery Gift', hint:'Open your mystery gift to reveal the result.'},
-        scratch_win: {icon:'✨', action:'Scratch & Win', hint:'Reveal your chance to win a Nababi reward.'},
-        spin_win: {icon:'🎡', action:'Spin to Win', hint:'Spin the wheel and discover your result.'}
+        find_golden_n: {icon:'🔎', hint:'Choose one of the six golden letters.'},
+        food_quiz: {icon:'🍛', hint:'Answer the food question, then reveal your result.'},
+        mystery_gift: {icon:'🎁', hint:'Choose one mystery gift box.'},
+        scratch_win: {icon:'✨', hint:'Tap the card to reveal what is underneath.'},
+        spin_win: {icon:'🎡', hint:'Spin the wheel to reveal your result.'}
       };
+      const gameControl = key => {
+        if (key === 'find_golden_n') return '<div class="game-choice-grid" aria-label="Choose a letter">' +
+          ['A','B','C','D','E','F'].map((v,i)=>'<button type="button" class="game-choice-button" data-choice="'+v+'" aria-label="Choose letter '+v+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'food_quiz') return '<p class="game-question">Which dish is traditionally made with rice and aromatic spices?</p><div class="game-choice-list">' +
+          ['Biryani','Margherita Pizza','Tiramisu'].map(v=>'<button type="button" class="game-choice-button" data-choice="'+v+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'mystery_gift') return '<div class="game-choice-grid game-gift-grid">' +
+          ['🎁','🎁','🎁'].map((v,i)=>'<button type="button" class="game-choice-button game-gift" data-choice="'+(i+1)+'" aria-label="Choose gift '+(i+1)+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'scratch_win') return '<button type="button" class="game-reveal-button">✨ Tap to reveal</button>';
+        if (key === 'spin_win') return '<div class="game-wheel" aria-label="Prize wheel">🎡</div><button type="button" class="game-reveal-button">Spin now</button>';
+        return '<button type="button" class="game-reveal-button">Play now</button>';
+      };
+
       container.innerHTML = rows.map(game => {
-        const info = gameInfo[game.game_key] || {icon:'🎮',action:'Play Now',hint:'Try your luck and discover your reward.'};
+        const info = gameInfo[game.game_key] || {icon:'🎮',hint:'Choose and reveal your result.'};
         let reward = game.reward_label || '';
         if (!reward) {
           if (game.reward_type === 'discount_percent' && game.reward_value != null) reward = game.reward_value + '% discount';
@@ -595,7 +608,9 @@
               <h3>${escapeHTML(game.title || game.game_key)}</h3>
               <p>${escapeHTML(game.description || info.hint)}</p>
               ${reward ? `<p class="site-price">${escapeHTML(reward)}</p>` : ''}
-              <button type="button" class="gold-btn game-play-button" data-game-key="${escapeHTML(game.game_key)}">${escapeHTML(info.action)}</button>
+              <div class="game-interaction">${gameControl(game.game_key)}</div>
+              <p class="game-selection-status help" aria-live="polite">Make your choice to continue.</p>
+              <button type="button" class="gold-btn game-play-button" data-game-key="${escapeHTML(game.game_key)}" disabled>Reveal result</button>
               <p class="game-play-status help" aria-live="polite"></p>
               <div class="game-result" hidden aria-live="polite"></div>
             </div>
@@ -605,14 +620,47 @@
       if (!container.dataset.playHandler) {
         container.dataset.playHandler = 'true';
         container.addEventListener('click', async event => {
+          const choice = event.target.closest('.game-choice-button');
+          const reveal = event.target.closest('.game-reveal-button');
+          if (choice) {
+            const card = choice.closest('.game-card');
+            card.querySelectorAll('.game-choice-button').forEach(el => el.classList.remove('is-selected'));
+            choice.classList.add('is-selected');
+            const status = card.querySelector('.game-selection-status');
+            if (status) status.textContent = 'Choice selected. Reveal your result!';
+            const play = card.querySelector('.game-play-button');
+            if (play) play.disabled = false;
+            return;
+          }
+          if (reveal) {
+            const card = reveal.closest('.game-card');
+            if (reveal.dataset.revealed === 'true') return;
+            reveal.dataset.revealed = 'true';
+            reveal.disabled = true;
+            reveal.textContent = card.dataset.gameCard === 'spin_win' ? 'Spinning…' : 'Revealed!';
+            if (card.dataset.gameCard === 'spin_win') {
+              const wheel = card.querySelector('.game-wheel');
+              if (wheel) {
+                wheel.classList.add('is-spinning');
+                await new Promise(resolve => setTimeout(resolve, 1700));
+              }
+            }
+            if (card.dataset.gameCard === 'scratch_win') reveal.classList.add('is-scratched');
+            const play = card.querySelector('.game-play-button');
+            if (play) play.disabled = false;
+            const status = card.querySelector('.game-selection-status');
+            if (status) status.textContent = 'Now reveal your official result.';
+            return;
+          }
+
           const button = event.target.closest('.game-play-button');
           if (!button || button.disabled) return;
           const card = button.closest('.game-card');
           const status = card?.querySelector('.game-play-status');
           const resultPanel = card?.querySelector('.game-result');
           button.disabled = true;
-          button.textContent = 'Playing…';
-          if (status) status.textContent = 'Checking your game result…';
+          button.textContent = 'Checking…';
+          if (status) status.textContent = 'Checking your result securely…';
           if (resultPanel) { resultPanel.hidden = true; resultPanel.textContent = ''; }
           try {
             const visitorToken = getVisitorToken();
@@ -636,7 +684,7 @@
               button.textContent = 'Played';
             } else {
               if (resultPanel) {
-                resultPanel.innerHTML = '<strong>Thanks for playing!</strong><p>Not a winner this time. You can try another game.</p>';
+                resultPanel.innerHTML = '<strong>Thanks for playing!</strong><p>Not a winner this time. Thanks for visiting Nababi!</p>';
                 resultPanel.hidden = false;
               }
               if (status) status.textContent = '';
