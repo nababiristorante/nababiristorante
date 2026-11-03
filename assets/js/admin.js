@@ -2144,6 +2144,90 @@ async function attendancePage() {
   `;
 }
 
+/* CUSTOMER COUPON QR SCANNER */
+let couponScannerStream = null;
+let couponScannerFrame = null;
+
+function stopCouponScanner() {
+  if (couponScannerFrame !== null) {
+    cancelAnimationFrame(couponScannerFrame);
+    couponScannerFrame = null;
+  }
+  if (couponScannerStream) {
+    couponScannerStream.getTracks().forEach(track => track.stop());
+    couponScannerStream = null;
+  }
+  const video = $('#couponScannerVideo');
+  if (video) video.srcObject = null;
+  const panel = $('#couponScannerPanel');
+  if (panel) panel.hidden = true;
+}
+
+async function startCouponScanner() {
+  const panel = $('#couponScannerPanel');
+  const video = $('#couponScannerVideo');
+  const message = $('#couponScannerMessage');
+  const button = $('#startCouponScanner');
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    message.textContent = 'Fotocamera non disponibile. Apri il sito tramite HTTPS o inserisci il codice manualmente.';
+    panel.hidden = false;
+    return;
+  }
+  if (!window.jsQR) {
+    message.textContent = 'Scanner non caricato. Ricarica la pagina oppure inserisci il codice manualmente.';
+    panel.hidden = false;
+    return;
+  }
+
+  button.disabled = true;
+  try {
+    couponScannerStream = await navigator.mediaDevices.getUserMedia({
+      audio:false,
+      video:{facingMode:{ideal:'environment'}}
+    });
+    video.srcObject = couponScannerStream;
+    panel.hidden = false;
+    await video.play();
+    message.textContent = 'Inquadra il QR Code del cliente.';
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', {willReadFrequently:true});
+    const scan = () => {
+      if (!couponScannerStream || panel.hidden) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video,0,0,canvas.width,canvas.height);
+        const frame = context.getImageData(0,0,canvas.width,canvas.height);
+        const result = window.jsQR(frame.data,frame.width,frame.height,{
+          inversionAttempts:'dontInvert'
+        });
+        if (result?.data) {
+          const code = String(result.data).trim().toUpperCase();
+          if (/^[0-9]{5,9}$/.test(code)) {
+            $('#secretCouponCode').value = code;
+            $('#redeemSecretStatus').textContent = 'QR letto correttamente. Premi COLLECT COUPON per verificare.';
+            stopCouponScanner();
+            button.disabled = false;
+            return;
+          }
+          message.textContent = 'Questo QR non contiene un codice coupon NABABI valido.';
+        }
+      }
+      couponScannerFrame = requestAnimationFrame(scan);
+    };
+    scan();
+  } catch (error) {
+    stopCouponScanner();
+    message.textContent = error.name === 'NotAllowedError'
+      ? 'Permesso fotocamera negato. Puoi inserire il codice manualmente.'
+      : 'Impossibile aprire la fotocamera. Inserisci il codice manualmente.';
+  } finally {
+    button.disabled = false;
+  }
+}
+
 /* SECRET COUPON BOX */
 
 function secretPage() {
@@ -2157,17 +2241,31 @@ function secretPage() {
         Enter the secret number given by the customer.
       </p>
 
-      <form id="redeemSecretForm" class="coupon-redeem-form">
-        <label for="secretCouponCode">CUSTOMER COUPON NUMBER</label>
-        <input id="secretCouponCode" name="code" type="text"
-          inputmode="numeric" pattern="[0-9]{5,9}"
-          minlength="5" maxlength="9" autocomplete="off"
-          placeholder="Enter coupon number" required>
-        <button type="submit" id="redeemSecretBtn"
-          class="coupon-collect-btn">
-          COLLECT COUPON
+      <div class="coupon-redeem-form">
+        <button type="button" id="startCouponScanner" class="outline-btn">
+          SCAN CUSTOMER QR CODE
         </button>
-      </form>
+        <div id="couponScannerPanel" hidden style="margin:14px 0">
+          <video id="couponScannerVideo" playsinline muted
+            style="display:block;width:100%;max-width:420px;margin:auto;border-radius:12px;background:#000"></video>
+          <p id="couponScannerMessage" class="help">Inquadra il QR del cliente.</p>
+          <button type="button" id="stopCouponScanner" class="outline-btn">
+            CLOSE CAMERA
+          </button>
+        </div>
+        <p class="help">Oppure inserisci il codice manualmente:</p>
+        <form id="redeemSecretForm">
+          <label for="secretCouponCode">CUSTOMER COUPON NUMBER</label>
+          <input id="secretCouponCode" name="code" type="text"
+            inputmode="numeric" pattern="[0-9]{5,9}"
+            minlength="5" maxlength="9" autocomplete="off"
+            placeholder="Enter coupon number" required>
+          <button type="submit" id="redeemSecretBtn"
+            class="coupon-collect-btn">
+            COLLECT COUPON
+          </button>
+        </form>
+      </div>
 
       <p id="redeemSecretStatus" class="coupon-status"
         aria-live="polite"></p>
@@ -4259,6 +4357,9 @@ async function render(id) {
               err.message || 'Redemption failed.';
           }
         };
+
+      $('#startCouponScanner').onclick = startCouponScanner;
+      $('#stopCouponScanner').onclick = stopCouponScanner;
 
       $('#refreshSecretHistory').onclick =
         loadSecretHistory;
