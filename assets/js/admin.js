@@ -3529,6 +3529,21 @@ async function contactMessagesPage() {
 }
 
 
+function shortWeekdayLabel(value) {
+  const normalized = String(value || '').trim().toLocaleLowerCase('it')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const labels = {
+    lunedi:'Lun', monday:'Mon',
+    martedi:'Mar', tuesday:'Tue',
+    mercoledi:'Mer', wednesday:'Wed',
+    giovedi:'Gio', thursday:'Thu',
+    venerdi:'Ven', friday:'Fri',
+    sabato:'Sab', saturday:'Sat',
+    domenica:'Dom', sunday:'Sun'
+  };
+  return labels[normalized] || String(value || '').trim().slice(0,3);
+}
+
 /* OPENING HOURS MANAGEMENT */
 
 async function hoursPage() {
@@ -3543,7 +3558,7 @@ async function hoursPage() {
   const cards = rows.map(row => `
     <article class="section-card" style="margin:12px 0">
       <div class="section-title">
-        <h3>${esc(row.day_name)}</h3>
+        <h3>${esc(shortWeekdayLabel(row.day_name))}</h3>
         <label class="field" style="display:flex;align-items:center;gap:8px">
           <input type="checkbox" data-hour-closed="${esc(row.id)}" ${row.is_closed === true ? 'checked' : ''}>
           Chiuso
