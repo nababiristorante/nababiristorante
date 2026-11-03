@@ -473,9 +473,74 @@
     return token;
   }
 
+  function showCustomerCoupon(data) {
+    const code = String(data?.code || '').trim();
+    if (!/^[0-9]{5,9}$/.test(code)) {
+      throw new Error('Codice coupon non valido.');
+    }
+
+    const codePanel = $('#customerCouponCode');
+    const button = $('#claimCustomerCoupon');
+    const qrHost = $('#customerCouponQr');
+
+    $('#customerCouponCodeValue').textContent = code;
+    $('#customerCouponExpiry').textContent = data.expires_at
+      ? 'Scade: ' + new Date(data.expires_at).toLocaleString('it-IT')
+      : '';
+    codePanel.hidden = false;
+    if (button) button.hidden = true;
+
+    if (qrHost) {
+      qrHost.replaceChildren();
+      if (window.QRCode) {
+        new window.QRCode(qrHost, {
+          text: code,
+          width: 220,
+          height: 220,
+          colorDark: '#102d24',
+          colorLight: '#ffffff',
+          correctLevel: window.QRCode.CorrectLevel.M
+        });
+      } else {
+        qrHost.textContent = 'QR Code non disponibile. Mostra il codice allo staff.';
+      }
+    }
+
+    $('#copyCustomerCoupon').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(code);
+        $('#customerCouponStatus').textContent = 'Codice copiato.';
+      } catch (_) {
+        $('#customerCouponStatus').textContent = 'Il tuo codice è: ' + code;
+      }
+    };
+  }
+
   async function loadCustomerCouponOffer() {
     const section = $('#customerCouponSection');
     if (!section || !db) return;
+
+    const visitorToken = getVisitorToken();
+    let savedCoupon = null;
+    try {
+      savedCoupon = JSON.parse(localStorage.getItem('nababi_coupon_claim_v1') || 'null');
+    } catch (_) {}
+
+    if (savedCoupon?.visitorToken === visitorToken && savedCoupon?.code) {
+      section.hidden = false;
+      $('#customerCouponDiscount').textContent =
+        Number(savedCoupon.discount_percent) + '% DI SCONTO';
+      $('#customerCouponPeriod').textContent = savedCoupon.expires_at
+        ? 'Valido fino al ' + new Date(savedCoupon.expires_at).toLocaleString('it-IT')
+        : 'Coupon NABABI';
+      $('#customerCouponRemaining').textContent = '';
+      showCustomerCoupon(savedCoupon);
+      $('#customerCouponStatus').textContent =
+        savedCoupon.expires_at && new Date(savedCoupon.expires_at) < new Date()
+          ? 'Il tuo coupon è scaduto.'
+          : 'Hai già ottenuto il tuo coupon. Mostra il QR allo staff.';
+      return;
+    }
 
     try {
       const {data,error} = await db.rpc('get_nababi_coupon_offer');
@@ -526,24 +591,23 @@
         throw new Error(data?.message || 'Coupon non disponibile.');
       }
 
-      $('#customerCouponCodeValue').textContent = data.code;
-      $('#customerCouponExpiry').textContent =
-        'Scade: ' + new Date(data.expires_at).toLocaleString('it-IT');
-      codePanel.hidden = false;
-      status.textContent =
-        'Coupon del ' + data.discount_percent + '% ottenuto con successo!';
-
-      $('#copyCustomerCoupon').onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(String(data.code));
-          status.textContent = 'Codice copiato.';
-        } catch (_) {
-          status.textContent = 'Il tuo codice è: ' + data.code;
-        }
+      const savedCoupon = {
+        visitorToken,
+        code: data.code,
+        discount_percent: data.discount_percent,
+        expires_at: data.expires_at
       };
+      localStorage.setItem('nababi_coupon_claim_v1', JSON.stringify(savedCoupon));
+
+      $('#customerCouponDiscount').textContent =
+        Number(data.discount_percent) + '% DI SCONTO';
+      showCustomerCoupon(savedCoupon);
+      status.textContent =
+        'Coupon del ' + data.discount_percent + '% ottenuto! Mostra il QR allo staff.';
     } catch (error) {
       status.textContent = error.message ||
         'Non è stato possibile ottenere il coupon.';
+      button.hidden = false;
     } finally {
       button.disabled = false;
     }
