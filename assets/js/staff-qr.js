@@ -30,6 +30,7 @@
   const verifyButton = document.getElementById("verifyButton");
   const selectedStaffName =
     document.getElementById("selectedStaffName");
+  const selectedStaffPhoto = document.getElementById("selectedStaffPhoto");
   const pinMessage = document.getElementById("pinMessage");
 
   const actionTitle = document.getElementById("actionTitle");
@@ -219,7 +220,16 @@
     pinInput.value = "";
     showMessage(pinMessage, "");
 
-    selectedStaffName.textContent = staff.full_name;\n    if (selectedStaffPhoto) {\n      selectedStaffPhoto.replaceChildren();\n      const url = safePhotoUrl(staff.photo_url);\n      if (url) {\n        const img = document.createElement("img");\n        img.src = url; img.alt = staff.full_name || "Staff photo";\n        selectedStaffPhoto.appendChild(img);\n      } else { selectedStaffPhoto.textContent = getInitials(staff.full_name); }\n    }
+    selectedStaffName.textContent = staff.full_name;
+    if (selectedStaffPhoto) {
+      selectedStaffPhoto.replaceChildren();
+      const url = safePhotoUrl(staff.photo_url);
+      if (url) {
+        const img = document.createElement("img");
+        img.src = url; img.alt = staff.full_name || "Staff photo";
+        selectedStaffPhoto.appendChild(img);
+      } else { selectedStaffPhoto.textContent = getInitials(staff.full_name); }
+    }
 
     verifyButton.disabled = false;
     verifyButton.textContent = "VERIFICA PIN";
