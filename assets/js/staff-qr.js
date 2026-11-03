@@ -438,7 +438,7 @@
       pinInput.value = pinInput.value.replace(/\D/g, "").slice(0, 4);
     });
 
-    loadStaff();
+    Promise.all([loadStaff(), loadStaffBrandLogo()]);
   }
 
   start();
