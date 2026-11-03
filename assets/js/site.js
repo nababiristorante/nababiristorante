@@ -1086,6 +1086,7 @@
           '#customerCouponPeriod': 'Offer valid for a limited time.',
           '#claimCustomerCoupon': 'Get Coupon',
           '#customerCouponCode > p:first-child': 'Your coupon code:',
+          '#customerCouponExpiryNotice': 'Please note: after the expiry date, the coupon can no longer be used.',
           '#copyCustomerCoupon': 'Copy code',
           '#customerCouponSection .site-card > p.help:last-child': 'No name, phone number or email required. Show the code to our staff.',
           '#menu > p': 'Discover our special dishes, prepared with care and tradition.',
@@ -1171,6 +1172,7 @@
           '#customerCouponPeriod': 'এই অফারটি সীমিত সময়ের জন্য।',
           '#claimCustomerCoupon': 'কুপন নিন',
           '#customerCouponCode > p:first-child': 'আপনার কুপন কোড:',
+          '#customerCouponExpiryNotice': 'মনে রাখবেন: মেয়াদ শেষ হওয়ার পর এই কুপন আর ব্যবহার করা যাবে না।'
           '#copyCustomerCoupon': 'কোড কপি করুন',
           '#customerCouponSection .site-card > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোডটি দেখান।',
           '#menu > p': 'ভালোবাসা ও ঐতিহ্যে তৈরি আমাদের বিশেষ খাবারগুলো দেখুন।',
