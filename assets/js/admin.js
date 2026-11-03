@@ -245,6 +245,72 @@ async function verifyAdmin(user) {
   return true;
 }
 
+/* PASSWORD RECOVERY */
+function showPasswordResetForm() {
+  const loginFields = $('#loginFields');
+  const resetFields = $('#passwordResetFields');
+  if (loginFields) loginFields.hidden = true;
+  if (resetFields) resetFields.hidden = false;
+  showLoginMessage('Imposta una nuova password per continuare.');
+}
+
+async function requestPasswordRecovery() {
+  const email = String($('#email')?.value || '').trim();
+  if (!email) {
+    showLoginMessage('Inserisci prima la tua email.');
+    $('#email')?.focus();
+    return;
+  }
+  const button = $('#forgotPasswordBtn');
+  if (button) { button.disabled = true; button.textContent = 'Invio in corso…'; }
+  try {
+    if (!db) {
+      if (!window.supabase || !cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+        throw new Error('Configurazione Supabase mancante.');
+      }
+      db = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    }
+    const redirectTo = window.location.origin + window.location.pathname;
+    const {error} = await db.auth.resetPasswordForEmail(email, {redirectTo});
+    if (error) throw error;
+    showLoginMessage('Email di recupero inviata. Controlla anche Spam/Junk e apri il link da questo dispositivo.');
+  } catch (err) {
+    showLoginMessage(err.message || 'Impossibile inviare l’email di recupero.');
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'Password dimenticata? Recuperala'; }
+  }
+}
+
+async function saveRecoveredPassword() {
+  const password = $('#newPassword')?.value || '';
+  const confirmation = $('#confirmPassword')?.value || '';
+  if (password.length < 8) {
+    showLoginMessage('La nuova password deve contenere almeno 8 caratteri.');
+    return;
+  }
+  if (password !== confirmation) {
+    showLoginMessage('Le due password non corrispondono.');
+    return;
+  }
+  const button = $('#saveNewPasswordBtn');
+  if (button) { button.disabled = true; button.textContent = 'Salvataggio…'; }
+  try {
+    const {error} = await db.auth.updateUser({password});
+    if (error) throw error;
+    await db.auth.signOut();
+    $('#password').value = '';
+    $('#newPassword').value = '';
+    $('#confirmPassword').value = '';
+    $('#passwordResetFields').hidden = true;
+    $('#loginFields').hidden = false;
+    showLoginMessage('Password aggiornata. Ora accedi con la nuova password.');
+  } catch (err) {
+    showLoginMessage(err.message || 'Non è stato possibile aggiornare la password.');
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'Salva nuova password'; }
+  }
+}
+
 /* LOGIN */
 
 async function signIn(e) {
@@ -3673,6 +3739,17 @@ async function genericTable(id) {
       </p>
     </div>`;
   }
+}
+
+/* PASSWORD RECOVERY EVENTS */
+$('#forgotPasswordBtn').addEventListener('click', requestPasswordRecovery);
+$('#saveNewPasswordBtn').addEventListener('click', saveRecoveredPassword);
+
+db = window.supabase?.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) || null;
+if (db) {
+  db.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') showPasswordResetForm();
+  });
 }
 
 /* EVENT LISTENERS */
