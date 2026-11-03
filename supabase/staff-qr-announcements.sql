@@ -16,7 +16,7 @@ as $$
   where a.is_active is true
     and (a.starts_at is null or a.starts_at <= now())
     and (a.ends_at is null or a.ends_at > now())
-  order by a.starts_at desc nulls last, a.created_at desc
+  order by a.starts_at desc nulls last
   limit 10;
 $$;
 
