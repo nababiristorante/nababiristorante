@@ -758,6 +758,8 @@ async function loadGalleryAdmin() {
             ${item.description ? `<small>${esc(item.description)}</small>` : ''}
           </div>
           <div class="menu-dish-actions">
+            <button type="button" class="outline-btn" data-gallery-move="up" data-gallery-id="${esc(item.id)}" aria-label="Sposta foto in alto">↑</button>
+            <button type="button" class="outline-btn" data-gallery-move="down" data-gallery-id="${esc(item.id)}" aria-label="Sposta foto in basso">↓</button>
             <button type="button" class="outline-btn" data-edit-gallery="${esc(item.id)}">Modifica</button>
             <button type="button" class="menu-delete-btn" data-delete-gallery="${esc(item.id)}">Elimina</button>
           </div>
@@ -767,6 +769,9 @@ async function loadGalleryAdmin() {
             </label>
             <label class="field">Descrizione
               <textarea name="description" maxlength="500">${esc(item.description || '')}</textarea>
+            </label>
+            <label class="field">Sostituisci foto (facoltativo)
+              <input name="replacement_image" type="file" accept="image/jpeg,image/png,image/webp">
             </label>
             <label class="gallery-active-toggle">
               <input name="is_active" type="checkbox" ${item.is_active === false ? '' : 'checked'}>
@@ -790,16 +795,31 @@ async function updateGalleryItem(id, form) {
   const title = String(form.elements.title?.value || '').trim();
   const description = String(form.elements.description?.value || '').trim() || null;
   const is_active = Boolean(form.elements.is_active?.checked);
+  const replacement = form.elements.replacement_image?.files?.[0] || null;
   if (!title) throw new Error('Inserisci il titolo della foto.');
+  if (replacement && (!['image/jpeg','image/png','image/webp'].includes(replacement.type) || replacement.size > 8 * 1024 * 1024)) {
+    throw new Error('Usa JPG, PNG o WebP con dimensione inferiore a 8 MB.');
+  }
 
   const status = form.querySelector('[data-gallery-edit-status]');
   const save = form.querySelector('button[type="submit"]');
   if (save) save.disabled = true;
   if (status) status.textContent = 'Salvataggio…';
   try {
-    const {error} = await db.from('gallery_items').update({
-      title, description, is_active
-    }).eq('id', id);
+    const changes = {title, description, is_active};
+    if (replacement) {
+      const ext = replacement.type === 'image/png' ? 'png' : replacement.type === 'image/webp' ? 'webp' : 'jpg';
+      const randomPart = globalThis.crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const path = `gallery/${Date.now()}-${randomPart}.${ext}`;
+      const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+      const {data:uploaded,error:uploadError} = await db.storage.from(bucket).upload(path,replacement,{
+        cacheControl:'3600',upsert:false,contentType:replacement.type
+      });
+      if (uploadError) throw uploadError;
+      const {data:publicData} = db.storage.from(bucket).getPublicUrl(uploaded.path);
+      changes.image_url = publicData.publicUrl;
+    }
+    const {error} = await db.from('gallery_items').update(changes).eq('id', id);
     if (error) throw error;
     await loadGalleryAdmin();
   } catch (error) {
@@ -807,6 +827,23 @@ async function updateGalleryItem(id, form) {
     if (save) save.disabled = false;
     throw error;
   }
+}
+
+async function moveGalleryItem(id, direction) {
+  const {data:rows,error} = await db.from('gallery_items')
+    .select('id,sort_order')
+    .order('sort_order',{ascending:true});
+  if (error) throw error;
+  const index = rows.findIndex(row => String(row.id) === String(id));
+  const targetIndex = index + (direction === 'up' ? -1 : 1);
+  if (index < 0 || targetIndex < 0 || targetIndex >= rows.length) return;
+  const current = rows[index];
+  const adjacent = rows[targetIndex];
+  const first = await db.from('gallery_items').update({sort_order:adjacent.sort_order}).eq('id',current.id);
+  if (first.error) throw first.error;
+  const second = await db.from('gallery_items').update({sort_order:current.sort_order}).eq('id',adjacent.id);
+  if (second.error) throw second.error;
+  await loadGalleryAdmin();
 }
 
 async function deleteGalleryItem(id) {
@@ -3786,6 +3823,13 @@ async function render(id) {
       };
       $('#uploadBtn').onclick = uploadHandler;
       $('#galleryAdminList').onclick = async e => {
+        const move = e.target.closest('[data-gallery-move]');
+        if (move) {
+          move.disabled = true;
+          try { await moveGalleryItem(move.dataset.galleryId, move.dataset.galleryMove); }
+          catch (err) { alert(err.message || 'Impossibile riordinare le foto.'); move.disabled = false; }
+          return;
+        }
         const edit = e.target.closest('[data-edit-gallery]');
         if (edit) {
           const form = $('#galleryAdminList').querySelector(`[data-gallery-edit-form="${CSS.escape(edit.dataset.editGallery)}"]`);
