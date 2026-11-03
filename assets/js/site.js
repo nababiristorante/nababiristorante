@@ -707,25 +707,17 @@
     });
   }
 
-  function localizedWeekdayLabel(value, language = document.documentElement.lang || 'it') {
-    const normalized = String(value || '').trim().toLocaleLowerCase('it')
-      .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
-    const dayKeys = {
-      lunedi:'monday', lun:'monday', monday:'monday', mon:'monday',
-      martedi:'tuesday', mar:'tuesday', tuesday:'tuesday', tue:'tuesday',
-      mercoledi:'wednesday', mer:'wednesday', wednesday:'wednesday', wed:'wednesday',
-      giovedi:'thursday', gio:'thursday', thursday:'thursday', thu:'thursday',
-      venerdi:'friday', ven:'friday', friday:'friday', fri:'friday',
-      sabato:'saturday', sab:'saturday', saturday:'saturday', sat:'saturday',
-      domenica:'sunday', dom:'sunday', sunday:'sunday', sun:'sunday'
-    };
-    const day = dayKeys[normalized];
+  function localizedWeekdayLabel(dayOfWeek, language = document.documentElement.lang || 'it') {
+    const dayIndex = Number(dayOfWeek);
+    const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const day = Number.isInteger(dayIndex) ? dayKeys[dayIndex] : null;
     const labels = {
-      it: {monday:'Lun',tuesday:'Mar',wednesday:'Mer',thursday:'Gio',friday:'Ven',saturday:'Sab',sunday:'Dom'},
-      en: {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun'},
-      bn: {monday:'সোম',tuesday:'মঙ্গল',wednesday:'বুধ',thursday:'বৃহস্পতি',friday:'শুক্র',saturday:'শনি',sunday:'রবি'}
+      it: {sunday:'Dom',monday:'Lun',tuesday:'Mar',wednesday:'Mer',thursday:'Gio',friday:'Ven',saturday:'Sab'},
+      en: {sunday:'Sun',monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat'},
+      bn: {sunday:'রবি',monday:'সোম',tuesday:'মঙ্গল',wednesday:'বুধ',thursday:'বৃহস্পতি',friday:'শুক্র',saturday:'শনি'}
     };
-    return (labels[language] || labels.it)[day] || String(value || '').trim().slice(0,3);
+    const activeLanguage = String(language || 'it').toLowerCase().slice(0, 2);
+    return (labels[activeLanguage] || labels.it)[day] || '';
   }
 
   function formatOpeningTime(value) {
@@ -746,11 +738,7 @@
 
     container.innerHTML = rows.map(row => {
 
-      const day =
-        row.day_name ||
-        row.day ||
-        row.weekday ||
-        '';
+      const day = row.day_of_week;
 
       const open =
         row.open_time ||
