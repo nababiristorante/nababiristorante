@@ -187,6 +187,29 @@ function showLoginMessage(message) {
   if (out) out.textContent = message || '';
 }
 
+async function loadAdminBrandLogo() {
+  if (!db) return;
+  try {
+    const {data,error} = await db.from('site_settings').select('setting_key,setting_value')
+      .in('setting_key',['restaurant_logo_url','restaurant_logo_show_admin_header']);
+    if (error) throw error;
+    const settings = Object.fromEntries((data || []).map(row => [row.setting_key,row.setting_value]));
+    const image = $('#adminHeaderLogo');
+    const fallback = $('#adminHeaderBrandFallback');
+    const enabled = settings.restaurant_logo_show_admin_header !== 'false';
+    if (image && settings.restaurant_logo_url && enabled) {
+      image.src = settings.restaurant_logo_url;
+      image.hidden = false;
+      if (fallback) fallback.hidden = true;
+    } else {
+      if (image) image.hidden = true;
+      if (fallback) fallback.hidden = false;
+    }
+  } catch (error) {
+    console.warn('Admin logo could not be loaded:', error.message);
+  }
+}
+
 function openApp(email) {
   $('#loginScreen').hidden = true;
   $('#adminApp').hidden = false;
@@ -196,6 +219,7 @@ function openApp(email) {
     (email || 'Account');
 
   nav();
+  loadAdminBrandLogo();
 
   // Open the coupon redemption screen immediately after login.
   // Staff still need the existing "secret" permission.
@@ -627,7 +651,8 @@ async function uploadHandler() {
       if (preview) { preview.src = pub.publicUrl; preview.hidden = false; }
       const fallback = $('#currentLogoFallback');
       if (fallback) fallback.hidden = true;
-      $('#uploadedUrl').innerHTML = '<p class="success-text">Logo salvato! Header, Footer e Favicon saranno aggiornati sul sito.</p>';
+      $('#uploadedUrl').innerHTML = '<p class="success-text">Logo salvato. Le posizioni selezionate saranno aggiornate sul sito e nel pannello Admin.</p>';
+      await loadAdminBrandLogo();
       status.textContent = 'Logo caricato e salvato correttamente.';
       return;
     }
@@ -3002,17 +3027,56 @@ async function saveSocialLink(event) {
 }
 
 async function logoManagementPage() {
-  const {data,error} = await db.from('site_settings').select('setting_value').eq('setting_key','restaurant_logo_url').maybeSingle();
+  const keys = ['restaurant_logo_url','restaurant_logo_show_site_header','restaurant_logo_show_site_footer','restaurant_logo_show_admin_header','restaurant_logo_show_favicon'];
+  const {data,error} = await db.from('site_settings').select('setting_key,setting_value').in('setting_key',keys);
   if (error) throw error;
-  const url = data?.setting_value || '';
+  const settings = Object.fromEntries((data || []).map(row => [row.setting_key,row.setting_value]));
+  const url = settings.restaurant_logo_url || '';
+  const enabled = key => settings[key] !== 'false';
   return `<section class="section-card">
-    <div class="section-title"><h2>Logo attuale</h2><span class="help">Header, Footer e icona del browser</span></div>
+    <div class="section-title"><h2>Logo Nababi attuale</h2><span class="help">Un solo logo per tutte le aree</span></div>
     <div class="upload-box">
       <img id="currentLogoPreview" class="preview-img" alt="Logo attuale" src="${esc(url)}" ${url ? '' : 'hidden'}>
       <p id="currentLogoFallback" class="help" ${url ? 'hidden' : ''}>Nessun logo personalizzato salvato.</p>
     </div>
+    <h3 style="margin-top:22px">Dove mostrare il logo</h3>
+    <p class="help">Seleziona le posizioni. Le modifiche vengono salvate insieme alle impostazioni del logo.</p>
+    <div class="logo-placement-options">
+      <label><input type="checkbox" id="logoShowSiteHeader" ${enabled('restaurant_logo_show_site_header')?'checked':''}> Sito web — in alto a sinistra</label>
+      <label><input type="checkbox" id="logoShowSiteFooter" ${enabled('restaurant_logo_show_site_footer')?'checked':''}> Sito web — Footer</label>
+      <label><input type="checkbox" id="logoShowAdminHeader" ${enabled('restaurant_logo_show_admin_header')?'checked':''}> Admin Panel — in alto a sinistra</label>
+      <label><input type="checkbox" id="logoShowFavicon" ${enabled('restaurant_logo_show_favicon')?'checked':''}> Icona del browser (Favicon)</label>
+    </div>
+    <button id="saveLogoPlacements" class="gold-btn" type="button" style="margin-top:16px">Salva posizioni logo</button>
+    <p id="logoPlacementStatus" class="help" aria-live="polite"></p>
   </section>
   ${uploadPanel('logo')}`;
+}
+
+async function saveLogoPlacements() {
+  const button = $('#saveLogoPlacements');
+  const status = $('#logoPlacementStatus');
+  const values = {
+    restaurant_logo_show_site_header: $('#logoShowSiteHeader').checked,
+    restaurant_logo_show_site_footer: $('#logoShowSiteFooter').checked,
+    restaurant_logo_show_admin_header: $('#logoShowAdminHeader').checked,
+    restaurant_logo_show_favicon: $('#logoShowFavicon').checked
+  };
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+  try {
+    const rows = Object.entries(values).map(([setting_key,value]) => ({
+      setting_key, setting_value: String(value), updated_at: new Date().toISOString()
+    }));
+    const {error} = await db.from('site_settings').upsert(rows,{onConflict:'setting_key'});
+    if (error) throw error;
+    await loadAdminBrandLogo();
+    status.textContent = 'Posizioni del logo salvate correttamente.';
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally {
+    button.disabled = false;
+  }
 }
 function gmailReplyUrl(row) {
   const subject = row.subject
@@ -3560,6 +3624,7 @@ async function render(id) {
         img.hidden = false;
       };
       $('#uploadBtn').onclick = uploadHandler;
+      $('#saveLogoPlacements').onclick = saveLogoPlacements;
       return;
     }
 
