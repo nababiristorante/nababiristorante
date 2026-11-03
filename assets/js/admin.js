@@ -3305,7 +3305,7 @@ async function saveSocialLink(event) {
 }
 
 async function logoManagementPage() {
-  const keys = ['restaurant_logo_url','restaurant_logo_show_site_header','restaurant_logo_show_site_footer','restaurant_logo_show_admin_header','restaurant_logo_show_favicon'];
+  const keys = ['restaurant_logo_url','restaurant_logo_show_site_header','restaurant_logo_show_site_footer','restaurant_logo_show_admin_header','restaurant_logo_show_favicon','restaurant_logo_show_staff_qr'];
   const {data,error} = await db.from('site_settings').select('setting_key,setting_value').in('setting_key',keys);
   if (error) throw error;
   const settings = Object.fromEntries((data || []).map(row => [row.setting_key,row.setting_value]));
@@ -3324,6 +3324,7 @@ async function logoManagementPage() {
       <label><input type="checkbox" id="logoShowSiteFooter" ${enabled('restaurant_logo_show_site_footer')?'checked':''}> Sito web — Footer</label>
       <label><input type="checkbox" id="logoShowAdminHeader" ${enabled('restaurant_logo_show_admin_header')?'checked':''}> Admin Panel — in alto a sinistra</label>
       <label><input type="checkbox" id="logoShowFavicon" ${enabled('restaurant_logo_show_favicon')?'checked':''}> Icona del browser (Favicon)</label>
+      <label><input type="checkbox" id="logoShowStaffQr" ${enabled('restaurant_logo_show_staff_qr')?'checked':''}> Staff QR — in alto nella pagina presenze</label>
     </div>
     <button id="saveLogoPlacements" class="gold-btn" type="button" style="margin-top:16px">Salva posizioni logo</button>
     <p id="logoPlacementStatus" class="help" aria-live="polite"></p>
@@ -3338,7 +3339,8 @@ async function saveLogoPlacements() {
     restaurant_logo_show_site_header: $('#logoShowSiteHeader').checked,
     restaurant_logo_show_site_footer: $('#logoShowSiteFooter').checked,
     restaurant_logo_show_admin_header: $('#logoShowAdminHeader').checked,
-    restaurant_logo_show_favicon: $('#logoShowFavicon').checked
+    restaurant_logo_show_favicon: $('#logoShowFavicon').checked,
+    restaurant_logo_show_staff_qr: $('#logoShowStaffQr').checked
   };
   button.disabled = true;
   status.textContent = 'Salvataggio…';
