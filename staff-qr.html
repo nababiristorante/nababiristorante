@@ -33,6 +33,14 @@
       padding: 22px 10px 28px;
     }
 
+    .staff-brand-logo {
+      display: block;
+      width: min(220px, 72vw);
+      max-height: 112px;
+      object-fit: contain;
+      margin: 0 auto 12px;
+    }
+
     .logo-mark {
       width: 64px;
       height: 64px;
@@ -249,8 +257,12 @@
   <main class="container">
 
     <header class="header">
-      <div class="logo-mark">N</div>
-      <h1 class="brand">NABABI RISTORANTE</h1>\n      <p class="subtitle" style="margin-top:6px">INDIAN FINE DINING · ROMA</p>
+      <img id="staffBrandLogo" class="staff-brand-logo hidden" alt="Nababi Ristorante logo">
+      <div id="staffBrandFallback">
+        <div class="logo-mark">N</div>
+        <h1 class="brand">NABABI RISTORANTE</h1>
+      </div>
+      <p class="subtitle" style="margin-top:6px">INDIAN FINE DINING · ROMA</p>
       <p class="subtitle">STAFF ATTENDANCE</p>
     </header>
 
