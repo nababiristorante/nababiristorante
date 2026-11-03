@@ -180,6 +180,32 @@ function nav() {
       button.hidden = !canSee(button.dataset.page);
     });
   }
+
+  if (db && userRole === 'admin') refreshNewBookingBadge();
+}
+
+async function refreshNewBookingBadge() {
+  try {
+    const {count,error} = await db.from('bookings')
+      .select('*',{count:'exact',head:true}).eq('status','pending');
+    if (error) throw error;
+    const total = Number(count || 0);
+    document.querySelectorAll('[data-page="bookings"]').forEach(button => {
+      let badge = button.querySelector('.new-booking-count');
+      if (!badge && total > 0) {
+        badge = document.createElement('span');
+        badge.className = 'new-booking-count';
+        badge.style.cssText = 'display:inline-block;margin-left:8px;padding:2px 7px;border-radius:20px;background:#f5c542;color:#382900;font-size:11px;font-weight:800;';
+        button.appendChild(badge);
+      }
+      if (badge) {
+        badge.textContent = total > 0 ? 'NEW ' + total : '';
+        badge.hidden = total === 0;
+      }
+    });
+  } catch (error) {
+    console.warn('New booking count unavailable:', error.message);
+  }
 }
 
 function showLoginMessage(message) {
@@ -456,13 +482,19 @@ async function dashboard() {
     </section>`;
   }
 
-  const [visits,clicks,gallery,coupons,bookings,reviews,staff] =
+  const [visits,clicks,gallery,coupons,bookings,newBookings,reviews,staff] =
     await Promise.all([
       count('site_visits'),
       count('menu_clicks'),
       count('gallery_items'),
       count('coupon_redemptions'),
       count('bookings'),
+      (async () => {
+        const {count,error} = await db.from('bookings')
+          .select('*',{count:'exact',head:true}).eq('status','pending');
+        if (error) throw error;
+        return count ?? 0;
+      })(),
       count('reviews'),
       count('staff')
     ]);
@@ -485,6 +517,7 @@ async function dashboard() {
     ${statCard('▧','Gallery Items',gallery)}
     ${statCard('◇','Coupons Used',coupons)}
     ${statCard('▣','Total Bookings',bookings)}
+    ${statCard('🟡','NEW Bookings',newBookings)}
     ${statCard('☆','Total Reviews',reviews)}
     ${statCard('▤','Reports','—')}
     ${statCard('♟','Staff Members',staff)}
