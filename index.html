@@ -514,88 +514,47 @@
 </section>
 
 <section class="site-section" id="reservation">
-
   <h2>Prenota il Tuo Tavolo</h2>
-
-  <p>
-    Invia una richiesta di prenotazione.
-    La prenotazione sarà confermata dal nostro staff.
-  </p>
+  <p>Scegli data, ora e tavolo sulla mappa. La richiesta sarà confermata dal nostro staff.</p>
 
   <form id="bookingForm" class="site-form">
-
-    <label>
-      Nome e cognome *
+    <label>Nome e cognome *
       <input name="full_name" autocomplete="name" required maxlength="120">
     </label>
-
-    <label>
-      Telefono *
-      <input name="phone" type="tel" autocomplete="tel" required maxlength="40">
+    <label>Telefono <span data-contact-required> (telefono o email obbligatori)</span>
+      <input name="phone" type="tel" autocomplete="tel" maxlength="40">
     </label>
-
-    <label>
-      Email
+    <label>Email <span data-contact-required> (telefono o email obbligatori)</span>
       <input name="email" type="email" autocomplete="email" maxlength="160">
     </label>
-
-    <label>
-      Numero ospiti *
+    <label>Numero ospiti *
       <select name="guests" required>
-        <option value="1">1</option>
-        <option value="2" selected>2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
+        <option value="1" >1</option><option value="2" selected>2</option><option value="3" >3</option><option value="4" >4</option><option value="5" >5</option><option value="6" >6</option><option value="7" >7</option><option value="8" >8</option><option value="9" >9</option><option value="10" >10</option><option value="11" >11</option><option value="12" >12</option><option value="13" >13</option><option value="14" >14</option><option value="15" >15</option><option value="16" >16</option>
       </select>
     </label>
-
-    <label>
-      Data *
+    <label>Data *
       <input name="booking_date" type="date" required>
     </label>
-
-    <label>
-      Ora *
+    <label>Ora *
       <input name="booking_time" type="time" required>
     </label>
-
-    <label>
-      Tipo di prenotazione
-      <select name="booking_type">
-        <option value="table">Tavolo</option>
+    <label class="wide">Tipo di prenotazione *
+      <select name="booking_type" required>
+        <option value="table">Prenotazione tavolo</option>
         <option value="birthday">Compleanno</option>
-        <option value="event">Evento speciale</option>
+        <option value="anniversary">Anniversario di matrimonio</option>
       </select>
     </label>
-
-    <label class="wide">
-      Note
-      <textarea
-        name="notes"
-        rows="3"
-        maxlength="1000"
-        placeholder="Richieste particolari (facoltativo)">
-      </textarea>
+    <div id="floorMap" class="wide" aria-live="polite">
+      <h3>Scegli il tuo tavolo</h3>
+      <p>Seleziona data e ora per vedere i tavoli disponibili.</p>
+    </div>
+    <input type="hidden" name="selected_table_id" required>
+    <label class="wide">Note (facoltativo)
+      <textarea name="notes" rows="3" maxlength="1000" placeholder="Richieste particolari"></textarea>
     </label>
-
-    <button class="gold-btn wide" type="submit">
-      Invia richiesta
-    </button>
-
-    <p
-      id="bookingMessage"
-      class="notice"
-      aria-live="polite">
-    </p>
-
+    <button class="gold-btn wide" type="submit">Invia richiesta</button>
+    <p id="bookingMessage" class="notice wide" aria-live="polite"></p>
   </form>
 
   <div class="whatsapp-booking-card">
@@ -605,12 +564,9 @@
       <small>Scrivici per informazioni o prenotazioni.</small>
     </div>
     <a class="whatsapp-cta" href="https://wa.me/393337687319?text=Ciao%20Nababi%20Ristorante%2C%20vorrei%20avere%20informazioni." target="_blank" rel="noopener noreferrer" aria-label="Scrivi a Nababi Ristorante su WhatsApp">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16.02 3.2A12.7 12.7 0 0 0 5.1 22.37L3.3 28.9l6.7-1.75A12.72 12.72 0 1 0 16.02 3.2Zm0 23.1c-1.95 0-3.86-.52-5.53-1.5l-.4-.23-3.98 1.04 1.06-3.88-.26-.4a10.35 10.35 0 1 1 9.11 4.97Zm5.68-7.75c-.31-.16-1.85-.91-2.14-1.01-.29-.1-.5-.16-.71.16-.21.31-.82 1.01-1 1.22-.19.21-.37.23-.68.08-.31-.16-1.31-.48-2.5-1.53-.92-.82-1.54-1.84-1.72-2.15-.18-.31-.02-.48.14-.64.14-.14.31-.37.47-.55.16-.19.21-.32.31-.53.1-.21.05-.4-.03-.56-.08-.16-.71-1.71-.97-2.34-.25-.61-.51-.53-.71-.54l-.61-.01c-.21 0-.55.08-.84.4-.29.31-1.1 1.07-1.1 2.61s1.13 3.03 1.29 3.24c.16.21 2.22 3.39 5.38 4.75.75.32 1.33.52 1.78.66.75.24 1.43.21 1.97.13.6-.09 1.85-.76 2.11-1.49.26-.74.26-1.37.18-1.5-.08-.13-.29-.21-.6-.37Z"/></svg>
-      <span>Scrivici su WhatsApp</span>
-      <span class="whatsapp-cta-arrow" aria-hidden="true">↗</span>
+      <span>Scrivici su WhatsApp</span><span aria-hidden="true">↗</span>
     </a>
   </div>
-
 </section>
 
 <section class="site-section" id="about">
