@@ -707,6 +707,32 @@
     });
   }
 
+  function localizedWeekdayLabel(value, language = document.documentElement.lang || 'it') {
+    const normalized = String(value || '').trim().toLocaleLowerCase('it')
+      .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+    const dayKeys = {
+      lunedi:'monday', lun:'monday', monday:'monday', mon:'monday',
+      martedi:'tuesday', mar:'tuesday', tuesday:'tuesday', tue:'tuesday',
+      mercoledi:'wednesday', mer:'wednesday', wednesday:'wednesday', wed:'wednesday',
+      giovedi:'thursday', gio:'thursday', thursday:'thursday', thu:'thursday',
+      venerdi:'friday', ven:'friday', friday:'friday', fri:'friday',
+      sabato:'saturday', sab:'saturday', saturday:'saturday', sat:'saturday',
+      domenica:'sunday', dom:'sunday', sunday:'sunday', sun:'sunday'
+    };
+    const day = dayKeys[normalized];
+    const labels = {
+      it: {monday:'Lun',tuesday:'Mar',wednesday:'Mer',thursday:'Gio',friday:'Ven',saturday:'Sab',sunday:'Dom'},
+      en: {monday:'Mon',tuesday:'Tue',wednesday:'Wed',thursday:'Thu',friday:'Fri',saturday:'Sat',sunday:'Sun'},
+      bn: {monday:'সোম',tuesday:'মঙ্গল',wednesday:'বুধ',thursday:'বৃহস্পতি',friday:'শুক্র',saturday:'শনি',sunday:'রবি'}
+    };
+    return (labels[language] || labels.it)[day] || String(value || '').trim().slice(0,3);
+  }
+
+  function formatOpeningTime(value) {
+    const time = String(value || '').trim();
+    return time ? time.slice(0,5) : '';
+  }
+
   /* OPENING HOURS */
 
   async function loadOpeningHours() {
@@ -742,11 +768,11 @@
 
       return `
         <p>
-          <strong>${escapeHTML(day)}</strong> —
+          <strong>${escapeHTML(localizedWeekdayLabel(day))}</strong> —
           ${
             closed
               ? 'Chiuso'
-              : `${escapeHTML(open)} – ${escapeHTML(close)}`
+              : `${escapeHTML(formatOpeningTime(open))} – ${escapeHTML(formatOpeningTime(close))}`
           }
         </p>
       `;
@@ -1334,7 +1360,7 @@
     let saved = 'it';
     try { saved = localStorage.getItem('nababi-language') || 'it'; } catch (_) {}
     selector.value = ['it', 'en', 'bn'].includes(saved) ? saved : 'it';
-    selector.addEventListener('change', () => applyLanguage(selector.value));
+    selector.addEventListener('change', () => { applyLanguage(selector.value); loadOpeningHours(); });
     applyLanguage(selector.value);
   }
 
