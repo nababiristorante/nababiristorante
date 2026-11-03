@@ -696,119 +696,153 @@
 
   function setupBooking() {
     const form = $('#bookingForm');
-
     if (!form) return;
 
+    const map = $('#floorMap');
+    const dateInput = form.elements.booking_date;
+    const timeInput = form.elements.booking_time;
+    const guestsInput = form.elements.guests;
+    const typeInput = form.elements.booking_type;
+    const tableInput = form.elements.selected_table_id;
+    const phoneInput = form.elements.phone;
+    const emailInput = form.elements.email;
+    let availableTables = [];
+
+    function specialBooking() {
+      return ['birthday', 'anniversary'].includes(typeInput.value);
+    }
+
+    function updateRequirements() {
+      const special = specialBooking();
+      phoneInput.required = special;
+      emailInput.required = special;
+      document.querySelectorAll('[data-contact-required]').forEach(el => {
+        el.textContent = special ? '*' : ' (telefono o email obbligatori)';
+      });
+    }
+
+    function renderFloorMap() {
+      const guests = Number(guestsInput.value || 1);
+      const rooms = ['Sala Principale', 'Sala dei Fiori', 'Dehors'];
+      const selected = tableInput.value;
+      map.innerHTML = '<h3>Scegli il tuo tavolo</h3>' + rooms.map(room => {
+        const items = availableTables.filter(t => t.room_name === room);
+        if (!items.length) return '';
+        return '<section class="floor-room"><h4>' + room + '</h4><div class="floor-table-grid">' +
+          items.map(t => {
+            const capacityOk = guests <= Number(t.seats) &&
+              (t.table_code !== 'SF-16' || guests >= 10);
+            const disabled = !t.is_available || !capacityOk;
+            const chosen = selected === t.id;
+            return '<button type="button" class="floor-table' +
+              (chosen ? ' is-selected' : '') + (disabled ? ' is-unavailable' : '') +
+              '" data-floor-table="' + t.id + '"' + (disabled ? ' disabled' : '') +
+              '><strong>' + t.table_code + '</strong><span>' + t.seats +
+              ' posti</span><small>' + (!t.is_available ? 'Occupato' :
+              (!capacityOk ? (t.table_code === 'SF-16' && guests < 10 ? 'Minimo 10 ospiti' : 'Capienza insufficiente') : 'Disponibile')) +
+              '</small></button>';
+          }).join('') + '</div></section>';
+      }).join('') || '<p>Nessun tavolo trovato.</p>';
+      if (selected && !availableTables.some(t => t.id === selected && t.is_available &&
+        guests <= Number(t.seats) && (t.table_code !== 'SF-16' || guests >= 10))) {
+        tableInput.value = '';
+      }
+    }
+
+    async function loadFloorMap() {
+      tableInput.value = '';
+      if (!dateInput.value || !timeInput.value) {
+        map.innerHTML = '<h3>Scegli il tuo tavolo</h3><p>Seleziona data e ora per vedere i tavoli disponibili.</p>';
+        return;
+      }
+      map.innerHTML = '<p>Caricamento tavoli…</p>';
+      const { data, error } = await db.rpc('nababi_available_floor_tables', {
+        p_date: dateInput.value,
+        p_time: timeInput.value
+      });
+      if (error) {
+        map.innerHTML = '<p>Disponibilità non caricabile. Riprova più tardi.</p>';
+        console.error('Floor map error:', error);
+        return;
+      }
+      availableTables = data || [];
+      renderFloorMap();
+    }
+
+    [dateInput, timeInput].forEach(input => input.addEventListener('change', loadFloorMap));
+    guestsInput.addEventListener('change', () => {
+      tableInput.value = '';
+      renderFloorMap();
+    });
+    typeInput.addEventListener('change', updateRequirements);
+    map.addEventListener('click', event => {
+      const button = event.target.closest('[data-floor-table]');
+      if (!button || button.disabled) return;
+      tableInput.value = button.dataset.floorTable;
+      renderFloorMap();
+    });
+    updateRequirements();
+
     form.addEventListener('submit', async event => {
-
       event.preventDefault();
-
       const result = $('#bookingMessage');
-
       if (!db) {
-        message(
-          result,
-          'Servizio non disponibile. Contattaci su WhatsApp.',
-          'error'
-        );
-
+        message(result, 'Servizio non disponibile. Contattaci su WhatsApp.', 'error');
         return;
       }
 
-      const formData = new FormData(form);
-
+      const fd = new FormData(form);
       const booking = {
-        full_name: String(
-          formData.get('full_name') || ''
-        ).trim(),
-
-        phone: String(
-          formData.get('phone') || ''
-        ).trim(),
-
-        email: String(
-          formData.get('email') || ''
-        ).trim() || null,
-
-        booking_date: String(
-          formData.get('booking_date') || ''
-        ),
-
-        booking_time: String(
-          formData.get('booking_time') || ''
-        ),
-
-        guests: Number(
-          formData.get('guests')
-        ),
-
-        notes: String(
-          formData.get('notes') || ''
-        ).trim() || null,
-
+        full_name: String(fd.get('full_name') || '').trim(),
+        phone: String(fd.get('phone') || '').trim() || null,
+        email: String(fd.get('email') || '').trim() || null,
+        booking_date: String(fd.get('booking_date') || ''),
+        booking_time: String(fd.get('booking_time') || ''),
+        guests: Number(fd.get('guests')),
+        notes: String(fd.get('notes') || '').trim() || null,
         status: 'pending',
-
-        booking_type: String(
-          formData.get('booking_type') || 'table'
-        )
+        booking_type: String(fd.get('booking_type') || 'table'),
+        selected_table_id: String(fd.get('selected_table_id') || ''),
+        booking_code: 'NAB-' + crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
       };
 
-      if (
-        !booking.full_name ||
-        !booking.phone ||
-        !booking.booking_date ||
-        !booking.booking_time ||
-        !Number.isInteger(booking.guests) ||
-        booking.guests < 1 ||
-        booking.guests > 30
-      ) {
-        message(
-          result,
-          'Controlla i campi obbligatori e il numero di ospiti.',
-          'error'
-        );
-
+      const special = ['birthday', 'anniversary'].includes(booking.booking_type);
+      if (!booking.full_name || !booking.booking_date || !booking.booking_time ||
+          !Number.isInteger(booking.guests) || booking.guests < 1 || booking.guests > 16 ||
+          (!booking.phone && !booking.email) ||
+          (special && (!booking.phone || !booking.email))) {
+        message(result, 'Controlla i campi obbligatori. Per compleanno e anniversario servono telefono ed email.', 'error');
+        return;
+      }
+      const chosen = availableTables.find(t => t.id === booking.selected_table_id && t.is_available);
+      if (!chosen || booking.guests > Number(chosen.seats) ||
+          (chosen.table_code === 'SF-16' && booking.guests < 10)) {
+        message(result, 'Scegli un tavolo disponibile adatto al numero di ospiti.', 'error');
         return;
       }
 
       const submit = $('button[type="submit"]', form);
-
       if (submit) submit.disabled = true;
-
-      message(result, 'Invio della richiesta in corso…');
-
+      message(result, 'Invio della richiesta…');
       try {
-
-        const { error } = await db
-          .from('bookings')
-          .insert(booking);
-
-        if (error) throw error;
-
+        const { error } = await db.from('bookings').insert(booking);
+        if (error) {
+          if (error.code === '23505') throw new Error('Questo tavolo è appena stato prenotato per quell’orario. Scegline un altro.');
+          throw error;
+        }
         form.reset();
-
-        message(
-          result,
-          'Richiesta inviata! Ti contatteremo per confermare la prenotazione.',
-          'success'
-        );
-
+        availableTables = [];
+        tableInput.value = '';
+        updateRequirements();
+        map.innerHTML = '<h3>Scegli il tuo tavolo</h3><p>Seleziona data e ora per vedere i tavoli disponibili.</p>';
+        message(result, 'Richiesta inviata! Codice prenotazione: ' + booking.booking_code + '. Il team ti contatterà per confermare.', 'success');
       } catch (error) {
-
         console.error('Booking error:', error);
-
-        message(
-          result,
-          'Invio non riuscito. Contattaci tramite WhatsApp o telefono.',
-          'error'
-        );
-
+        message(result, error.message || 'Invio non riuscito. Contattaci tramite WhatsApp o telefono.', 'error');
+        await loadFloorMap();
       } finally {
-
         if (submit) submit.disabled = false;
-
       }
-
     });
   }
 
