@@ -142,7 +142,7 @@ begin
   where game_key = p_game_key and status in ('issued','redeemed');
 
   if v_game.max_claims is not null and v_claim_count >= v_game.max_claims then
-    return query select false, null::text, null::numeric,
+    return query select false, null::text, null::text, null::numeric,
       null::text, null::timestamptz, 'No rewards remaining';
     return;
   end if;
