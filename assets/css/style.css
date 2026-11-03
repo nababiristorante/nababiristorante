@@ -719,3 +719,14 @@ body.gallery-lightbox-open{overflow:hidden}
  .gallery-lightbox-prev{left:8px}
  .gallery-lightbox-next{right:8px}
 }
+
+
+/* GALLERY ADMIN EDITOR */
+.gallery-edit-form{grid-column:1/-1;width:100%;display:grid;gap:12px;padding:16px;margin-top:10px;border:1px solid #80652e;border-radius:12px;background:linear-gradient(145deg,#101d19,#090f11)}
+.gallery-edit-form[hidden]{display:none!important}
+.gallery-edit-form .field{margin:0}
+.gallery-active-toggle{display:flex;align-items:center;gap:9px;color:#e9dfc9;font-size:13px}
+.gallery-active-toggle input{accent-color:#d8b76a;width:17px;height:17px}
+.gallery-edit-actions{display:flex;flex-wrap:wrap;gap:10px}
+.gallery-edit-form textarea{min-height:78px}
+@media(max-width:600px){.gallery-edit-actions button{flex:1}}
