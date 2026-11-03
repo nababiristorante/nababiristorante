@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const phoneHash = await keyedDigest(hashSecret, phone);
+    const phoneHash = phone ? await keyedDigest(hashSecret, phone) : null;
     const visitorHash = await keyedDigest(hashSecret, visitorToken);
     const { data, error } = await admin.rpc("issue_game_claim", {
       p_game_key: gameKey,
@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
       reward_value: claim.reward_value,
       reward_label: claim.reward_label,
       expires_at: claim.expires_at,
-      phone_verification: "not_verified",
+      phone_required: false,
     });
   } catch (error) {
     console.error("Game claim error:", error);
