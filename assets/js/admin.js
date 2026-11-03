@@ -758,13 +758,54 @@ async function loadGalleryAdmin() {
             ${item.description ? `<small>${esc(item.description)}</small>` : ''}
           </div>
           <div class="menu-dish-actions">
+            <button type="button" class="outline-btn" data-edit-gallery="${esc(item.id)}">Modifica</button>
             <button type="button" class="menu-delete-btn" data-delete-gallery="${esc(item.id)}">Elimina</button>
           </div>
+          <form class="gallery-edit-form" data-gallery-edit-form="${esc(item.id)}" hidden>
+            <label class="field">Titolo foto
+              <input name="title" maxlength="150" required value="${esc(item.title || '')}">
+            </label>
+            <label class="field">Descrizione
+              <textarea name="description" maxlength="500">${esc(item.description || '')}</textarea>
+            </label>
+            <label class="gallery-active-toggle">
+              <input name="is_active" type="checkbox" ${item.is_active === false ? '' : 'checked'}>
+              Mostra questa foto sul sito
+            </label>
+            <div class="gallery-edit-actions">
+              <button type="submit" class="gold-btn">Salva modifiche</button>
+              <button type="button" class="outline-btn" data-cancel-gallery-edit="${esc(item.id)}">Annulla</button>
+            </div>
+            <p class="help" data-gallery-edit-status></p>
+          </form>
         </article>
       `).join('')}</div>`
       : '<div class="empty-state">Nessuna foto nella Gallery.</div>';
   } catch (e) {
     host.innerHTML = `<p class="error-text">${esc(e.message || 'Impossibile caricare la Gallery.')}</p>`;
+  }
+}
+
+async function updateGalleryItem(id, form) {
+  const title = String(form.elements.title?.value || '').trim();
+  const description = String(form.elements.description?.value || '').trim() || null;
+  const is_active = Boolean(form.elements.is_active?.checked);
+  if (!title) throw new Error('Inserisci il titolo della foto.');
+
+  const status = form.querySelector('[data-gallery-edit-status]');
+  const save = form.querySelector('button[type="submit"]');
+  if (save) save.disabled = true;
+  if (status) status.textContent = 'Salvataggio…';
+  try {
+    const {error} = await db.from('gallery_items').update({
+      title, description, is_active
+    }).eq('id', id);
+    if (error) throw error;
+    await loadGalleryAdmin();
+  } catch (error) {
+    if (status) status.textContent = error.message || 'Salvataggio non riuscito.';
+    if (save) save.disabled = false;
+    throw error;
   }
 }
 
@@ -3745,6 +3786,18 @@ async function render(id) {
       };
       $('#uploadBtn').onclick = uploadHandler;
       $('#galleryAdminList').onclick = async e => {
+        const edit = e.target.closest('[data-edit-gallery]');
+        if (edit) {
+          const form = $('#galleryAdminList').querySelector(`[data-gallery-edit-form="${CSS.escape(edit.dataset.editGallery)}"]`);
+          if (form) form.hidden = !form.hidden;
+          return;
+        }
+        const cancel = e.target.closest('[data-cancel-gallery-edit]');
+        if (cancel) {
+          const form = $('#galleryAdminList').querySelector(`[data-gallery-edit-form="${CSS.escape(cancel.dataset.cancelGalleryEdit)}"]`);
+          if (form) form.hidden = true;
+          return;
+        }
         const button = e.target.closest('[data-delete-gallery]');
         if (!button) return;
         button.disabled = true;
@@ -3753,6 +3806,16 @@ async function render(id) {
         } catch (err) {
           alert(err.message || 'Impossibile eliminare la foto.');
           button.disabled = false;
+        }
+      };
+      $('#galleryAdminList').onsubmit = async e => {
+        const form = e.target.closest('[data-gallery-edit-form]');
+        if (!form) return;
+        e.preventDefault();
+        try {
+          await updateGalleryItem(form.dataset.galleryEditForm, form);
+        } catch (err) {
+          alert(err.message || 'Impossibile salvare le modifiche.');
         }
       };
       return;
