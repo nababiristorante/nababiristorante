@@ -3912,7 +3912,7 @@ async function loadGames() {
   const list = $('#gamesAdminList');
   const select = $('#gameKey');
   if (!list || !select) return;
-  const {data,error} = await db.from('games')
+  const {data,error} = await db.from('nababi_games')
     .select('game_key,title,description,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,win_probability,starts_at,ends_at')
     .order('title');
   if (error) throw error;
@@ -4034,7 +4034,7 @@ async function saveGame(e) {
       ends_at:ends ? new Date(ends).toISOString() : null,
       updated_at:new Date().toISOString()
     };
-    const {data,error} = await db.from('games').update(payload).eq('game_key',key).select('game_key').maybeSingle();
+    const {data,error} = await db.from('nababi_games').update(payload).eq('game_key',key).select('game_key').maybeSingle();
     if (error) throw error;
     if (!data) throw new Error('Gioco non aggiornato. Controlla la policy RLS della tabella games per l’account Admin.');
     status.textContent = 'Gioco salvato correttamente.';
@@ -4050,7 +4050,7 @@ async function saveGame(e) {
 }
 
 async function toggleGame(key, enabled) {
-  const {data,error} = await db.from('games')
+  const {data,error} = await db.from('nababi_games')
     .update({is_enabled:!enabled,updated_at:new Date().toISOString()})
     .eq('game_key',key).select('game_key').maybeSingle();
   if (error) throw error;
