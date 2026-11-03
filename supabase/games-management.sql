@@ -287,3 +287,60 @@ $$;
 
 revoke all on function public.play_game_and_issue_claim(text,text) from public, anon, authenticated;
 grant execute on function public.play_game_and_issue_claim(text,text) to service_role;
+
+
+-- Redeem a coupon once, only through the authenticated staff Edge Function.
+create or replace function public.redeem_game_claim(p_claim_code text)
+returns table (
+  success boolean,
+  message text,
+  game_key text,
+  reward_label text,
+  redeemed_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_claim public.game_claims%rowtype;
+begin
+  if p_claim_code is null or length(p_claim_code) > 40 then
+    return query select false, 'Invalid coupon code', null::text, null::text, null::timestamptz;
+    return;
+  end if;
+
+  select * into v_claim
+  from public.game_claims
+  where upper(claim_code) = upper(trim(p_claim_code))
+  for update;
+
+  if not found then
+    return query select false, 'Coupon code not found', null::text, null::text, null::timestamptz;
+    return;
+  end if;
+
+  if v_claim.status <> 'issued' then
+    return query select false, 'Coupon has already been used or is no longer valid',
+      v_claim.game_key, v_claim.reward_label, v_claim.redeemed_at;
+    return;
+  end if;
+
+  if v_claim.expires_at is not null and v_claim.expires_at < now() then
+    update public.game_claims set status = 'expired' where id = v_claim.id;
+    return query select false, 'Coupon has expired', v_claim.game_key,
+      v_claim.reward_label, null::timestamptz;
+    return;
+  end if;
+
+  update public.game_claims
+  set status = 'redeemed', redeemed_at = now()
+  where id = v_claim.id;
+
+  return query select true, 'Coupon successfully redeemed', v_claim.game_key,
+    v_claim.reward_label, now();
+end;
+$$;
+
+revoke all on function public.redeem_game_claim(text) from public, anon, authenticated;
+grant execute on function public.redeem_game_claim(text) to service_role;
