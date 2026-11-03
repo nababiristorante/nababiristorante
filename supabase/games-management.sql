@@ -193,7 +193,8 @@ grant all on public.game_play_attempts to service_role;
 
 create or replace function public.play_game_and_issue_claim(
   p_game_key text,
-  p_visitor_hash text
+  p_visitor_hash text,
+  p_choice text
 )
 returns table (
   won boolean,
@@ -269,6 +270,12 @@ begin
     ) % 10000
   ) < round(coalesce(v_game.win_probability, 20) * 100)::bigint;
 
+  if p_game_key = 'find_golden_n' then
+    v_won := upper(coalesce(p_choice, '')) = 'N';
+  elsif p_game_key = 'food_quiz' then
+    v_won := lower(coalesce(p_choice, '')) = 'biryani';
+  end if;
+
   insert into public.game_play_attempts(game_key, visitor_hash, won)
   values (p_game_key, p_visitor_hash, v_won);
 
@@ -294,8 +301,8 @@ begin
 end;
 $$;
 
-revoke all on function public.play_game_and_issue_claim(text,text) from public, anon, authenticated;
-grant execute on function public.play_game_and_issue_claim(text,text) to service_role;
+revoke all on function public.play_game_and_issue_claim(text,text,text) from public, anon, authenticated;
+grant execute on function public.play_game_and_issue_claim(text,text,text) to service_role;
 
 
 -- Redeem a coupon once, only through the authenticated staff Edge Function.
