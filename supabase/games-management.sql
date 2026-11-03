@@ -215,6 +215,7 @@ declare
   v_won boolean;
   v_code text;
   v_expiry timestamptz;
+  v_random bytea;
 begin
   if p_game_key is null or length(p_game_key) > 80
      or p_visitor_hash is null or length(p_visitor_hash) <> 64 then
@@ -258,12 +259,13 @@ begin
     return;
   end if;
 
+  v_random := gen_random_bytes(4);
   v_won := (
     (
-      get_byte(gen_random_bytes(4), 0)::bigint * 16777216 +
-      get_byte(gen_random_bytes(4), 0)::bigint * 65536 +
-      get_byte(gen_random_bytes(4), 0)::bigint * 256 +
-      get_byte(gen_random_bytes(4), 0)::bigint
+      get_byte(v_random, 0)::bigint * 16777216 +
+      get_byte(v_random, 1)::bigint * 65536 +
+      get_byte(v_random, 2)::bigint * 256 +
+      get_byte(v_random, 3)::bigint
     ) % 10000
   ) < round(coalesce(v_game.win_probability, 20) * 100)::bigint;
 
