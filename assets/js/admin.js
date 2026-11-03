@@ -3859,6 +3859,9 @@ function gamesPage() {
           <label class="field">Limite totale dei premi
             <input id="gameMaxClaims" name="max_claims" type="number" min="1" step="1" placeholder="Vuoto = nessun limite">
           </label>
+          <label class="field">Probabilità di vincita (%)
+            <input id="gameWinProbability" name="win_probability" type="number" min="0" max="100" step="0.1" value="20">
+          </label>
           <label class="field">Inizio validità
             <input id="gameStartsAt" name="starts_at" type="datetime-local">
           </label>
@@ -3900,7 +3903,7 @@ async function loadGames() {
   const select = $('#gameKey');
   if (!list || !select) return;
   const {data,error} = await db.from('games')
-    .select('game_key,title,description,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,starts_at,ends_at')
+    .select('game_key,title,description,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,win_probability,starts_at,ends_at')
     .order('title');
   if (error) throw error;
   gamesCache = data || [];
@@ -3946,6 +3949,7 @@ function fillGameForm(game) {
   $('#gameRewardValue').value = game.reward_value ?? '';
   $('#gameRewardLabel').value = game.reward_label || '';
   $('#gameMaxClaims').value = game.max_claims ?? '';
+  $('#gameWinProbability').value = game.win_probability ?? 20;
   $('#gameStartsAt').value = gameDateInput(game.starts_at);
   $('#gameEndsAt').value = gameDateInput(game.ends_at);
   $('#gameEnabled').checked = game.is_enabled === true;
@@ -3977,9 +3981,11 @@ async function saveGame(e) {
   const rawLimit = $('#gameMaxClaims').value;
   const rewardValue = rawValue === '' ? null : Number(rawValue);
   const maxClaims = rawLimit === '' ? null : Number(rawLimit);
+  const winProbability = Number($('#gameWinProbability').value);
   if (!title) throw new Error('Inserisci il titolo del gioco.');
   if (rawValue !== '' && (!Number.isFinite(rewardValue) || rewardValue < 0)) throw new Error('Valore premio non valido.');
   if (rawLimit !== '' && (!Number.isInteger(maxClaims) || maxClaims < 1)) throw new Error('Il limite deve essere un numero intero maggiore di zero.');
+  if (!Number.isFinite(winProbability) || winProbability < 0 || winProbability > 100) throw new Error('La probabilità deve essere compresa tra 0 e 100%.');
   if (rewardType === 'discount_percent' && rewardValue !== null && rewardValue > 100) throw new Error('Lo sconto percentuale non può superare il 100%.');
   const starts = $('#gameStartsAt').value;
   const ends = $('#gameEndsAt').value;
@@ -4013,6 +4019,7 @@ async function saveGame(e) {
       reward_value:rewardValue,
       reward_label:rewardLabel || null,
       max_claims:maxClaims,
+      win_probability:winProbability,
       starts_at:starts ? new Date(starts).toISOString() : null,
       ends_at:ends ? new Date(ends).toISOString() : null,
       updated_at:new Date().toISOString()
