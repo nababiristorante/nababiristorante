@@ -46,6 +46,7 @@ const menu = [
   ['reviews','☆','Reviews'],
   ['hours','◷','Hours'],
   ['logo','♛','Logo Management'],
+  ['about','✎','About Editor'],
   ['reports','▤','Reports'],
   ['contact','✉','Contact'],
   ['settings','⚙','Settings']
@@ -100,6 +101,7 @@ const descriptions = {
   reviews:'Consulta le recensioni dei clienti.',
   hours:'Orari di apertura e chiusura.',
   logo:'Carica il logo del ristorante dal tuo telefono.',
+  about:'Modifica la presentazione del ristorante in italiano, inglese e bengalese.',
   reports:'Statistiche e report del ristorante.',
   contact:'Leggi e gestisci i messaggi inviati dal modulo Contatti.',
   settings:'Impostazioni generali del sito.'
@@ -4157,6 +4159,52 @@ async function toggleGame(key, enabled) {
 }
 
 
+/* ABOUT SECTION EDITOR */
+async function aboutEditorPage() {
+  const keys=['about_text_it','about_text_en','about_text_bn','about_image_url'];
+  const {data,error}=await db.from('site_settings').select('setting_key,setting_value').in('setting_key',keys);
+  if(error) throw error;
+  const v=Object.fromEntries((data||[]).map(row=>[row.setting_key,row.setting_value||'']));
+  return `<section class="section-card"><div class="section-title"><h2>About Us — Chi Siamo</h2></div>
+    <p class="help">Modifica la presentazione del ristorante nelle tre lingue. I visitatori vedranno il testo nella lingua selezionata.</p>
+    <form id="aboutEditorForm" class="form-grid">
+      <label class="field">Italiano<textarea id="aboutTextIt" rows="4" maxlength="1800" required>${esc(v.about_text_it||'Nababi Ristorante porta a Roma i sapori autentici della cucina indiana, con ricette ispirate alla tradizione e un’accoglienza pensata per farvi vivere un’esperienza di Indian Fine Dining.')}</textarea></label>
+      <label class="field">English<textarea id="aboutTextEn" rows="4" maxlength="1800" required>${esc(v.about_text_en||'Nababi Ristorante brings the authentic flavours of India to Rome, with dishes prepared using traditional recipes and a modern touch.')}</textarea></label>
+      <label class="field">বাংলা<textarea id="aboutTextBn" rows="4" maxlength="1800" required>${esc(v.about_text_bn||'Nababi Ristorante রোমে নিয়ে এসেছে ভারতের আসল স্বাদ—ঐতিহ্যবাহী রেসিপি ও আধুনিক পরিবেশনায় তৈরি খাবার।')}</textarea></label>
+      <label class="field">Immagine About (facoltativa)<input id="aboutImageFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <img id="aboutImagePreview" alt="Anteprima immagine About" style="width:100%;max-width:520px;border-radius:14px;object-fit:cover" ${v.about_image_url?'src="'+esc(v.about_image_url)+'"':'hidden'}>
+      <p id="aboutEditorStatus" class="help" aria-live="polite"></p><button class="gold-btn" id="saveAboutEditor" type="submit">Save About Changes</button>
+    </form></section>`;
+}
+async function saveAboutEditor(event) {
+  event.preventDefault();
+  const button=$('#saveAboutEditor'),status=$('#aboutEditorStatus'),file=$('#aboutImageFile')?.files?.[0];
+  if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)){status.textContent='Usa JPG, PNG o WebP (massimo 8 MB).';return;}
+  button.disabled=true;status.textContent='Salvataggio…';
+  try{
+    let imageUrl=null;
+    if(file){
+      const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+      const path=`about/${Date.now()}-${globalThis.crypto?.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)}.${ext}`;
+      const bucket=cfg.STORAGE_BUCKET||'nababi-media';
+      const {data:uploaded,error:uploadError}=await db.storage.from(bucket).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+      if(uploadError)throw uploadError;
+      imageUrl=db.storage.from(bucket).getPublicUrl(uploaded.path).data.publicUrl;
+    }
+    const now=new Date().toISOString(),rows=[
+      {setting_key:'about_text_it',setting_value:$('#aboutTextIt').value.trim(),updated_at:now},
+      {setting_key:'about_text_en',setting_value:$('#aboutTextEn').value.trim(),updated_at:now},
+      {setting_key:'about_text_bn',setting_value:$('#aboutTextBn').value.trim(),updated_at:now}
+    ];
+    if(imageUrl)rows.push({setting_key:'about_image_url',setting_value:imageUrl,updated_at:now});
+    const {error}=await db.from('site_settings').upsert(rows,{onConflict:'setting_key'});
+    if(error)throw error;
+    const preview=$('#aboutImagePreview');if(imageUrl&&preview){preview.src=imageUrl;preview.hidden=false;}
+    status.textContent='About aggiornato. Il sito mostrerà i testi in base alla lingua scelta.';
+  }catch(error){status.textContent=error.message||'Salvataggio non riuscito.';}
+  finally{button.disabled=false;}
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -4373,6 +4421,13 @@ async function render(id) {
       return;
     }
 
+    if (id === 'about') {
+      if(userRole!=='admin'){host.innerHTML='<p>Solo il Super Admin può modificare la sezione About.</p>';return;}
+      host.innerHTML=await aboutEditorPage();
+      $('#aboutEditorForm').onsubmit=saveAboutEditor;
+      $('#aboutImageFile').onchange=()=>{const file=$('#aboutImageFile').files?.[0],preview=$('#aboutImagePreview');if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){$('#aboutEditorStatus').textContent='Usa JPG, PNG o WebP (massimo 8 MB).';$('#aboutImageFile').value='';return;}preview.src=URL.createObjectURL(file);preview.hidden=false;};
+      return;
+    }
     if (id === 'logo') {
       host.innerHTML = await logoManagementPage();
       $('#mediaFile').onchange = () => {
