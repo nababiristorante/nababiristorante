@@ -57,7 +57,7 @@ language plpgsql
 as $$
 begin
   if new.booking_code is null or btrim(new.booking_code) = '' then
-    new.booking_code := 'NAB-' || upper(substr(encode(gen_random_bytes(5), 'hex'), 1, 8));
+    new.booking_code := 'NAB-' || upper(substr(encode(gen_random_bytes(6), 'hex'), 1, 12));
   end if;
   return new;
 end;
