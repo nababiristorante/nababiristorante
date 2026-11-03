@@ -3446,20 +3446,38 @@ async function bookingsPage() {
   const rows = data || [];
   if (!rows.length) return '<section class="section-card"><p>Nessuna prenotazione trovata.</p></section>';
   return `<section class="section-card">
+    <style>
+      .booking-row-new{background:rgba(217,165,45,.10)}
+      .booking-row-confirmed{background:rgba(35,145,85,.09)}
+      .booking-row-rejected{background:rgba(190,55,55,.09)}
+      .booking-status-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+      .booking-status-new{background:#fff0c2;color:#805500;border:1px solid #e7c46a}
+      .booking-status-confirmed{background:#d9f5e4;color:#17643a;border:1px solid #8fd2aa}
+      .booking-status-rejected{background:#ffe0e0;color:#9d2424;border:1px solid #e7a0a0}
+    </style>
     <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
-    <p class="help">Apri “Messaggio” per preparare una risposta personalizzata e inviarla tramite WhatsApp o email.</p>
+    <p class="help">Le nuove richieste sono evidenziate in giallo; confermate in verde e rifiutate in rosso. Apri “Messaggio” per preparare una risposta tramite WhatsApp o email.</p>
     <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
-    ${rows.map(row => `<tr>
+    ${rows.map(row => {
+      const bookingStatus = String(row.status || 'pending').toLowerCase();
+      const isNew = bookingStatus === 'pending' || bookingStatus === 'new';
+      const isConfirmed = bookingStatus === 'confirmed';
+      const isRejected = ['rejected', 'cancelled'].includes(bookingStatus);
+      const rowClass = isNew ? 'booking-row-new' : isConfirmed ? 'booking-row-confirmed' : isRejected ? 'booking-row-rejected' : '';
+      const statusClass = isNew ? 'booking-status-new' : isConfirmed ? 'booking-status-confirmed' : isRejected ? 'booking-status-rejected' : '';
+      const statusLabel = isNew ? 'NUOVA · IN ATTESA' : isConfirmed ? 'CONFERMATA' : isRejected ? 'RIFIUTATA' : bookingStatus.toUpperCase();
+      return `<tr class="${rowClass}">
       <td>${esc(row.full_name || row.name || row.customer_name || '—')}<br><small>${esc(row.booking_code || '')}</small></td>
       <td>${esc(row.phone || '—')}<br>${esc(row.email || '')}</td>
       <td>${esc(row.booking_date || '—')}<br>${esc(row.booking_time || '—')}</td>
       <td>${esc(row.guests ?? '—')}</td>
-      <td><span class="tag">${esc(row.status || 'pending')}</span></td>
+      <td><span class="booking-status-pill ${statusClass}">${esc(statusLabel)}</span></td>
       <td>
         <button class="outline-btn" data-booking-message data-name="${esc(row.full_name || row.name || row.customer_name || '')}" data-phone="${esc(row.phone || '')}" data-email="${esc(row.email || '')}" data-date="${esc(row.booking_date || '')}" data-time="${esc(row.booking_time || '')}" data-guests="${esc(row.guests ?? '')}" data-code="${esc(row.booking_code || '')}" data-status="${esc(row.status || 'pending')}">Messaggio</button>
-        ${row.status === 'pending' ? `<button class="gold-btn" data-booking-status="confirmed" data-booking-id="${esc(row.id)}">Conferma</button><button class="outline-btn" data-booking-status="rejected" data-booking-id="${esc(row.id)}">Rifiuta</button>` : ''}
+        ${isNew ? `<button class="gold-btn" data-booking-status="confirmed" data-booking-id="${esc(row.id)}">Conferma</button><button class="outline-btn" data-booking-status="rejected" data-booking-id="${esc(row.id)}">Rifiuta</button>` : ''}
       </td>
-    </tr>`).join('')}</tbody></table></div>
+    </tr>`;
+    }).join('')}</tbody></table></div>
     <section class="section-card" id="bookingMessagePanel" hidden>
       <h3>Invia un messaggio al cliente</h3>
       <p class="help" id="bookingMessageRecipient"></p>
