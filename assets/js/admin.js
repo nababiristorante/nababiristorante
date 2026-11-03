@@ -3884,7 +3884,17 @@ function gamesPage() {
         </div>
       </form>
     </section>
-    <p class="help">Nota: questa sezione configura i giochi e i premi. La generazione e la convalida dei coupon devono essere completate tramite una funzione server-side prima di pubblicare i giochi interattivi.</p>
+    <section class="section-card">
+      <div class="section-title"><h2>Verifica e riscatta Coupon</h2></div>
+      <form id="gameRedeemForm" class="upload-box">
+        <label class="field">Codice Coupon
+          <input id="gameRedeemCode" maxlength="16" placeholder="NBG-XXXXXXXXXXXX" autocomplete="off" required>
+        </label>
+        <button class="gold-btn" type="submit">Verifica e riscatta</button>
+        <p id="gameRedeemStatus" class="help" aria-live="polite"></p>
+      </form>
+    </section>
+    <p class="help">I risultati di gioco e i codici vengono generati e verificati sul server. Ogni coupon può essere riscattato una sola volta.</p>
   `;
 }
 
@@ -4180,6 +4190,29 @@ async function render(id) {
         if (game) fillGameForm(game);
       };
       $('#gameReset').onclick = resetGameForm;
+      $('#gameRedeemForm').onsubmit = async e => {
+        e.preventDefault();
+        const button = e.submitter || $('#gameRedeemForm button[type="submit"]');
+        const status = $('#gameRedeemStatus');
+        const code = String($('#gameRedeemCode').value || '').trim().toUpperCase();
+        if (!/^NBG-[A-F0-9]{12}$/.test(code)) {
+          status.textContent = 'Inserisci un codice valido (NBG-XXXXXXXXXXXX).';
+          return;
+        }
+        button.disabled = true;
+        status.textContent = 'Verifica del coupon…';
+        try {
+          const {data,error} = await db.functions.invoke('redeem-game-claim', {body:{code}});
+          if (error) throw error;
+          if (!data?.success) throw new Error(data?.message || 'Coupon non valido.');
+          status.textContent = 'Coupon riscattato! ' + (data.reward_label || data.game_key || '');
+          $('#gameRedeemCode').value = '';
+        } catch (err) {
+          status.textContent = err.message || 'Impossibile verificare il coupon.';
+        } finally {
+          button.disabled = false;
+        }
+      };
       $('#gameImageFile').onchange = () => {
         const file = $('#gameImageFile').files?.[0];
         if (!file) return;
