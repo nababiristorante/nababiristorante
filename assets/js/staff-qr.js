@@ -193,7 +193,7 @@
     pinInput.value = "";
     showMessage(pinMessage, "");
 
-    selectedStaffName.textContent = staff.full_name;
+    selectedStaffName.textContent = staff.full_name;\n    if (selectedStaffPhoto) {\n      selectedStaffPhoto.replaceChildren();\n      const url = safePhotoUrl(staff.photo_url);\n      if (url) {\n        const img = document.createElement("img");\n        img.src = url; img.alt = staff.full_name || "Staff photo";\n        selectedStaffPhoto.appendChild(img);\n      } else { selectedStaffPhoto.textContent = getInitials(staff.full_name); }\n    }
 
     verifyButton.disabled = false;
     verifyButton.textContent = "VERIFICA PIN";
