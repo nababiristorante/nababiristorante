@@ -13,7 +13,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/site.js?v=20261103-language-fix"></script>
+  <script defer src="assets/js/site.js?v=20261103-booking-status"></script>
 
   <style>
     .site-header {
@@ -564,6 +564,18 @@
     <button class="gold-btn wide" type="submit">Invia richiesta</button>
     <p id="bookingMessage" class="notice wide" aria-live="polite"></p>
   </form>
+
+  <div class="booking-status-lookup site-card" style="max-width:720px;margin:24px auto;padding:20px">
+    <h3>Controlla la tua prenotazione</h3>
+    <p>Inserisci il codice ricevuto dopo aver inviato la richiesta.</p>
+    <form id="bookingStatusForm" class="site-form" style="margin:12px 0">
+      <label class="wide">Codice prenotazione
+        <input name="booking_code" type="text" placeholder="NAB-XXXXXXXXXXXX" autocomplete="off" maxlength="16" required>
+      </label>
+      <button class="gold-btn wide" type="submit">Verifica stato</button>
+      <p id="bookingStatusResult" class="notice wide" aria-live="polite"></p>
+    </form>
+  </div>
 
   <div class="whatsapp-booking-card">
     <div class="whatsapp-booking-copy">
