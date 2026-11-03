@@ -209,6 +209,16 @@ async function verifyAdmin(user) {
 
   sessionUser = user;
 
+  // The configured owner account is the primary Super Admin.
+  // This also keeps login working if the optional admin_users table has
+  // not been created yet. Authentication still requires a valid Supabase
+  // email/password session, and the UUID is never a password or secret.
+  if (cfg.ADMIN_USER_ID && user.id === cfg.ADMIN_USER_ID) {
+    userRole = 'admin';
+    staffPermissions = permissionObject({});
+    return true;
+  }
+
   const {data:admin,error:adminError} = await db
     .from('admin_users')
     .select('user_id')
