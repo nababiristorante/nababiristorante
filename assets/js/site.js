@@ -803,7 +803,7 @@
         status: 'pending',
         booking_type: String(fd.get('booking_type') || 'table'),
         selected_table_id: String(fd.get('selected_table_id') || ''),
-        booking_code: 'NAB-' + crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+        booking_code: 'NAB-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()
       };
 
       const special = ['birthday', 'anniversary'].includes(booking.booking_type);
@@ -842,6 +842,66 @@
         await loadFloorMap();
       } finally {
         if (submit) submit.disabled = false;
+      }
+    });
+  }
+
+  /* CUSTOMER BOOKING STATUS LOOKUP */
+  function setupBookingStatusLookup() {
+    const form = $('#bookingStatusForm');
+    const result = $('#bookingStatusResult');
+    if (!form || !result) return;
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const input = form.elements.booking_code;
+      const code = String(input.value || '').trim().toUpperCase();
+      if (!/^NAB-[A-F0-9]{8,12}$/.test(code)) {
+        message(result, 'Inserisci un codice prenotazione valido (es. NAB-XXXXXXXXXXXX).', 'error');
+        return;
+      }
+      if (!db) {
+        message(result, 'Servizio temporaneamente non disponibile. Contattaci direttamente.', 'error');
+        return;
+      }
+      const button = form.querySelector('button[type="submit"]');
+      if (button) button.disabled = true;
+      message(result, 'Controllo dello stato…');
+      try {
+        const { data, error } = await db.rpc('nababi_lookup_booking_status', {
+          p_booking_code: code
+        });
+        if (error) throw error;
+        const booking = Array.isArray(data) ? data[0] : null;
+        if (!booking) {
+          message(result, 'Codice non trovato. Controlla il codice e riprova.', 'error');
+          return;
+        }
+        const status = String(booking.status || '').toLowerCase();
+        const labels = {
+          pending: 'In attesa di conferma',
+          new: 'Ricevuta — in attesa di verifica',
+          confirmed: 'Prenotazione confermata',
+          rejected: 'Prenotazione non confermata',
+          cancelled: 'Prenotazione annullata'
+        };
+        const statusLabel = labels[status] || 'Stato: ' + status;
+        const date = booking.booking_date
+          ? new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('it-IT')
+          : '';
+        const time = String(booking.booking_time || '').slice(0, 5);
+        result.textContent = 'Codice: ' + booking.booking_code +
+          ' · Stato: ' + statusLabel +
+          (date ? ' · Data: ' + date : '') +
+          (time ? ' · Ora: ' + time : '') +
+          (booking.guests ? ' · Ospiti: ' + booking.guests : '');
+        result.dataset.state = status === 'confirmed' ? 'success' :
+          (status === 'rejected' || status === 'cancelled' ? 'error' : '');
+      } catch (error) {
+        console.error('Booking status lookup failed:', error);
+        message(result, 'Non è stato possibile verificare il codice. Riprova più tardi.', 'error');
+      } finally {
+        if (button) button.disabled = false;
       }
     });
   }
@@ -1113,6 +1173,7 @@
   async function initializeWebsite() {
 
     setupBooking();
+    setupBookingStatusLookup();
     setupContactForm();
     setupMobileNavigation();
     setupLanguageSwitcher();
