@@ -117,3 +117,34 @@ $$;
 
 revoke all on function public.nababi_available_floor_tables(date,time) from public;
 grant execute on function public.nababi_available_floor_tables(date,time) to anon, authenticated;
+
+-- Public booking status lookup by the high-entropy booking code.
+-- Returns booking details needed by the customer, never name, phone, email or notes.
+create or replace function public.nababi_lookup_booking_status(p_booking_code text)
+returns table (
+  booking_code text,
+  booking_date date,
+  booking_time time,
+  guests integer,
+  status text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    b.booking_code,
+    b.booking_date,
+    b.booking_time,
+    b.guests,
+    b.status::text
+  from public.bookings b
+  where p_booking_code is not null
+    and length(btrim(p_booking_code)) between 8 and 20
+    and upper(btrim(b.booking_code)) = upper(btrim(p_booking_code))
+  limit 1;
+$$;
+
+revoke all on function public.nababi_lookup_booking_status(text) from public;
+grant execute on function public.nababi_lookup_booking_status(text) to anon, authenticated;
