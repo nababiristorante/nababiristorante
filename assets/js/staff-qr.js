@@ -41,6 +41,9 @@
 
   const backFromPin = document.getElementById("backFromPin");
   const backToStaff = document.getElementById("backToStaff");
+  const staffNoticeModal = document.getElementById("staffNoticeModal");
+  const staffNoticeList = document.getElementById("staffNoticeList");
+  const staffNoticeClose = document.getElementById("staffNoticeClose");
 
   let db = null;
   let selectedStaff = null;
@@ -61,6 +64,36 @@
     busy = value;
     button.disabled = value;
     button.textContent = value ? "PLEASE WAIT..." : originalText;
+  }
+
+  async function showActiveStaffNotices() {
+    if (!staffNoticeModal || !staffNoticeList) return;
+    try {
+      const { data, error } = await db.rpc("staff_qr_active_announcements");
+      if (error) throw error;
+      const notices = Array.isArray(data) ? data : [];
+      if (!notices.length) return;
+
+      staffNoticeList.replaceChildren();
+      notices.forEach(notice => {
+        const item = document.createElement("article");
+        item.className = "notice-item";
+        const heading = document.createElement("h3");
+        heading.textContent = notice.title || "Staff notice";
+        const body = document.createElement("p");
+        body.textContent = notice.message || "";
+        item.append(heading, body);
+        staffNoticeList.appendChild(item);
+      });
+      staffNoticeModal.classList.remove("hidden");
+      if (staffNoticeClose) staffNoticeClose.focus();
+    } catch (error) {
+      console.error("Staff announcements could not be loaded:", error);
+    }
+  }
+
+  function closeStaffNotices() {
+    if (staffNoticeModal) staffNoticeModal.classList.add("hidden");
   }
 
   function getInitials(name) {
@@ -311,6 +344,10 @@
         (data.staff_name || selectedStaff.full_name) + "."
       );
 
+      if (data.event === "check_in") {
+        await showActiveStaffNotices();
+      }
+
     } catch (error) {
       console.error("Attendance error:", error);
 
@@ -364,6 +401,12 @@
 
     backFromPin.addEventListener("click", backToStaffList);
     backToStaff.addEventListener("click", backToStaffList);
+    if (staffNoticeClose) staffNoticeClose.addEventListener("click", closeStaffNotices);
+    if (staffNoticeModal) {
+      staffNoticeModal.addEventListener("click", event => {
+        if (event.target === staffNoticeModal) closeStaffNotices();
+      });
+    }
 
     pinInput.addEventListener("input", () => {
       pinInput.value = pinInput.value.replace(/\D/g, "").slice(0, 4);
