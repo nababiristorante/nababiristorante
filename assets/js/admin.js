@@ -3837,6 +3837,9 @@ function gamesPage() {
           <label class="field">Titolo
             <input id="gameTitle" name="title" maxlength="120" required>
           </label>
+          <label class="field">Descrizione del gioco
+            <input id="gameDescription" name="description" maxlength="500" placeholder="Breve descrizione del gioco">
+          </label>
           <label class="field">Tipo premio
             <select id="gameRewardType" name="reward_type">
               <option value="none">Nessun premio configurato</option>
@@ -3897,7 +3900,7 @@ async function loadGames() {
   const select = $('#gameKey');
   if (!list || !select) return;
   const {data,error} = await db.from('games')
-    .select('game_key,title,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,starts_at,ends_at')
+    .select('game_key,title,description,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,starts_at,ends_at')
     .order('title');
   if (error) throw error;
   gamesCache = data || [];
@@ -3938,6 +3941,7 @@ function fillGameForm(game) {
   if (!game) return;
   $('#gameKey').value = game.game_key || '';
   $('#gameTitle').value = game.title || '';
+  $('#gameDescription').value = game.description || '';
   $('#gameRewardType').value = game.reward_type || 'none';
   $('#gameRewardValue').value = game.reward_value ?? '';
   $('#gameRewardLabel').value = game.reward_label || '';
@@ -4002,6 +4006,7 @@ async function saveGame(e) {
     }
     const payload = {
       title,
+      description:String($('#gameDescription').value || '').trim() || null,
       is_enabled:$('#gameEnabled').checked,
       image_url:imageUrl,
       reward_type:rewardType,
