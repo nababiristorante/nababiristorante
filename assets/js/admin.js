@@ -27,6 +27,7 @@ const menu = [
   ['secret','🎁','Secret Coupon Box'],
   ['discounts','％','Discount Management'],
   ['menu_manager','🍛','Menu Manager'],
+  ['qr_menu','▣','QR Menu Images'],
   ['categories','▦','Categories'],
   ['bookings','▣','Bookings'],
   ['customers','♙','Customers'],
@@ -63,6 +64,7 @@ const tableMap = {
   delivery:'delivery_orders',
   menu_public:'menu_items',
   menu_manager:'menu_items',
+  qr_menu:'qr_menu_images',
   news:'breaking_news',
   reviews:'reviews',
   hours:'opening_hours',
@@ -77,6 +79,7 @@ const descriptions = {
   secret:'Gestisci offerte riservate e coupon esclusivi.',
   discounts:'Imposta sconto, periodo di validità e limite dei coupon per i clienti.',
   menu_manager:'Aggiungi e modifica piatti, descrizioni, prezzi e immagini.',
+  qr_menu:'Carica le pagine immagine del menu da mostrare solo tramite QR Code.',
   categories:'Organizza le categorie del menu.',
   bookings:'Consulta le prenotazioni dei tavoli.',
   customers:'Archivio clienti.',
@@ -731,6 +734,87 @@ async function uploadHandler() {
     status.textContent = e.message || 'Upload non riuscito.';
   } finally {
     btn.disabled = false;
+  }
+}
+
+
+/* QR MENU — IMAGE PAGES ONLY */
+function qrMenuAdminPage() {
+  return `<section class="section-card">
+    <div class="section-title"><h2>Carica le pagine del Menu QR</h2></div>
+    <p class="help">Carica le immagini complete del menu: nome dei piatti e prezzi resteranno dentro l'immagine. Queste foto non vengono mostrate nel Menu del sito.</p>
+    <form id="qrMenuUploadForm" class="form-grid">
+      <label class="field">Scegli immagine dal telefono
+        <input id="qrMenuImageFile" type="file" accept="image/jpeg,image/png,image/webp" required>
+      </label>
+      <img id="qrMenuPreview" class="menu-image-preview" alt="Anteprima Menu QR" hidden>
+      <button class="gold-btn" type="submit">Carica immagine nel QR Menu</button>
+      <p id="qrMenuStatus" class="help" aria-live="polite"></p>
+    </form>
+  </section>
+  <section class="section-card">
+    <div class="section-title"><h2>Immagini salvate</h2></div>
+    <div id="qrMenuImages" class="help">Caricamento…</div>
+  </section>
+  <section class="section-card">
+    <h2>QR Code del ristorante</h2>
+    <p class="help">Stampa questo codice e posizionalo sui tavoli. Tutti i tavoli aprono lo stesso menu digitale.</p>
+    <img style="width:220px;max-width:100%;background:white;padding:10px;border-radius:12px" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fnababi-ristorante.vercel.app%2Fqr-menu.html" alt="QR Menu">
+    <p><a href="https://nababi-ristorante.vercel.app/qr-menu.html" target="_blank" rel="noopener">Apri QR Menu</a></p>
+  </section>`;
+}
+
+async function loadQrMenuImages() {
+  const host = $('#qrMenuImages');
+  if (!host) return;
+  const {data,error} = await db.from('qr_menu_images')
+    .select('id,image_url,is_active,sort_order')
+    .order('sort_order',{ascending:true}).order('created_at',{ascending:true});
+  if (error) throw error;
+  host.innerHTML = data?.length ? `<div class="menu-dish-list">${data.map(item => `
+    <article class="menu-dish-row">
+      <img class="menu-dish-thumb" src="${esc(item.image_url)}" alt="Pagina Menu QR">
+      <div class="menu-dish-info"><strong>Pagina Menu</strong><small>${item.is_active ? 'Visibile nel QR Menu' : 'Nascosta nel QR Menu'}</small></div>
+      <div class="menu-dish-actions">
+        <button class="outline-btn" data-qr-action="up" data-id="${esc(item.id)}" aria-label="Sposta su">↑</button>
+        <button class="outline-btn" data-qr-action="down" data-id="${esc(item.id)}" aria-label="Sposta giù">↓</button>
+        <button class="outline-btn" data-qr-action="toggle" data-active="${item.is_active}" data-id="${esc(item.id)}">${item.is_active ? 'Nascondi' : 'Mostra'}</button>
+        <button class="outline-btn" data-qr-action="delete" data-id="${esc(item.id)}">Elimina</button>
+      </div>
+    </article>`).join('')}</div>` : '<p class="empty-state">Non hai ancora caricato immagini nel QR Menu.</p>';
+}
+
+async function uploadQrMenuImage(event) {
+  event.preventDefault();
+  const input = $('#qrMenuImageFile');
+  const status = $('#qrMenuStatus');
+  const button = event.submitter;
+  const file = input.files?.[0];
+  if (!file) { status.textContent = 'Scegli prima un’immagine.'; return; }
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 12 * 1024 * 1024) {
+    status.textContent = 'Usa JPG, PNG o WebP (massimo 12 MB).'; return;
+  }
+  button.disabled = true;
+  status.textContent = 'Caricamento…';
+  try {
+    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    const path = 'qr-menu/' + Date.now() + '-' + (crypto.randomUUID?.() || Math.random().toString(36).slice(2)) + '.' + ext;
+    const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+    const {data:uploaded,error:uploadError} = await db.storage.from(bucket).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+    if (uploadError) throw uploadError;
+    const {data:publicFile} = db.storage.from(bucket).getPublicUrl(uploaded.path);
+    const {data:last,error:lastError} = await db.from('qr_menu_images').select('sort_order').order('sort_order',{ascending:false}).limit(1);
+    if (lastError) throw lastError;
+    const {error} = await db.from('qr_menu_images').insert({image_url:publicFile.publicUrl,is_active:true,sort_order:Number(last?.[0]?.sort_order || 0)+1});
+    if (error) throw error;
+    input.value = '';
+    $('#qrMenuPreview').hidden = true;
+    status.textContent = 'Immagine caricata correttamente nel QR Menu.';
+    await loadQrMenuImages();
+  } catch (error) {
+    status.textContent = error.message || 'Caricamento non riuscito.';
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -3895,6 +3979,60 @@ async function render(id) {
         }
       };
 
+      return;
+    }
+
+    if (id === 'qr_menu') {
+      host.innerHTML = qrMenuAdminPage();
+      await loadQrMenuImages();
+      $('#qrMenuUploadForm').onsubmit = uploadQrMenuImage;
+      $('#qrMenuImageFile').onchange = () => {
+        const file = $('#qrMenuImageFile').files?.[0];
+        const preview = $('#qrMenuPreview');
+        if (!file) { preview.hidden = true; return; }
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 12 * 1024 * 1024) {
+          $('#qrMenuStatus').textContent = 'Usa JPG, PNG o WebP (massimo 12 MB).';
+          $('#qrMenuImageFile').value = '';
+          preview.hidden = true;
+          return;
+        }
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
+      };
+      $('#qrMenuImages').onclick = async e => {
+        const button = e.target.closest('[data-qr-action]');
+        if (!button) return;
+        button.disabled = true;
+        try {
+          const id = button.dataset.id;
+          const action = button.dataset.qrAction;
+          if (action === 'toggle') {
+            const {error} = await db.from('qr_menu_images').update({is_active:button.dataset.active !== 'true'}).eq('id',id);
+            if (error) throw error;
+          } else if (action === 'delete') {
+            if (!confirm('Eliminare questa immagine del QR Menu?')) return;
+            const {error} = await db.from('qr_menu_images').delete().eq('id',id);
+            if (error) throw error;
+          } else if (action === 'up' || action === 'down') {
+            const {data:rows,error} = await db.from('qr_menu_images').select('id,sort_order').order('sort_order');
+            if (error) throw error;
+            const pos = rows.findIndex(row => String(row.id) === String(id));
+            const other = rows[pos + (action === 'up' ? -1 : 1)];
+            if (pos >= 0 && other) {
+              const here = rows[pos];
+              const {error:e1} = await db.from('qr_menu_images').update({sort_order:other.sort_order}).eq('id',here.id);
+              if (e1) throw e1;
+              const {error:e2} = await db.from('qr_menu_images').update({sort_order:here.sort_order}).eq('id',other.id);
+              if (e2) throw e2;
+            }
+          }
+          await loadQrMenuImages();
+        } catch (err) {
+          alert(err.message || 'Operazione non riuscita.');
+        } finally {
+          button.disabled = false;
+        }
+      };
       return;
     }
 
