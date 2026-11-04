@@ -499,3 +499,20 @@ body.site-body{background:var(--ref-cream)!important;color:#24170c!important}
  .fusion-reference-hero:before{background:linear-gradient(90deg,rgba(12,6,2,.88),rgba(12,6,2,.58) 68%,rgba(12,6,2,.2))}
  .fusion-hero-photo-credit{z-index:5}
 }
+
+
+.fusion-reference-header .fusion-search-link{display:inline-grid!important;place-items:center!important;width:46px;height:44px;border:0!important;background:transparent!important;color:#fff2dc!important;cursor:pointer}
+.fusion-reference-header .fusion-search-link:hover{color:#f2cf7a!important}
+.fusion-menu-search{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0 15px;border-top:1px solid #d6b46b55}
+.fusion-menu-search[hidden]{display:none!important}
+.fusion-menu-search label{color:#f3d58c;font:14px Georgia,serif}
+.fusion-menu-search input{width:min(420px,80vw);padding:11px 14px;border:1px solid #d8b76a;border-radius:25px;background:#fff7e7;color:#2a1a0c;font:14px Georgia,serif}
+#liveMenu .site-card[hidden]{display:none!important}
+.fusion-live-social{display:flex!important;align-items:center;gap:10px;flex-wrap:wrap}
+.fusion-live-social[hidden]{display:none!important}
+.fusion-live-social a{display:grid!important;place-items:center;width:31px;height:31px;border:1px solid #e4c879;border-radius:50%;color:#f4d889!important;text-decoration:none!important}
+.fusion-live-social img,.fusion-live-social svg{width:20px;height:20px;object-fit:contain}
+@media(max-width:700px){
+ .fusion-menu-search{flex-direction:column;align-items:stretch;padding:12px 8px}
+ .fusion-menu-search input{width:100%}
+}
