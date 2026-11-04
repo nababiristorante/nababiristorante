@@ -1303,7 +1303,7 @@
           '#customerCouponCode > p:first-child': 'আপনার কুপন কোড:',
           '#customerCouponExpiryNotice': 'মনে রাখবেন: মেয়াদ শেষ হওয়ার পর এই কুপন আর ব্যবহার করা যাবে না।',
           '#copyCustomerCoupon': 'কোড কপি করুন',
-          '#customerCouponSection .site-card > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোডটি দেখান।',
+          '#customerCouponSection .fusion-offer-copy > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোড বা QR দেখান.',
           '#menu > p': 'ভালোবাসা ও ঐতিহ্যে তৈরি আমাদের বিশেষ খাবারগুলো দেখুন।',
           '#gallery > p': 'ছবির মাধ্যমে আমাদের রেস্টুরেন্টের পরিবেশ উপভোগ করুন।',
           '#events > p': 'Nababi Ristorante-এর আয়োজিত অনুষ্ঠানগুলো দেখুন।',
