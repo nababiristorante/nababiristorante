@@ -516,3 +516,8 @@ body.site-body{background:var(--ref-cream)!important;color:#24170c!important}
  .fusion-menu-search{flex-direction:column;align-items:stretch;padding:12px 8px}
  .fusion-menu-search input{width:100%}
 }
+
+
+.fusion-reference-hero h1{max-width:540px!important}
+.fusion-reference-hero h2{max-width:500px!important}
+.fusion-offer-copy p{max-width:310px}
