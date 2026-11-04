@@ -461,10 +461,26 @@
   </div>
 </section>
 <section class="fusion-feature-split" aria-label="Special offers and about Nababi">
-  <article class="fusion-offer-panel">
+  <article class="fusion-offer-panel" id="customerCouponSection" hidden>
     <div class="fusion-offer-ornament">✧</div>
-    <div class="fusion-offer-copy"><h2>Offerte Speciali</h2><p>Ottieni uno sconto esclusivo con il nostro coupon</p><a href="#customerCouponSection" class="fusion-gold-link">Ottieni il Coupon <span>→</span></a></div>
-    <div class="fusion-offer-seal"><span>FINO AL</span><strong>30%</strong><span>DI SCONTO</span></div>
+    <div class="fusion-offer-copy">
+      <p class="eyebrow">OFFERTA SPECIALE NABABI</p><h2>Offerte Speciali</h2>
+      <p>Ottieni uno sconto esclusivo con il nostro coupon</p>
+      <p id="customerCouponDiscount" class="site-price fusion-coupon-discount">—</p>
+      <p id="customerCouponPeriod" class="fusion-coupon-period">Offerta valida per un periodo limitato.</p>
+      <p id="customerCouponRemaining" class="help"></p>
+      <button id="claimCustomerCoupon" class="gold-btn" type="button">Ottieni il Coupon →</button>
+      <p id="customerCouponStatus" class="help" aria-live="polite"></p>
+      <div id="customerCouponCode" class="fusion-coupon-result" hidden>
+        <p>Il tuo codice coupon:</p><strong id="customerCouponCodeValue"></strong>
+        <p id="customerCouponExpiry"></p>
+        <img id="customerCouponQr" class="fusion-coupon-qr" alt="QR Code del tuo coupon" hidden>
+        <p id="customerCouponExpiryNotice" class="help">Attenzione: dopo la data di scadenza, il coupon non sarà più utilizzabile.</p>
+        <button id="copyCustomerCoupon" class="outline-btn" type="button">Copia codice</button>
+      </div>
+      <p class="help">Non serve inserire nome, telefono o email. Mostra il codice o il QR allo staff.</p>
+    </div>
+    <div class="fusion-offer-seal"><span>OFFERTA</span><strong>★</strong><span>NABABI</span></div>
     <span class="fusion-gift" aria-hidden="true">🎁</span>
   </article>
   <article class="fusion-about-teaser">
@@ -500,30 +516,7 @@
 </section>
 
 
-<section class="site-section" id="customerCouponSection" hidden>
-  <div class="site-card" style="max-width:760px;margin:0 auto;padding:26px;text-align:center">
-    <p class="eyebrow">OFFERTA SPECIALE NABABI</p>
-    <h2>Ottieni il tuo Coupon</h2>
-    <p id="customerCouponDiscount" class="site-price" style="font-size:30px">—</p>
-    <p id="customerCouponPeriod">Offerta valida per un periodo limitato.</p>
-    <p id="customerCouponRemaining" class="help"></p>
-    <button id="claimCustomerCoupon" class="gold-btn" type="button">
-      Ottieni Coupon
-    </button>
-    <p id="customerCouponStatus" class="help" aria-live="polite"></p>
-    <div id="customerCouponCode" hidden>
-      <p>Il tuo codice coupon:</p>
-      <strong id="customerCouponCodeValue"
-        style="display:block;font-size:30px;letter-spacing:5px;color:#d8b76a"></strong>
-      <p id="customerCouponExpiry"></p>
-      <p id="customerCouponExpiryNotice" class="help">Attenzione: dopo la data di scadenza, il coupon non sarà più utilizzabile.</p>
-      <button id="copyCustomerCoupon" class="outline-btn" type="button">
-        Copia codice
-      </button>
-    </div>
-    <p class="help">Non serve inserire nome, telefono o email. Mostra il codice allo staff.</p>
-  </div>
-</section>
+
 
 <section class="site-section" id="menu">
   <h2>Il Nostro Menu</h2>
