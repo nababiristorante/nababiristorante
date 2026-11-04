@@ -3389,9 +3389,11 @@ async function logoManagementPage() {
   return `<section class="section-card">
     <div class="section-title"><h2>Stato del sito pubblico</h2></div>
     <p class="help">OFF mostra una pagina di manutenzione ai visitatori. Admin Panel resta sempre accessibile.</p>
-    <label><input type="checkbox" id="websitePublicEnabled" ${settings.website_maintenance_mode !== "true" ? "checked" : ""}> Sito web attivo (ON)</label>
-    <button id="saveWebsiteStatus" class="gold-btn" type="button" style="margin-top:12px">Salva stato sito</button>
-    <p id="websiteStatusMessage" class="help" aria-live="polite"></p>
+    <div class="website-status-toggle" role="group" aria-label="Stato del sito pubblico" style="display:flex;gap:12px;flex-wrap:wrap;margin:18px 0">
+      <button id="websiteOnButton" type="button" aria-pressed="${settings.website_maintenance_mode !== "true"}" style="flex:1;min-width:150px;padding:16px 18px;border:2px solid ${settings.website_maintenance_mode !== "true" ? "#16a34a" : "#d1d5db"};border-radius:12px;background:${settings.website_maintenance_mode !== "true" ? "#16a34a" : "#f3f4f6"};color:${settings.website_maintenance_mode !== "true" ? "#fff" : "#374151"};font-weight:700;cursor:pointer">🟢 ON — Sito visibile</button>
+      <button id="websiteOffButton" type="button" aria-pressed="${settings.website_maintenance_mode === "true"}" style="flex:1;min-width:150px;padding:16px 18px;border:2px solid ${settings.website_maintenance_mode === "true" ? "#dc2626" : "#d1d5db"};border-radius:12px;background:${settings.website_maintenance_mode === "true" ? "#dc2626" : "#f3f4f6"};color:${settings.website_maintenance_mode === "true" ? "#fff" : "#374151"};font-weight:700;cursor:pointer">🔴 OFF — Sito non visibile</button>
+    </div>
+    <p id="websiteStatusMessage" class="help" aria-live="polite">${settings.website_maintenance_mode === "true" ? "🔴 Il sito è OFF: i visitatori vedono la pagina di manutenzione." : "🟢 Il sito è ON: tutti possono visitarlo."}</p>
   </section>
   <section class="section-card">
     <div class="section-title"><h2>Logo Nababi attuale</h2><span class="help">Un solo logo per tutte le aree</span></div>
@@ -3414,20 +3416,32 @@ async function logoManagementPage() {
   ${uploadPanel('logo')}`;
 }
 
-async function saveWebsiteStatus() {
+async function saveWebsiteStatus(enabled) {
   if (userRole !== 'admin') return;
-  const button = $('#saveWebsiteStatus');
+  const onButton = $('#websiteOnButton');
+  const offButton = $('#websiteOffButton');
   const status = $('#websiteStatusMessage');
-  button.disabled = true;
+  onButton.disabled = true;
+  offButton.disabled = true;
   status.textContent = 'Salvataggio…';
   try {
-    const enabled = $('#websitePublicEnabled').checked;
     const {error} = await db.from('site_settings').upsert({setting_key:'website_maintenance_mode',setting_value:String(!enabled),updated_at:new Date().toISOString()},{onConflict:'setting_key'});
     if (error) throw error;
-    status.textContent = enabled ? 'Sito pubblico attivo.' : 'Modalità manutenzione attivata.';
+    onButton.setAttribute('aria-pressed', String(enabled));
+    offButton.setAttribute('aria-pressed', String(!enabled));
+    onButton.style.background = enabled ? '#16a34a' : '#f3f4f6';
+    onButton.style.borderColor = enabled ? '#16a34a' : '#d1d5db';
+    onButton.style.color = enabled ? '#fff' : '#374151';
+    offButton.style.background = enabled ? '#f3f4f6' : '#dc2626';
+    offButton.style.borderColor = enabled ? '#d1d5db' : '#dc2626';
+    offButton.style.color = enabled ? '#374151' : '#fff';
+    status.textContent = enabled ? '🟢 Il sito è ON: tutti possono visitarlo.' : '🔴 Il sito è OFF: i visitatori vedono la pagina di manutenzione.';
   } catch (error) {
     status.textContent = error.message || 'Salvataggio non riuscito.';
-  } finally { button.disabled = false; }
+  } finally {
+    onButton.disabled = false;
+    offButton.disabled = false;
+  }
 }
 
 async function saveLogoPlacements() {
@@ -4083,7 +4097,7 @@ async function render(id) {
 
     if (id === 'logo') {
       host.innerHTML = await logoManagementPage();
-      if (userRole === 'admin') $('#saveWebsiteStatus').onclick = saveWebsiteStatus;
+      if (userRole === 'admin') { $('#websiteOnButton').onclick = () => saveWebsiteStatus(true); $('#websiteOffButton').onclick = () => saveWebsiteStatus(false); }
       $('#mediaFile').onchange = () => {
         const file = $('#mediaFile').files?.[0];
         if (!file) return;
