@@ -2160,6 +2160,12 @@ function secretPage() {
           inputmode="numeric" pattern="[0-9]{5,9}"
           minlength="5" maxlength="9" autocomplete="off"
           placeholder="Enter coupon number" required>
+        <button type="button" id="scanSecretCoupon" class="outline-btn">SCAN QR CODE</button>
+        <div id="secretCouponScanner" class="coupon-qr-scanner" hidden>
+          <video id="secretCouponVideo" playsinline muted></video>
+          <p id="secretCouponScanStatus" class="help" aria-live="polite"></p>
+          <button type="button" id="stopSecretCouponScan" class="outline-btn">STOP SCANNER</button>
+        </div>
         <button type="submit" id="redeemSecretBtn"
           class="coupon-collect-btn">
           COLLECT COUPON
@@ -2509,6 +2515,75 @@ function showCouponErrorScreen(message) {
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
   close.focus();
+}
+
+let secretCouponCameraStream = null;
+let secretCouponScanFrame = null;
+
+function stopSecretCouponScanner() {
+  if (secretCouponScanFrame) cancelAnimationFrame(secretCouponScanFrame);
+  secretCouponScanFrame = null;
+  if (secretCouponCameraStream) {
+    secretCouponCameraStream.getTracks().forEach(track => track.stop());
+    secretCouponCameraStream = null;
+  }
+  const video = $('#secretCouponVideo');
+  if (video) video.srcObject = null;
+  const panel = $('#secretCouponScanner');
+  if (panel) panel.hidden = true;
+}
+
+async function setupCouponQrScanner() {
+  const scanButton = $('#scanSecretCoupon');
+  const panel = $('#secretCouponScanner');
+  const video = $('#secretCouponVideo');
+  const status = $('#secretCouponScanStatus');
+  const codeInput = $('#secretCouponCode');
+  if (!scanButton || !panel || !video || !status || !codeInput) return;
+  scanButton.onclick = async () => {
+    stopSecretCouponScanner();
+    if (!('BarcodeDetector' in window)) {
+      status.textContent = 'QR scanning is not supported by this browser. Enter the coupon number manually.';
+      panel.hidden = false;
+      return;
+    }
+    try {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      secretCouponCameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } }, audio: false
+      });
+      video.srcObject = secretCouponCameraStream;
+      panel.hidden = false;
+      status.textContent = 'Point the camera at the customer coupon QR code.';
+      await video.play();
+      const scan = async () => {
+        if (!secretCouponCameraStream) return;
+        try {
+          const codes = await detector.detect(video);
+          const value = String(codes[0]?.rawValue || '').trim();
+          if (value) {
+            if (/^[0-9]{5,9}$/.test(value)) {
+              codeInput.value = value;
+              status.textContent = 'Coupon number loaded. Press COLLECT COUPON to redeem.';
+            } else {
+              status.textContent = 'This QR code is not a valid Nababi coupon.';
+            }
+            stopSecretCouponScanner();
+            return;
+          }
+        } catch (_) {}
+        secretCouponScanFrame = requestAnimationFrame(scan);
+      };
+      scan();
+    } catch (error) {
+      stopSecretCouponScanner();
+      panel.hidden = false;
+      status.textContent = error.name === 'NotAllowedError'
+        ? 'Camera permission was denied. Enter the coupon number manually.'
+        : 'Camera unavailable. Enter the coupon number manually.';
+    }
+  };
+  $('#stopSecretCouponScan').onclick = stopSecretCouponScanner;
 }
 
 async function redeemSecretCoupon(e) {
@@ -3951,7 +4026,9 @@ async function render(id) {
     }
 
     if (id === 'secret') {
+      stopSecretCouponScanner();
       host.innerHTML = secretPage();
+      await setupCouponQrScanner();
 
       if (userRole === 'admin') {
         $('#generateSecretCoupon').onclick =
