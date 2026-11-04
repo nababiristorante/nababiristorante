@@ -3900,6 +3900,7 @@ async function setBookingStatus(id,status) {
 /* MODULE RENDERING */
 
 async function render(id) {
+  stopSecretCouponScanner();
   if (!canSee(id)) {
     alert('Questa funzione non è autorizzata per il tuo account.');
     return;
