@@ -2059,86 +2059,77 @@ async function removeStaffLink(id) {
 
 /* STAFF ATTENDANCE + SHARED QR */
 
+function attendanceDuration(checkIn,checkOut) {
+  if (!checkIn || !checkOut) return '—';
+  const a = new Date(checkIn).getTime(), b = new Date(checkOut).getTime();
+  if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) return '—';
+  const minutes = Math.floor((b-a)/60000);
+  return Math.floor(minutes/60) + 'h ' + String(minutes%60).padStart(2,'0') + 'm';
+}
+
 async function attendancePage() {
-  const {data,error} = await db
-    .from('staff_attendance')
-    .select('staff_name,attendance_date,check_in,check_out,status')
-    .order('attendance_date',{ascending:false})
-    .limit(100);
-
+  const [{data:rows,error},{data:staff,error:staffError}] = await Promise.all([
+    db.from('staff_attendance').select('staff_name,attendance_date,check_in,check_out,status')
+      .order('attendance_date',{ascending:false}).order('check_out',{ascending:false}).limit(200),
+    db.from('staff').select('full_name,photo_url')
+  ]);
   if (error) throw error;
-
-  const rows = data || [];
-
-  return `
+  if (staffError) throw staffError;
+  const records = rows || [];
+  const photos = new Map((staff || []).map(person => [String(person.full_name || '').trim().toLocaleLowerCase(),person.photo_url || '']));
+  const today = new Date().toLocaleDateString('en-CA');
+  const checkedOutToday = records.filter(row => row.check_out && String(row.attendance_date || '').slice(0,10) === today);
+  const photoFor = name => photos.get(String(name || '').trim().toLocaleLowerCase()) || '';
+  const photoMarkup = (name,large=false) => {
+    const url = photoFor(name), size = large ? 88 : 58;
+    return url
+      ? '<img src="' + esc(url) + '" alt="' + esc(name || 'Staff') + '" style="width:'+size+'px;height:'+size+'px;object-fit:cover;border-radius:50%;flex:0 0 auto">'
+      : '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:#e8dfc9;display:grid;place-items:center;font-size:26px;flex:0 0 auto">♟</div>';
+  };
+  const timeText = value => value ? new Date(value).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const dateText = value => value ? new Date(String(value).slice(0,10)+'T12:00:00').toLocaleDateString('it-IT') : '—';
+  return \`
     <section class="section-card">
-      <div class="section-title">
-        <h2>Shared Staff QR Code</h2>
-      </div>
-
-      <p class="help">
-        Tutto il personale può utilizzare questo unico QR Code.
-        Ogni persona deve selezionare il proprio nome e inserire
-        il proprio PIN personale.
-      </p>
-
+      <div class="section-title"><h2>Shared Staff QR Code</h2></div>
+      <p class="help">Tutto il personale può utilizzare questo unico QR Code. Ogni persona deve selezionare il proprio nome e inserire il proprio PIN personale.</p>
       <div style="text-align:center;padding:20px">
-        <img src="${STAFF_QR_IMAGE}"
-          alt="Nababi Staff Attendance QR Code"
-          style="width:280px;max-width:100%;height:auto;
-          background:white;padding:10px;border-radius:12px">
-
-        <p><b>NABABI RISTORANTE</b></p>
-        <p class="help">Staff Check In / Check Out</p>
-
-        <p>
-          <a href="${STAFF_QR_URL}" target="_blank" rel="noopener">
-            Open Staff QR Page
-          </a>
-        </p>
-
-        <button class="gold-btn" data-print-attendance-qr>
-          Print QR Code
-        </button>
+        <img src="\${STAFF_QR_IMAGE}" alt="Nababi Staff Attendance QR Code" style="width:280px;max-width:100%;height:auto;background:white;padding:10px;border-radius:12px">
+        <p><b>NABABI RISTORANTE</b></p><p class="help">Staff Check In / Check Out</p>
+        <p><a href="\${STAFF_QR_URL}" target="_blank" rel="noopener">Open Staff QR Page</a></p>
+        <button class="gold-btn" data-print-attendance-qr>Print QR Code</button>
       </div>
     </section>
-
     <section class="section-card">
-      <div class="section-title">
-        <h2>Attendance Records</h2>
-        <span class="help">${rows.length} records</span>
-      </div>
-
-      ${
-        rows.length
-          ? `<div class="table-scroll">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Staff</th>
-                    <th>Date</th>
-                    <th>Check In</th>
-                    <th>Check Out</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${rows.map(row => `
-                    <tr>
-                      <td>${esc(row.staff_name || '—')}</td>
-                      <td>${esc(row.attendance_date || '—')}</td>
-                      <td>${esc(row.check_in || '—')}</td>
-                      <td>${esc(row.check_out || '—')}</td>
-                      <td>${esc(row.status || '—')}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>`
-          : '<div class="empty-state">Nessun record trovato.</div>'
-      }
+      <div class="section-title"><h2>🟢 Staff Checked Out Today</h2><span class="help">\${checkedOutToday.length} staff</span></div>
+      <p class="help">আজ যারা Check-out করেছে তাদের ছবি ও নাম দেখুন। বিস্তারিত জানতে কার্ডে ক্লিক করুন।</p>
+      \${checkedOutToday.length ? \`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+        \${checkedOutToday.map(row => \`
+          <details class="section-card" style="padding:14px;margin:0">
+            <summary style="display:flex;align-items:center;gap:12px;cursor:pointer;list-style:none">
+              \${photoMarkup(row.staff_name)}
+              <span style="min-width:0"><strong>\${esc(row.staff_name || 'Staff')}</strong><br><small class="help">Check-out: \${esc(timeText(row.check_out))}</small></span>
+              <span style="margin-left:auto">＋</span>
+            </summary>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:16px">\${photoMarkup(row.staff_name,true)}<strong>\${esc(row.staff_name || 'Staff')}</strong></div>
+            <p><b>Date:</b> \${esc(dateText(row.attendance_date))}</p>
+            <p><b>Check-in:</b> \${esc(timeText(row.check_in))}</p>
+            <p><b>Check-out:</b> \${esc(timeText(row.check_out))}</p>
+            <p><b>Total work time:</b> \${esc(attendanceDuration(row.check_in,row.check_out))}</p>
+            <p><b>Status:</b> \${esc(row.status || 'Checked out')}</p>
+          </details>\`).join('')}
+      </div>\` : '<div class="empty-state">আজ এখনো কোনো Staff Check-out করেনি।</div>'}
     </section>
-  `;
+    <section class="section-card">
+      <div class="section-title"><h2>Attendance Records</h2><span class="help">\${records.length} records</span></div>
+      \${records.length ? \`<div class="table-scroll"><table class="data-table">
+        <thead><tr><th>Staff</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Work Time</th><th>Status</th></tr></thead>
+        <tbody>\${records.map(row => \`<tr>
+          <td><span style="display:inline-flex;align-items:center;gap:8px">\${photoMarkup(row.staff_name)}<b>\${esc(row.staff_name || '—')}</b></span></td>
+          <td>\${esc(dateText(row.attendance_date))}</td><td>\${esc(timeText(row.check_in))}</td><td>\${esc(timeText(row.check_out))}</td>
+          <td>\${esc(attendanceDuration(row.check_in,row.check_out))}</td><td>\${esc(row.status || '—')}</td>
+        </tr>\`).join('')}</tbody>
+      </table></div>\` : '<div class="empty-state">Nessun record trovato.</div>'}
+    </section>\`;
 }
 
 /* SECRET COUPON BOX */
