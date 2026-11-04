@@ -549,6 +549,258 @@
     }
   }
 
+  /* CLOUDFLARE TURNSTILE — bot protection for public games */
+  let turnstileScriptPromise = null;
+
+  function loadTurnstileScript() {
+    if (window.turnstile?.render) return Promise.resolve();
+    if (turnstileScriptPromise) return turnstileScriptPromise;
+
+    turnstileScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => window.turnstile?.render
+        ? resolve()
+        : reject(new Error('Turnstile could not be initialized.'));
+      script.onerror = () => reject(new Error('Turnstile could not be loaded.'));
+      document.head.appendChild(script);
+    });
+
+    return turnstileScriptPromise;
+  }
+
+  function refreshGamePlayButton(card) {
+    const button = card?.querySelector('.game-play-button');
+    const widget = card?.querySelector('[data-turnstile-widget]');
+    if (!button || !widget) return;
+    button.disabled = card.dataset.gameReady !== 'true' || !widget.dataset.token;
+  }
+
+  async function mountGameTurnstile(container) {
+    const siteKey = CONFIG.TURNSTILE_SITE_KEY;
+    const hosts = Array.from(container.querySelectorAll('[data-turnstile-widget]'));
+    if (!hosts.length) return;
+
+    if (!siteKey) {
+      hosts.forEach(host => {
+        const status = host.closest('.game-card')?.querySelector('.game-play-status');
+        if (status) status.textContent = 'Game verification is not configured.';
+      });
+      return;
+    }
+
+    try {
+      await loadTurnstileScript();
+      hosts.forEach(host => {
+        const card = host.closest('.game-card');
+        if (!card || host.dataset.widgetId) return;
+        const widgetId = window.turnstile.render(host, {
+          sitekey: siteKey,
+          callback: token => {
+            host.dataset.token = token;
+            refreshGamePlayButton(card);
+          },
+          'expired-callback': () => {
+            delete host.dataset.token;
+            refreshGamePlayButton(card);
+            const status = card.querySelector('.game-play-status');
+            if (status) status.textContent = 'Verification expired. Please verify again.';
+          },
+          'error-callback': () => {
+            delete host.dataset.token;
+            refreshGamePlayButton(card);
+            const status = card.querySelector('.game-play-status');
+            if (status) status.textContent = 'Verification failed. Please try again.';
+          }
+        });
+        host.dataset.widgetId = widgetId;
+      });
+    } catch (error) {
+      console.error('Nababi Turnstile could not be loaded:', error);
+      hosts.forEach(host => {
+        const status = host.closest('.game-card')?.querySelector('.game-play-status');
+        if (status) status.textContent = 'Security verification is temporarily unavailable.';
+      });
+    }
+  }
+
+  /* PUBLIC GAMES — themed interactions; server authoritatively decides win/loss */
+  async function loadGames() {
+    const container = $('#liveGames');
+    const section = $('#gamesSection');
+    if (!container || !db) return;
+    const now = new Date().toISOString();
+    try {
+      const {data,error} = await db.from('nababi_games')
+        .select('game_key,title,description,image_url,reward_type,reward_value,reward_label,starts_at,ends_at')
+        .eq('is_enabled',true)
+        .or('starts_at.is.null,starts_at.lte.' + now)
+        .or('ends_at.is.null,ends_at.gte.' + now)
+        .order('title');
+      if (error) throw error;
+      const rows = data || [];
+      if (!rows.length) {
+        if (section) section.hidden = true;
+        return;
+      }
+      if (section) section.hidden = false;
+
+      const gameInfo = {
+        find_golden_n: {icon:'🔎', hint:'Choose one of the six golden letters.'},
+        food_quiz: {icon:'🍛', hint:'Answer the food question, then reveal your result.'},
+        mystery_gift: {icon:'🎁', hint:'Choose one mystery gift box.'},
+        scratch_win: {icon:'✨', hint:'Tap the card to reveal what is underneath.'},
+        spin_win: {icon:'🎡', hint:'Spin the wheel to reveal your result.'}
+      };
+      const gameControl = key => {
+        if (key === 'find_golden_n') return '<div class="game-choice-grid" aria-label="Choose a letter">' +
+          ['A','N','B','A','B','I'].map((v,i)=>'<button type="button" class="game-choice-button" data-choice="'+v+'" aria-label="Choose letter '+v+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'food_quiz') return '<p class="game-question">Which dish is traditionally made with rice and aromatic spices?</p><div class="game-choice-list">' +
+          ['Biryani','Margherita Pizza','Tiramisu'].map(v=>'<button type="button" class="game-choice-button" data-choice="'+v+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'mystery_gift') return '<div class="game-choice-grid game-gift-grid">' +
+          ['🎁','🎁','🎁'].map((v,i)=>'<button type="button" class="game-choice-button game-gift" data-choice="'+(i+1)+'" aria-label="Choose gift '+(i+1)+'">'+v+'</button>').join('') + '</div>';
+        if (key === 'scratch_win') return '<button type="button" class="game-reveal-button">✨ Tap to reveal</button>';
+        if (key === 'spin_win') return '<div class="game-wheel" aria-label="Prize wheel">🎡</div><button type="button" class="game-reveal-button">Spin now</button>';
+        return '<button type="button" class="game-reveal-button">Play now</button>';
+      };
+
+      container.innerHTML = rows.map(game => {
+        const info = gameInfo[game.game_key] || {icon:'🎮',hint:'Choose and reveal your result.'};
+        let reward = game.reward_label || '';
+        if (!reward) {
+          if (game.reward_type === 'discount_percent' && game.reward_value != null) reward = game.reward_value + '% discount';
+          else if (game.reward_type === 'discount_euro' && game.reward_value != null) reward = money(game.reward_value) + ' discount';
+          else if (game.reward_type === 'free_food') reward = 'Free food';
+          else if (game.reward_type === 'free_drink') reward = 'Free drink';
+          else if (game.reward_type === 'custom') reward = 'Special reward';
+        }
+        return `
+          <article class="site-card live-card game-card" data-game-card="${escapeHTML(game.game_key)}">
+            ${game.image_url ? `<img src="${escapeHTML(game.image_url)}" alt="${escapeHTML(game.title || 'Nababi game')}" loading="lazy">` : ''}
+            <div>
+              <p class="game-icon" aria-hidden="true" style="font-size:34px">${info.icon}</p>
+              <h3>${escapeHTML(game.title || game.game_key)}</h3>
+              <p>${escapeHTML(game.description || info.hint)}</p>
+              ${reward ? `<p class="site-price">${escapeHTML(reward)}</p>` : ''}
+              <div class="game-interaction">${gameControl(game.game_key)}</div>
+              <p class="game-selection-status help" aria-live="polite">Make your choice to continue.</p>
+              <div class="game-turnstile" data-turnstile-widget aria-label="Security verification"></div>
+              <button type="button" class="gold-btn game-play-button" data-game-key="${escapeHTML(game.game_key)}" disabled>Reveal result</button>
+              <p class="game-play-status help" aria-live="polite"></p>
+              <div class="game-result" hidden aria-live="polite"></div>
+            </div>
+          </article>`;
+      }).join('');
+
+      await mountGameTurnstile(container);
+
+      if (!container.dataset.playHandler) {
+        container.dataset.playHandler = 'true';
+        container.addEventListener('click', async event => {
+          const choice = event.target.closest('.game-choice-button');
+          const reveal = event.target.closest('.game-reveal-button');
+          if (choice) {
+            const card = choice.closest('.game-card');
+            card.querySelectorAll('.game-choice-button').forEach(el => el.classList.remove('is-selected'));
+            choice.classList.add('is-selected');
+            const status = card.querySelector('.game-selection-status');
+            if (status) status.textContent = 'Choice selected. Reveal your result!';
+            card.dataset.gameReady = 'true';
+            refreshGamePlayButton(card);
+            return;
+          }
+          if (reveal) {
+            const card = reveal.closest('.game-card');
+            if (reveal.dataset.revealed === 'true') return;
+            reveal.dataset.revealed = 'true';
+            reveal.disabled = true;
+            reveal.textContent = card.dataset.gameCard === 'spin_win' ? 'Spinning…' : 'Revealed!';
+            if (card.dataset.gameCard === 'spin_win') {
+              const wheel = card.querySelector('.game-wheel');
+              if (wheel) {
+                wheel.classList.add('is-spinning');
+                await new Promise(resolve => setTimeout(resolve, 1700));
+              }
+            }
+            if (card.dataset.gameCard === 'scratch_win') reveal.classList.add('is-scratched');
+            card.dataset.gameReady = 'true';
+            refreshGamePlayButton(card);
+            const status = card.querySelector('.game-selection-status');
+            if (status) status.textContent = 'Now reveal your official result.';
+            return;
+          }
+
+          const button = event.target.closest('.game-play-button');
+          if (!button || button.disabled) return;
+          const card = button.closest('.game-card');
+          const status = card?.querySelector('.game-play-status');
+          const resultPanel = card?.querySelector('.game-result');
+          button.disabled = true;
+          button.textContent = 'Checking…';
+          if (status) status.textContent = 'Checking your result securely…';
+          if (resultPanel) { resultPanel.hidden = true; resultPanel.textContent = ''; }
+          try {
+            const visitorToken = getVisitorToken();
+            const {data,error} = await db.functions.invoke('claim-game-reward', {
+              body: {
+                game_key: button.dataset.gameKey,
+                visitor_token: visitorToken,
+                choice: card.querySelector('.game-choice-button.is-selected')?.dataset.choice || '',
+                turnstile_token: card.querySelector('[data-turnstile-widget]')?.dataset.token || ''
+              }
+            });
+            if (error) {
+              let detail = error.message || 'Game could not be played.';
+              try { const payload = await error.context?.json?.(); if (payload?.error) detail = payload.error; } catch (_) {}
+              throw new Error(detail);
+            }
+            if (!data?.success) throw new Error(data?.error || 'Game is unavailable.');
+            if (data.won && data.code) {
+              if (resultPanel) resultPanel.innerHTML = '<strong>🎉 Congratulations! You won!</strong><p>Your coupon code:</p><strong class="game-coupon-code"></strong><p class="game-expiry"></p><button type="button" class="outline-btn game-copy-button">Copy coupon</button>';
+              const code = resultPanel?.querySelector('.game-coupon-code');
+              const expiry = resultPanel?.querySelector('.game-expiry');
+              if (code) code.textContent = data.code;
+              if (expiry) expiry.textContent = data.expires_at ? 'Valid until ' + new Date(data.expires_at).toLocaleString() : '';
+              if (resultPanel) resultPanel.hidden = false;
+              if (status) status.textContent = data.reward_label || 'Show your coupon to our staff.';
+              button.textContent = 'Played';
+            } else {
+              if (resultPanel) {
+                resultPanel.innerHTML = '<strong>Thanks for playing!</strong><p>Not a winner this time. Thanks for visiting Nababi!</p>';
+                resultPanel.hidden = false;
+              }
+              if (status) status.textContent = '';
+              button.textContent = 'Played';
+            }
+          } catch (error) {
+            console.error('Nababi game play failed:', error);
+            if (status) status.textContent = error.message || 'Please try again later.';
+            const widget = card.querySelector('[data-turnstile-widget]');
+            if (widget?.dataset.widgetId && window.turnstile) {
+              delete widget.dataset.token;
+              window.turnstile.reset(widget.dataset.widgetId);
+            }
+            button.textContent = 'Try Again';
+            refreshGamePlayButton(card);
+          }
+        });
+        container.addEventListener('click', async event => {
+          const copy = event.target.closest('.game-copy-button');
+          if (!copy) return;
+          const code = copy.closest('.game-result')?.querySelector('.game-coupon-code')?.textContent || '';
+          try { await navigator.clipboard.writeText(code); copy.textContent = 'Copied!'; }
+          catch (_) { copy.textContent = code || 'Copy unavailable'; }
+        });
+      }
+    } catch (error) {
+      console.error('Nababi games could not be loaded:', error);
+      if (section) section.hidden = true;
+    }
+  }
+
+
   /* EVENTS */
 
   async function loadEvents() {
@@ -1387,6 +1639,8 @@
       loadSocialLinks(),
 
       loadCustomerCouponOffer(),
+
+      loadGames(),
 
       loadEvents(),
 
