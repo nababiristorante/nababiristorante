@@ -1080,6 +1080,38 @@
   }
 
 
+  /* QUICK MENU SEARCH */
+  function setupMenuSearch() {
+    const toggle = $('#menuSearchToggle');
+    const panel = $('#menuSearchPanel');
+    const input = $('#menuQuickSearch');
+    const menu = $('#liveMenu');
+    if (!toggle || !panel || !input || !menu) return;
+
+    function filterMenu() {
+      const query = input.value.trim().toLocaleLowerCase();
+      menu.querySelectorAll('.site-card').forEach(card => {
+        card.hidden = Boolean(query) && !card.textContent.toLocaleLowerCase().includes(query);
+      });
+    }
+
+    toggle.addEventListener('click', () => {
+      const opened = panel.hidden;
+      panel.hidden = !opened;
+      toggle.setAttribute('aria-expanded', String(opened));
+      if (opened) input.focus();
+      else {
+        input.value = '';
+        filterMenu();
+      }
+    });
+    input.addEventListener('input', filterMenu);
+    if (window.MutationObserver) {
+      const observer = new MutationObserver(filterMenu);
+      observer.observe(menu, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
   /* WEBSITE LANGUAGE SWITCHER */
   function setupLanguageSwitcher() {
     const selector = $('#siteLanguage');
@@ -1087,9 +1119,49 @@
 
     const translations = {
       en: {
-        nav: ['Home', 'Menu', 'About us', 'Gallery', 'Events', 'Book a table', 'Contact'],
+        nav: ['Home', 'Menu', 'Gallery', 'Special Offers', 'About Us', 'Reviews', 'Contact'],
         text: {
           '.site-hero .eyebrow': 'WELCOME TO',
+          '.fusion-book-top': 'Book a Table',
+          '.fusion-menu-search label': 'Search the menu',
+          '.fusion-footer-brand p': 'Good Food. Good Mood.',
+          '.fusion-footer-bottom p': '© 2026 NABABI RISTORANTE. All rights reserved.',
+          '.fusion-footer-bottom a:nth-child(1)': 'Privacy Policy',
+          '.fusion-footer-bottom a:nth-child(2)': 'Terms & Conditions',
+          '#home h1': 'NABABI RISTORANTE',
+          '#home h2': 'A Perfect Blend of Bangladeshi, Indian & Italian Cuisine',
+          '#home .fusion-hero-cta': 'Book a Table',
+          '.fusion-section-title h2': 'Our Special Cuisine',
+          '.fusion-cuisine-item:nth-child(1) strong': 'Bangladeshi',
+          '.fusion-cuisine-item:nth-child(2) strong': 'Indian',
+          '.fusion-cuisine-item:nth-child(3) strong': 'Italian',
+          '.fusion-cuisine-item:nth-child(4) strong': 'Pizza',
+          '.fusion-cuisine-item:nth-child(5) strong': 'Pasta',
+          '.fusion-cuisine-item:nth-child(6) strong': 'Desserts',
+          '.fusion-offer-copy h2': 'Special Offers',
+          '.fusion-offer-copy p': 'Get Exclusive Discount with Our Coupon',
+          '.fusion-offer-copy .fusion-gold-link': 'Grab Your Coupon',
+          '.fusion-about-teaser h2': 'About',
+          '.fusion-about-teaser h3': 'NABABI RISTORANTE',
+          '.fusion-about-teaser p': 'Experience the perfect harmony of traditional Bangladeshi flavors, authentic Indian spices and classic Italian cuisine — all in one place. A culinary journey like no other!',
+          '.fusion-about-teaser .fusion-gold-link': 'Learn More',
+          '.fusion-book-card h3': 'Book Your Table',
+          '.fusion-book-card p': 'Reserve your table for an unforgettable dining experience.',
+          '.fusion-book-card b': 'Book Now',
+          '.fusion-review-card h3': 'Customer Reviews',
+          '.fusion-offer-seal span:first-child': 'UP TO',
+          '.fusion-offer-seal span:last-child': 'OFF',
+          '.fusion-review-quote small': 'Read guest feedback',
+          '.fusion-map-tile b': 'Rome',
+          '.fusion-review-quote blockquote': 'Discover what our guests say about their Nababi experience.',
+          '.fusion-location-card h3': 'Our Location',
+          '.fusion-location-card b': 'View Location',
+          '.fusion-footer-links h3': 'Quick Links',
+          '.fusion-footer-social h3': 'Follow Us',
+          '.fusion-footer-connect h3': 'Stay Connected',
+          '.fusion-footer-connect p': 'Get the latest offers and news!',
+          '.fusion-footer-subscribe': 'Contact Us',
+          '.fusion-footer-qr span': 'Scan for Our Menu',
           '.site-hero > div > h2': 'Authentic Indian cuisine in the heart of Rome.',
           '.site-hero > div > p:not(.eyebrow)': 'A journey of flavour, tradition and passion. Discover our authentic dishes, prepared with selected ingredients and original recipes.',
           '.site-hero a[href="#menu"]': 'Explore the Menu',
@@ -1167,15 +1239,56 @@
         reviewLabels: ['Your name *', 'Rating *', 'Your review *'],
         bookingTypes: ['Table', 'Birthday', 'Special event'],
         bookingPlaceholder: 'Special requests (optional)',
+        menuSearchPlaceholder: 'Search dishes and ingredients',
         contactLabels: ['Full name *', 'Email', 'Phone', 'Subject', 'Message *'],
         contactButton: 'Send message',
         directions: 'Get directions',
         faq: ['Bookings / Reservations / বুকিং', 'Opening hours / Orari / খোলার সময়', 'Location / Dove siamo / ঠিকানা', 'Takeaway / Asporto / খাবার নিয়ে যাওয়া', 'Home delivery / Consegna a domicilio / হোম ডেলিভারি', 'Payments / Pagamenti / পেমেন্ট', 'Vegetarian options / Menu vegetariano / নিরামিষ খাবার', 'Events and birthdays / Eventi e compleanni / অনুষ্ঠান ও জন্মদিন']
       },
       bn: {
-        nav: ['হোম', 'মেনু', 'আমাদের পরিচয়', 'গ্যালারি', 'অনুষ্ঠান', 'টেবিল বুকিং', 'যোগাযোগ'],
+        nav: ['হোম', 'মেনু', 'গ্যালারি', 'বিশেষ অফার', 'আমাদের পরিচয়', 'রিভিউ', 'যোগাযোগ'],
         text: {
           '.site-hero .eyebrow': 'নবাবিতে আপনাকে স্বাগতম',
+          '.fusion-book-top': 'টেবিল বুক করুন',
+          '.fusion-menu-search label': 'মেনুতে খুঁজুন',
+          '.fusion-footer-brand p': 'ভালো খাবার। ভালো সময়।',
+          '.fusion-footer-bottom p': '© 2026 NABABI RISTORANTE. সর্বস্বত্ব সংরক্ষিত।',
+          '.fusion-footer-bottom a:nth-child(1)': 'গোপনীয়তা নীতি',
+          '.fusion-footer-bottom a:nth-child(2)': 'শর্তাবলি',
+          '#home h1': 'নবাবি রিস্টোরান্তে',
+          '#home h2': 'বাংলাদেশি, ভারতীয় ও ইতালীয় খাবারের অনন্য মেলবন্ধন',
+          '#home .fusion-hero-cta': 'টেবিল বুক করুন',
+          '.fusion-section-title h2': 'আমাদের বিশেষ খাবার',
+          '.fusion-cuisine-item:nth-child(1) strong': 'বাংলাদেশি',
+          '.fusion-cuisine-item:nth-child(2) strong': 'ভারতীয়',
+          '.fusion-cuisine-item:nth-child(3) strong': 'ইতালীয়',
+          '.fusion-cuisine-item:nth-child(4) strong': 'পিজ্জা',
+          '.fusion-cuisine-item:nth-child(5) strong': 'পাস্তা',
+          '.fusion-cuisine-item:nth-child(6) strong': 'ডেজার্ট',
+          '.fusion-offer-copy h2': 'বিশেষ অফার',
+          '.fusion-offer-copy p': 'আমাদের কুপনে বিশেষ ছাড় পান',
+          '.fusion-offer-copy .fusion-gold-link': 'কুপন সংগ্রহ করুন',
+          '.fusion-about-teaser h2': 'আমাদের সম্পর্কে',
+          '.fusion-about-teaser h3': 'নবাবি রিস্টোরান্তে',
+          '.fusion-about-teaser p': 'বাংলাদেশের ঐতিহ্যবাহী স্বাদ, আসল ভারতীয় মসলা এবং ক্লাসিক ইতালীয় খাবারের দারুণ সমন্বয়—সব এক জায়গায়।',
+          '.fusion-about-teaser .fusion-gold-link': 'আরও জানুন',
+          '.fusion-book-card h3': 'আপনার টেবিল বুক করুন',
+          '.fusion-book-card p': 'একটি স্মরণীয় খাবারের অভিজ্ঞতার জন্য টেবিল সংরক্ষণ করুন।',
+          '.fusion-book-card b': 'এখনই বুক করুন',
+          '.fusion-review-card h3': 'গ্রাহকদের মতামত',
+          '.fusion-offer-seal span:first-child': 'পর্যন্ত',
+          '.fusion-offer-seal span:last-child': 'ছাড়',
+          '.fusion-review-quote small': 'অতিথিদের মতামত পড়ুন',
+          '.fusion-map-tile b': 'রোম',
+          '.fusion-review-quote blockquote': 'নবাবিতে অতিথিদের অভিজ্ঞতা ও মতামত দেখুন।',
+          '.fusion-location-card h3': 'আমাদের ঠিকানা',
+          '.fusion-location-card b': 'ঠিকানা দেখুন',
+          '.fusion-footer-links h3': 'দ্রুত লিংক',
+          '.fusion-footer-social h3': 'আমাদের অনুসরণ করুন',
+          '.fusion-footer-connect h3': 'যোগাযোগ রাখুন',
+          '.fusion-footer-connect p': 'নতুন অফার ও খবর জানতে থাকুন!',
+          '.fusion-footer-subscribe': 'যোগাযোগ করুন',
+          '.fusion-footer-qr span': 'মেনু দেখতে স্ক্যান করুন',
           '.site-hero > div > h2': 'রোমের হৃদয়ে আসল ভারতীয় খাবার।',
           '.site-hero > div > p:not(.eyebrow)': 'স্বাদ, ঐতিহ্য ও ভালোবাসার এক ভ্রমণ। বাছাই করা উপকরণ ও আসল রেসিপিতে তৈরি আমাদের বিশেষ খাবার উপভোগ করুন।',
           '.site-hero a[href="#menu"]': 'মেনু দেখুন',
@@ -1252,6 +1365,7 @@
         reviewLabels: ['আপনার নাম *', 'রেটিং *', 'আপনার রিভিউ *'],
         bookingTypes: ['টেবিল', 'জন্মদিন', 'বিশেষ অনুষ্ঠান'],
         bookingPlaceholder: 'বিশেষ অনুরোধ (ঐচ্ছিক)',
+        menuSearchPlaceholder: 'খাবার ও উপকরণ খুঁজুন',
         contactLabels: ['নাম ও পদবি *', 'ইমেইল', 'ফোন', 'বিষয়', 'মেসেজ *'],
         contactButton: 'মেসেজ পাঠান',
         directions: 'যাওয়ার দিকনির্দেশনা',
@@ -1325,6 +1439,11 @@
           }
         });
       }
+      const searchInput = $('#menuQuickSearch');
+      if (searchInput) {
+        remember(searchInput);
+        searchInput.placeholder = t.menuSearchPlaceholder;
+      }
       const notes = $('#bookingForm textarea[name="notes"]');
       if (notes) {
         remember(notes);
@@ -1348,7 +1467,22 @@
     let saved = 'it';
     try { saved = localStorage.getItem('nababi-language') || 'it'; } catch (_) {}
     selector.value = ['it', 'en', 'bn'].includes(saved) ? saved : 'it';
-    selector.addEventListener('change', () => { applyLanguage(selector.value); loadOpeningHours(); });
+    selector.addEventListener('change', () => {
+      applyLanguage(selector.value);
+      loadOpeningHours();
+      document.querySelectorAll('[data-site-language]').forEach(button => {
+        button.classList.toggle('is-active', button.dataset.siteLanguage === selector.value);
+      });
+    });
+    document.querySelectorAll('[data-site-language]').forEach(button => {
+      button.addEventListener('click', () => {
+        selector.value = button.dataset.siteLanguage;
+        selector.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+    document.querySelectorAll('[data-site-language]').forEach(button => {
+      button.classList.toggle('is-active', button.dataset.siteLanguage === selector.value);
+    });
     applyLanguage(selector.value);
   }
 
@@ -1360,6 +1494,7 @@
     setupBookingStatusLookup();
     setupContactForm();
     setupMobileNavigation();
+    setupMenuSearch();
     setupLanguageSwitcher();
     setupGalleryLightbox();
 
