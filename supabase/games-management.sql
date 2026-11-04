@@ -170,7 +170,7 @@ grant execute on function public.issue_game_claim(text,text,text) to service_rol
 
 -- One anonymous play per browser token and game. No customer phone or login is required.
 alter table public.nababi_games
-  add column if not exists win_probability numeric(5,2) not null default 20;
+  add column if not exists win_probability numeric(5,2) not null default 10;
 
 alter table public.nababi_games
   drop constraint if exists games_win_probability_check;
@@ -360,3 +360,9 @@ $$;
 
 revoke all on function public.redeem_game_claim(text) from public, anon, authenticated;
 grant execute on function public.redeem_game_claim(text) to service_role;
+
+
+-- Harden all privileged RPCs against search_path object shadowing.
+alter function public.issue_game_claim(text,text,text) set search_path = '';
+alter function public.play_game_and_issue_claim(text,text,text) set search_path = '';
+alter function public.redeem_game_claim(text) set search_path = '';
