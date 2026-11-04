@@ -730,3 +730,29 @@ body.gallery-lightbox-open{overflow:hidden}
 .gallery-edit-actions{display:flex;flex-wrap:wrap;gap:10px}
 .gallery-edit-form textarea{min-height:78px}
 @media(max-width:600px){.gallery-edit-actions button{flex:1}}
+
+
+/* NABABI GAMES — interactive play cards */
+.game-card{position:relative;overflow:hidden}
+.game-card>div{display:flex;flex-direction:column;gap:10px}
+.game-icon{margin:0;font-size:34px}
+.game-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:8px 0}
+.game-choice-list{display:grid;gap:8px;margin:8px 0}
+.game-choice-button,.game-reveal-button{min-height:48px;padding:12px 14px;border:1px solid #b99a56;border-radius:12px;background:linear-gradient(145deg,#173b2e,#10271f);color:#f8edcf;font:600 15px inherit;cursor:pointer;transition:transform .18s,border-color .18s,background .18s}
+.game-choice-button:hover,.game-reveal-button:hover{transform:translateY(-2px);border-color:#f3d78c}
+.game-choice-button.is-selected{background:linear-gradient(145deg,#d8b76a,#a77d32);color:#18241d;border-color:#ffe6a3;box-shadow:0 0 0 2px rgba(216,183,106,.22)}
+.game-gift{font-size:28px;min-height:70px}
+.game-question{font-weight:650;color:#f2dfb4}
+.game-reveal-button{width:100%;font-weight:700}
+.game-reveal-button.is-scratched{background:linear-gradient(120deg,#d8b76a,#f5e6b8);color:#1c2b22}
+.game-wheel{width:132px;height:132px;border:7px solid #d8b76a;border-radius:50%;margin:8px auto;display:grid;place-items:center;font-size:66px;background:conic-gradient(#183b2e 0 25%,#d8b76a 25% 50%,#214c3b 50% 75%,#f0d99c 75%);box-shadow:0 7px 22px rgba(0,0,0,.24)}
+.game-wheel.is-spinning{animation:nababi-wheel-spin 1.7s cubic-bezier(.15,.75,.18,1)}
+@keyframes nababi-wheel-spin{from{transform:rotate(0)}to{transform:rotate(1440deg)}}
+.game-play-button:disabled{opacity:.48;cursor:not-allowed;transform:none}
+.game-play-status{min-height:1.2em}
+.game-result{padding:16px;margin-top:8px;border:1px solid #c5a45b;border-radius:14px;background:linear-gradient(145deg,#173b2e,#0d211a);color:#fff4d6;text-align:center;overflow-wrap:anywhere}
+.game-result[hidden]{display:none}
+.game-coupon-code{display:block;margin:9px 0;padding:12px;border:1px dashed #e2c77e;border-radius:9px;background:#081a13;color:#ffe29b;font-size:22px;letter-spacing:2px}
+.game-copy-button{margin-top:8px}
+@media(max-width:600px){.game-wheel{width:112px;height:112px;font-size:56px}.game-choice-button{min-height:46px;padding:10px 6px}}
+@media(prefers-reduced-motion:reduce){.game-wheel.is-spinning{animation:none}.game-choice-button,.game-reveal-button{transition:none}}
