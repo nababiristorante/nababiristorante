@@ -1348,7 +1348,22 @@
     let saved = 'it';
     try { saved = localStorage.getItem('nababi-language') || 'it'; } catch (_) {}
     selector.value = ['it', 'en', 'bn'].includes(saved) ? saved : 'it';
-    selector.addEventListener('change', () => { applyLanguage(selector.value); loadOpeningHours(); });
+    selector.addEventListener('change', () => {
+      applyLanguage(selector.value);
+      loadOpeningHours();
+      document.querySelectorAll('[data-site-language]').forEach(button => {
+        button.classList.toggle('is-active', button.dataset.siteLanguage === selector.value);
+      });
+    });
+    document.querySelectorAll('[data-site-language]').forEach(button => {
+      button.addEventListener('click', () => {
+        selector.value = button.dataset.siteLanguage;
+        selector.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+    document.querySelectorAll('[data-site-language]').forEach(button => {
+      button.classList.toggle('is-active', button.dataset.siteLanguage === selector.value);
+    });
     applyLanguage(selector.value);
   }
 
