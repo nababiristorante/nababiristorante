@@ -1,0 +1,159 @@
+/* NABABI RISTORANTE — premium Bangladesh × India × Italy homepage
+   Layout and presentation only. Do not change application behaviour or form hooks. */
+:root{
+ --fusion-cream:#fbf5e9;--fusion-paper:#fffdf8;--fusion-ink:#211c18;
+ --fusion-green:#07563c;--fusion-green-dark:#063b2c;--fusion-wine:#84212d;
+ --fusion-gold:#d5a94f;--fusion-muted:#6d6257;--fusion-line:rgba(75,55,35,.15);
+ --fusion-shadow:0 20px 55px rgba(44,30,18,.12)
+}
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+body.site-body{background:var(--fusion-cream)!important;color:var(--fusion-ink)!important}
+.site-header{
+ min-height:82px!important;padding:12px clamp(16px,5vw,76px)!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:18px!important;background:linear-gradient(105deg,#063b2c 0%,#14291f 56%,#541923 100%)!important;
+ border-bottom:3px solid var(--fusion-gold)!important;box-shadow:0 12px 34px #17130f24!important
+}
+.site-logo,.site-logo-fallback{color:#f5d58f!important}
+.site-logo-words strong{font:700 27px Georgia,serif!important;letter-spacing:-.5px}
+.site-logo-words small{color:#f7ead0!important;letter-spacing:3px!important}
+.site-header nav{gap:clamp(9px,1.6vw,24px)!important}
+.site-header nav a{color:#fff8eb!important;font-size:11px!important;font-weight:800!important;letter-spacing:.1em!important}
+.site-header nav a:hover{color:#f4cf7d!important}
+.language-switcher{border:1px solid #e0bd72!important;background:#fff9ed!important;color:#173e2c!important;border-radius:30px!important}
+.language-switcher select{color:#173e2c!important}
+.site-header-actions{display:flex;align-items:center;gap:10px}
+.site-header .site-phone{color:#f7e5c0!important;font-size:12px!important}
+.site-header-whatsapp{background:#e9f5e9!important;border:1px solid #73b487!important}
+.site-admin-link{color:#f6d58f!important;border-color:#d5a94f!important}
+#mobileMenuButton{color:#f8e9ce!important;border-color:#d5a94f!important;background:#ffffff12!important}
+.site-hero{
+ position:relative;isolation:isolate;min-height:min(760px,78vw)!important;
+ display:flex!important;align-items:center!important;padding:clamp(78px,10vw,145px) clamp(24px,9vw,140px)!important;
+ background:
+  linear-gradient(90deg,rgba(4,31,23,.93) 0%,rgba(5,39,29,.77) 43%,rgba(7,34,26,.13) 100%),
+  linear-gradient(0deg,rgba(22,15,12,.28),transparent 48%),
+  url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90') center 52%/cover!important
+}
+.site-hero:after{content:"";position:absolute;z-index:-1;inset:18px;border:1px solid #f1d18a66;pointer-events:none}
+.site-hero>div{max-width:760px!important}
+.site-hero .eyebrow{color:#f4d28a!important;font-size:11px!important;font-weight:900!important;letter-spacing:.3em!important}
+.fusion-kicker{margin:18px 0 6px!important;color:#f3d28a!important;font-size:11px!important;font-weight:800!important;letter-spacing:.22em!important}
+.site-hero h1{color:#fff9ec!important;font:clamp(48px,7.5vw,98px)/.98 Georgia,"Times New Roman",serif!important;letter-spacing:-.055em!important;text-shadow:0 8px 30px #0006!important;margin:8px 0 20px!important}
+.site-hero h2{color:#f5dcae!important;font:italic clamp(20px,2.5vw,30px)/1.35 Georgia,serif!important;margin:0 0 18px!important}
+.site-hero p:not(.eyebrow):not(.fusion-kicker){max-width:560px!important;color:#fff9ed!important;font-size:16px!important;line-height:1.9!important}
+.site-hero .gold-btn,.site-hero .outline-btn,.gold-btn,.outline-btn,.google-review-btn{
+ min-height:48px!important;padding:13px 24px!important;border-radius:5px!important;
+ font-size:11px!important;font-weight:900!important;letter-spacing:.1em!important;text-transform:uppercase!important
+}
+.site-hero .gold-btn,.gold-btn{background:linear-gradient(110deg,#d6aa50,#f0d18b)!important;color:#2b2116!important;border:1px solid #e9c777!important;box-shadow:0 10px 24px #0003!important}
+.site-hero .outline-btn{border:1px solid #fff0d0!important;color:#fff8e9!important;background:#ffffff16!important}
+.hero-signature{display:flex;align-items:center;gap:12px;margin-top:34px;color:#f3d99f;font-size:9px;font-weight:800;letter-spacing:.2em}
+.hero-signature i{width:4px;height:4px;border-radius:50%;background:var(--fusion-gold)}
+.fusion-intro{padding:clamp(58px,8vw,100px) max(5%,calc((100% - 1220px)/2))!important;background:#fffaf0!important}
+.fusion-intro-heading{max-width:760px;margin:0 auto 38px;text-align:center}
+.fusion-overline{display:block;color:var(--fusion-green)!important;font-size:10px!important;font-weight:900!important;letter-spacing:.25em!important}
+.fusion-intro-heading h2,.fusion-about-copy h2{margin:14px 0!important;color:var(--fusion-wine)!important;font:clamp(31px,4vw,49px)/1.12 Georgia,serif!important;letter-spacing:-.035em!important}
+.fusion-intro-heading h2 em,.fusion-about-copy h2 em{color:var(--fusion-green)!important;font-weight:400}
+.fusion-intro-heading p,.fusion-about-copy p{color:var(--fusion-muted)!important;line-height:1.85!important}
+.fusion-culture-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.fusion-culture-card{position:relative;min-height:360px;overflow:hidden;border-radius:9px;background:#1b241d;box-shadow:var(--fusion-shadow)}
+.fusion-culture-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(13,23,17,.92),rgba(13,23,17,.03) 72%)}
+.fusion-culture-card img{width:100%;height:100%;min-height:360px;object-fit:cover;display:block;transition:transform .55s ease}
+.fusion-culture-card:hover img{transform:scale(1.045)}
+.fusion-culture-card>div{position:absolute;z-index:1;left:25px;right:20px;bottom:25px;color:#fff8ea}
+.fusion-culture-card span{color:#f2d18a;font-size:9px;font-weight:900;letter-spacing:.2em}
+.fusion-culture-card h3{margin:8px 0;color:#fff8ea;font:36px Georgia,serif}
+.fusion-culture-card p{margin:0;color:#f4ead8;font-size:13px}
+.fusion-bangladesh{border-bottom:4px solid #08794e}.fusion-india{border-bottom:4px solid #d28a3b}.fusion-italy{border-bottom:4px solid #397c50}
+.fusion-bridge{display:flex;align-items:center;justify-content:center;gap:18px;margin:32px auto 0;color:var(--fusion-green);font-size:11px;letter-spacing:.1em}
+.fusion-bridge i{color:var(--fusion-gold);font-style:normal}
+.site-body>section.site-section{
+ padding:clamp(60px,8vw,104px) max(5%,calc((100% - 1220px)/2))!important;
+ border-bottom:1px solid var(--fusion-line)!important;background:var(--fusion-paper)!important
+}
+.site-body>section.site-section:nth-of-type(even){background:#f2eadb!important}
+.site-section h2{color:var(--fusion-wine)!important;font:clamp(32px,4vw,48px)/1.12 Georgia,serif!important;letter-spacing:-.03em!important;text-align:center!important;margin:0 0 18px!important}
+.site-section h2:after{content:"";display:block;width:56px;height:3px;margin:17px auto 0;background:linear-gradient(90deg,var(--fusion-green),var(--fusion-gold),var(--fusion-wine))}
+.site-section>p{color:var(--fusion-muted)!important}
+.site-cards{grid-template-columns:repeat(auto-fit,minmax(245px,1fr))!important;gap:24px!important;margin-top:36px!important}
+.site-card,.news-card{overflow:hidden;border:1px solid var(--fusion-line)!important;border-radius:9px!important;background:#fffdf8!important;box-shadow:var(--fusion-shadow)!important;transition:transform .25s ease,box-shadow .25s ease!important}
+.site-card:hover,.news-card:hover{transform:translateY(-5px)!important;box-shadow:0 25px 55px #2c1e1228!important}
+.site-card img,.news-card img{width:100%;height:230px!important;object-fit:cover!important}
+.site-card>div,.news-card{padding:22px!important}
+.site-card h3,.site-card h4,.news-card h3{color:var(--fusion-wine)!important;font:600 24px/1.25 Georgia,serif!important}
+.site-card p,.news-card p{color:var(--fusion-muted)!important;line-height:1.75!important}
+.site-price,.review-stars{color:var(--fusion-green)!important;font-weight:900!important}
+#liveMenu .site-card .site-price{display:inline-block;padding:5px 10px;border:1px solid #84212d35;background:#f8eee8;color:var(--fusion-wine)!important}
+#customerCouponSection{background:#efe2ca!important}
+#customerCouponSection>.site-card{max-width:850px!important;padding:clamp(28px,5vw,58px)!important;border:1px solid #d5a94f99!important;background:linear-gradient(135deg,#fffdf8,#f4e8d4)!important}
+#customerCouponSection h2{color:var(--fusion-wine)!important}
+#reservation,#contact{background:#f0e8da!important}
+#reservation .site-form,#contact .site-form{max-width:900px!important;padding:clamp(22px,4vw,42px)!important;border:1px solid var(--fusion-line)!important;border-radius:10px!important;background:#fffdf8!important;box-shadow:var(--fusion-shadow)!important}
+.site-form label{color:var(--fusion-green-dark)!important;font-size:13px!important;font-weight:800!important}
+.site-form input,.site-form select,.site-form textarea{min-height:49px!important;padding:12px 14px!important;border:1px solid #07563c40!important;border-radius:5px!important;background:#fff!important;color:var(--fusion-ink)!important}
+.site-form input:focus,.site-form select:focus,.site-form textarea:focus{outline:3px solid #07563c20!important;border-color:var(--fusion-green)!important}
+.floor-room,.booking-status-lookup,.whatsapp-booking-card{border:1px solid var(--fusion-line)!important;border-radius:9px!important;background:#fffdf8!important;box-shadow:var(--fusion-shadow)!important}
+.floor-room h4,.booking-status-lookup h3{color:var(--fusion-wine)!important}
+.floor-table{border-radius:5px!important;background:var(--fusion-green)!important}
+.floor-table.is-selected{outline:3px solid var(--fusion-gold)!important}
+.fusion-about{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:center!important;gap:clamp(28px,6vw,76px)!important;background:#fffaf0!important}
+.fusion-about:before{display:none!important}
+.fusion-about .fusion-about-photo{position:relative;min-height:430px;border-radius:10px;overflow:hidden;box-shadow:var(--fusion-shadow)}
+.fusion-about-photo img{width:100%;height:100%;min-height:430px;object-fit:cover;display:block}
+.fusion-photo-stamp{position:absolute;right:18px;bottom:18px;padding:14px 18px;border:1px solid #f3d18a;background:#063b2ceF;color:#f7d891;text-align:center;font:18px Georgia,serif;letter-spacing:.12em}
+.fusion-photo-stamp small{font:8px Arial,sans-serif;letter-spacing:.2em}
+.fusion-about-copy h2{text-align:left!important}
+.fusion-about-copy h2:after{display:none!important}
+.fusion-about-copy p{max-width:570px}
+#reviews{background:#fffaf0!important}
+#reviews>.site-card{max-width:760px!important;margin:28px auto!important;padding:clamp(24px,4vw,42px)!important;border:1px solid #d5a94f99!important;border-radius:12px!important;background:linear-gradient(145deg,#fffdf8,#f3e8d7)!important;box-shadow:var(--fusion-shadow)!important}
+#reviewFormHeading{color:var(--fusion-wine)!important;font:clamp(27px,3.5vw,36px)/1.15 Georgia,serif!important}
+#customerReviewForm{display:grid!important;grid-template-columns:1fr!important;gap:11px!important}
+#customerReviewForm button.google-review-btn{justify-self:start;background:var(--fusion-wine)!important;color:#fff!important;border:1px solid var(--fusion-wine)!important;border-radius:5px!important}
+.google-review-btn{background:var(--fusion-green)!important;color:#fff!important;border:1px solid var(--fusion-green)!important;border-radius:5px!important}
+.site-footer{background:var(--fusion-green-dark)!important;color:#fff5e5!important;border-top:4px solid var(--fusion-gold)!important}
+.site-footer a{color:#f2d18a!important}
+.delivery-section{background:var(--fusion-green-dark)!important}
+.whatsapp-floating{box-shadow:0 10px 26px #0003!important}
+@media(max-width:980px){
+ .site-header{gap:10px!important;padding-inline:18px!important}
+ .site-header nav{gap:10px!important}
+ .site-header nav a{font-size:10px!important}
+ .site-header .site-phone{display:none!important}
+}
+@media(max-width:760px){
+ .site-header{position:sticky!important;display:flex!important;flex-wrap:wrap!important;padding:10px 14px!important;gap:9px!important}
+ .site-header nav{display:none!important;flex:1 0 100%!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;padding:8px 0!important;background:#0b392b!important}
+ .site-header nav.is-open{display:flex!important}
+ .site-header nav a{padding:12px 14px!important;border-top:1px solid #ffffff20!important;color:#fff8eb!important}
+ .site-header-actions{gap:7px}
+ .site-header .site-admin-link{font-size:10px!important;padding:8px!important}
+ .site-hero{min-height:560px!important;padding:70px 24px!important;background-position:62% center!important}
+ .site-hero h1{font-size:clamp(44px,12vw,66px)!important}
+ .site-hero p:not(.eyebrow):not(.fusion-kicker){font-size:14px!important}
+ .hero-signature{flex-wrap:wrap;gap:8px;font-size:8px}
+ .fusion-intro{padding:58px 20px!important}
+ .fusion-culture-grid{grid-template-columns:1fr!important;gap:16px}
+ .fusion-culture-card,.fusion-culture-card img{min-height:290px!important;height:290px!important}
+ .fusion-bridge{gap:9px;flex-wrap:wrap;font-size:9px}
+ .site-body>section.site-section{padding:56px 20px!important}
+ .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important}
+ .site-card img,.news-card img{height:175px!important}
+ .site-card>div,.news-card{padding:15px!important}
+ .site-card h3,.site-card h4,.news-card h3{font-size:19px!important}
+ .fusion-about{grid-template-columns:1fr!important;gap:28px!important}
+ .fusion-about .fusion-about-photo,.fusion-about-photo img{min-height:290px!important}
+ .fusion-about-copy h2{text-align:center!important}
+ .fusion-about-copy .gold-btn{display:inline-flex}
+ #menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #reservation .site-form,#contact .site-form{grid-template-columns:1fr!important}
+}
+@media(max-width:480px){
+ .site-hero{min-height:500px!important;padding:56px 20px!important}
+ .site-hero .gold-btn,.site-hero .outline-btn{display:inline-flex;margin:5px 5px 0 0;padding:12px 15px!important;font-size:10px!important}
+ .site-cards,#menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:1fr!important}
+ .site-card img,.news-card img{height:210px!important}
+ .fusion-intro-heading h2,.fusion-about-copy h2{font-size:32px!important}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.site-card,.news-card,.fusion-culture-card img{transition:none!important}}
