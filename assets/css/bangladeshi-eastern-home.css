@@ -1,0 +1,43 @@
+/* NABABI — Bangladeshi Eastern restaurant visual direction. Presentation only. */
+:root{--ref-bg:#03170f;--ref-panel:#06271a;--ref-gold:#f0c65d;--ref-gold-soft:#c99736;--ref-cream:#fff3d8;--ref-muted:#e0d4b9}
+body.site-body{background:#f7eedc!important;color:#14251a!important}
+.fusion-reference-header{background:linear-gradient(105deg,#031b11,#063d26 58%,#092719)!important;border-bottom:2px solid var(--ref-gold)!important}
+.fusion-main-logo .site-logo-crown,.fusion-main-logo .site-logo-words{color:#f4cd69!important}
+.fusion-reference-header nav a{color:#fff4dc!important}
+.fusion-language-select select{background:#082d1c!important;border-color:#d5a84c!important;color:#fff4dc!important}
+.fusion-reference-hero{min-height:440px!important;height:440px!important;padding:40px clamp(22px,8vw,120px)!important;background:linear-gradient(90deg,rgba(0,24,14,.94),rgba(0,35,20,.76) 42%,rgba(0,22,12,.12)),url('https://images.unsplash.com/photo-1563379091339-03246963d96a?auto=format&fit=crop&w=2200&q=92') center 52%/cover!important;border-bottom:2px solid #d7ad4e!important}
+.fusion-reference-hero:before{content:"";position:absolute;inset:12px;border:1px solid #edc76566;pointer-events:none}
+.fusion-reference-hero h1{color:#f7d578!important;text-shadow:0 5px 24px #000!important;font-size:clamp(44px,6vw,78px)!important}
+.fusion-reference-hero h2{color:#fff0d0!important;font-style:italic!important}
+.fusion-reference-hero .eyebrow{color:#f4ce68!important;letter-spacing:3px!important}
+.fusion-reference-hero .fusion-hero-intro{color:#fff4df!important;font-size:15px!important;line-height:1.65!important}
+.fusion-reference-hero .fusion-hero-cta{background:linear-gradient(110deg,#ffe18a,#d7a63d)!important;border-color:#f5d578!important;color:#1b2416!important;border-radius:28px!important}
+.fusion-reference-hero .fusion-hero-cta.secondary{background:#041a11d9!important;color:#fff4dc!important}
+.fusion-cuisine{background:linear-gradient(90deg,#031b11,#064128,#031b11)!important;border-color:#d8ae4e!important}
+.fusion-cuisine-item strong{color:#ffe09a!important}
+.fusion-cuisine-item img{border:2px solid #d9b253!important}
+.site-body>section.site-section{background:#fff8e9!important;color:#1c281e!important}
+.site-body>section.site-section:nth-of-type(even){background:#f0e3c9!important}
+.site-section h2{color:#06452c!important}
+.site-section h2:after{background:linear-gradient(90deg,transparent,#d8aa43,transparent)!important}
+.site-card,.news-card{background:#fffaf0!important;border:1px solid #d6b66c!important;border-radius:13px!important;box-shadow:0 12px 30px #38250e18!important}
+.site-card h3,.site-card h4,.news-card h3{color:#075333!important}
+.site-card p,.news-card p{color:#544936!important}
+.site-card img,.news-card img{height:190px!important}
+.site-price,.review-stars{color:#a66d12!important}
+.fusion-feature-split,.fusion-quick-panels{background:#041d12!important;border-color:#c79b42!important}
+.fusion-offer-panel,.fusion-about-teaser,.fusion-quick-card{background:linear-gradient(135deg,#062e1d,#03170f)!important;color:#fff3d8!important;border-color:#c99e49!important}
+.fusion-offer-copy h2,.fusion-about-teaser h2,.fusion-quick-card h3{color:#f1cc68!important}
+.fusion-offer-copy p,.fusion-about-teaser p,.fusion-quick-card p{color:#f4e8cf!important}
+#reservation,#contact,#reviews,#about{background:#f4e9d4!important}
+#reservation .site-form,#contact .site-form,#reviews>.site-card{background:#fffaf0!important;border-color:#d1ad61!important}
+.site-form label{color:#075333!important}
+.site-form input,.site-form select,.site-form textarea{border-color:#c8a45c!important;background:#fff!important;color:#1c281e!important}
+.floor-room{background:#fffaf0!important;border-color:#d0ad65!important}
+.floor-room h4{color:#075333!important}
+.floor-table{background:#075333!important;border-color:#d6b15c!important}
+.floor-table.is-selected{background:#0a7044!important;outline-color:#d9b24f!important}
+.site-footer{background:linear-gradient(120deg,#03180f,#064027)!important;border-top:3px solid #d8ad4e!important;color:#fff2d5!important}
+.site-footer a{color:#f4d17a!important}
+.google-review-btn,.gold-btn{background:linear-gradient(110deg,#f4d276,#d3a13d)!important;color:#1b2416!important;border-color:#c79535!important}
+@media(max-width:700px){.fusion-reference-hero{height:auto!important;min-height:440px!important;padding:42px 22px!important;background-position:58% center!important}.fusion-reference-hero h1{font-size:44px!important}.fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.site-body>section.site-section{padding:36px 16px!important}.site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}.site-card img,.news-card img{height:140px!important}}
