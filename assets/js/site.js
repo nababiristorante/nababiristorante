@@ -1490,7 +1490,21 @@
 
   /* INITIALIZATION */
 
+  async function showMaintenanceIfEnabled() {
+    if (!db) return false;
+    try {
+      const {data,error} = await db.from('site_settings').select('setting_value').eq('setting_key','website_maintenance_mode').maybeSingle();
+      if (error) throw error;
+      if (!data || data.setting_value !== 'true') return false;
+    } catch (error) { console.warn('Nababi: maintenance check failed; keeping site available.', error); return false; }
+    document.body.innerHTML = ['<main style="min-height:100vh;display:grid;place-items:center;padding:32px 20px;background:#f5f0e5;color:#173d2c;text-align:center;font-family:Arial,sans-serif">','<section style="max-width:620px;padding:42px 28px;border:1px solid #c9a45c;border-radius:18px;background:#fffdf8">','<p style="letter-spacing:.18em;color:#a17b35;font-weight:700">NABABI RISTORANTE</p>','<h1>Website Temporarily Closed</h1>','<p>Stiamo aggiornando il nostro sito. Torneremo presto online.</p>','<p>Our website is temporarily unavailable. We will be back soon.</p>','<p lang="bn">আমাদের ওয়েবসাইট সাময়িকভাবে বন্ধ আছে। খুব শিগগিরই আবার চালু হবে।</p>','<a href="tel:+393933805350">+39 393 3805350</a>','</section></main>'].join('');
+    document.title = 'Nababi Ristorante — Temporarily Closed';
+    return true;
+  }
+
   async function initializeWebsite() {
+
+    if (await showMaintenanceIfEnabled()) return;
 
     setupBooking();
     setupBookingStatusLookup();
