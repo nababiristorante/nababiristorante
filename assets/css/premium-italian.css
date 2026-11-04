@@ -373,3 +373,125 @@ body.site-body{background:var(--nababi-cream)!important}
   .site-header nav a{color:#201b17!important}
   .site-hero{min-height:500px!important;background-position:58% center!important}
 }
+
+
+/* Premium fusion review area — visual-only; review form IDs and submission remain unchanged. */
+#reviews{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 8% 12%,rgba(7,88,61,.09),transparent 34%),
+    radial-gradient(ellipse at 92% 88%,rgba(134,31,43,.08),transparent 36%),
+    #f8f0df!important;
+}
+#reviews>h2{margin-bottom:34px!important}
+#liveReviews{
+  max-width:1120px!important;
+  margin:0 auto 34px!important;
+}
+#liveReviews .site-card{
+  border:1px solid rgba(160,119,48,.3)!important;
+  border-radius:14px!important;
+  background:rgba(255,250,240,.94)!important;
+  box-shadow:0 14px 36px rgba(35,24,14,.09)!important;
+}
+#liveReviews .site-card h3{color:var(--nababi-wine)!important}
+#liveReviews .site-card p{color:var(--nababi-muted)!important}
+#liveReviews .review-stars{color:#bd8b2e!important;letter-spacing:3px}
+#reviews>.site-card{
+  position:relative;
+  max-width:760px!important;
+  margin:0 auto 24px!important;
+  padding:clamp(24px,4vw,42px)!important;
+  overflow:hidden;
+  border:1px solid rgba(214,168,75,.65)!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,#fffaf0 0%,#f3e7d1 100%)!important;
+  box-shadow:0 22px 55px rgba(35,24,14,.14)!important;
+}
+#reviews>.site-card:before{
+  content:"“";
+  position:absolute;right:24px;top:-24px;
+  color:rgba(134,31,43,.09);
+  font:180px/1 Georgia,serif;
+  pointer-events:none;
+}
+#reviewFormHeading{
+  position:relative;
+  margin:0 0 10px!important;
+  color:var(--nababi-wine)!important;
+  font:clamp(27px,3.5vw,36px)/1.15 Georgia,"Times New Roman",serif!important;
+}
+#reviewFormIntro{
+  position:relative;
+  max-width:560px;
+  color:var(--nababi-muted)!important;
+  line-height:1.75!important;
+}
+#customerReviewForm{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+  margin-top:24px!important;
+}
+#customerReviewForm label{
+  margin:5px 0 0!important;
+  color:var(--nababi-olive-dark)!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  letter-spacing:.025em;
+}
+#customerReviewForm input,
+#customerReviewForm select,
+#customerReviewForm textarea{
+  width:100%!important;
+  min-height:50px!important;
+  padding:13px 15px!important;
+  border:1px solid rgba(7,88,61,.24)!important;
+  border-radius:8px!important;
+  background:rgba(255,255,255,.9)!important;
+  color:var(--nababi-ink)!important;
+  box-shadow:inset 0 1px 2px rgba(35,24,14,.03)!important;
+  font:inherit!important;
+}
+#customerReviewForm textarea{min-height:138px!important;resize:vertical}
+#customerReviewForm input:focus,
+#customerReviewForm select:focus,
+#customerReviewForm textarea:focus{
+  outline:3px solid rgba(7,88,61,.13)!important;
+  border-color:var(--nababi-olive)!important;
+}
+#customerReviewForm button.google-review-btn{
+  justify-self:start;
+  min-width:210px;
+  margin-top:10px!important;
+  padding:14px 24px!important;
+  border:1px solid var(--nababi-wine)!important;
+  border-radius:7px!important;
+  color:#fffaf0!important;
+  background:linear-gradient(110deg,var(--nababi-wine),#a32a36)!important;
+  box-shadow:0 8px 20px rgba(92,23,33,.18)!important;
+}
+#customerReviewForm button.google-review-btn:hover{
+  transform:translateY(-2px);
+  background:var(--nababi-wine-dark)!important;
+}
+#customerReviewStatus{min-height:1.5em;color:var(--nababi-olive-dark)!important}
+#reviews>a.google-review-btn{
+  display:flex!important;
+  width:fit-content;
+  margin:0 auto!important;
+  align-items:center;
+  justify-content:center;
+  border-radius:7px!important;
+  border:1px solid var(--nababi-olive)!important;
+  color:#fff!important;
+  background:linear-gradient(110deg,var(--nababi-olive-dark),var(--nababi-olive))!important;
+  box-shadow:0 8px 20px rgba(6,59,44,.16)!important;
+}
+@media(max-width:600px){
+  #reviews>.site-card{padding:23px 18px!important;border-radius:12px!important}
+  #customerReviewForm button.google-review-btn{width:100%;justify-self:stretch}
+  #reviews>a.google-review-btn{width:100%;text-align:center}
+}
