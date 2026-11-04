@@ -32,6 +32,7 @@ const menu = [
   ['bookings','▣','Bookings'],
   ['customers','♙','Customers'],
   ['coupons','◇','Coupons'],
+  ['games','🎮','Games Management'],
   ['staff','♟','Staff Management'],
   ['performance','▥','Staff Performance'],
   ['attendance','◷','Staff Attendance'],
@@ -55,6 +56,7 @@ const tableMap = {
   bookings:'bookings',
   customers:'customers',
   coupons:'coupons',
+  games:'nababi_games',
   staff:'staff',
   performance:'staff_activity_logs',
   attendance:'staff_attendance',
@@ -84,6 +86,7 @@ const descriptions = {
   bookings:'Consulta le prenotazioni dei tavoli.',
   customers:'Archivio clienti.',
   coupons:'Crea e gestisci codici sconto.',
+  games:'Gestisci giochi, immagini, premi e disponibilità sul sito.',
   staff:'Gestisci profili e ruoli del personale.',
   performance:'Consulta le attività e le prestazioni del personale.',
   attendance:'Presenze e turni del personale.',
@@ -3928,6 +3931,74 @@ async function render(id) {
       return;
     }
 
+    if (id === 'games') {
+      if (userRole !== 'admin') {
+        host.innerHTML = '<p>Solo il Super Admin può gestire i giochi.</p>';
+        return;
+      }
+      host.innerHTML = gamesPage();
+      await loadGames();
+      $('#gameForm').onsubmit = async e => {
+        try { await saveGame(e); }
+        catch (err) { if ($('#gameStatus')) $('#gameStatus').textContent = err.message || 'Salvataggio non riuscito.'; }
+      };
+      $('#gameKey').onchange = () => {
+        const game = gamesCache.find(item => item.game_key === $('#gameKey').value);
+        if (game) fillGameForm(game);
+      };
+      $('#gameReset').onclick = resetGameForm;
+      $('#gameRedeemForm').onsubmit = async e => {
+        e.preventDefault();
+        const button = e.submitter || $('#gameRedeemForm button[type="submit"]');
+        const status = $('#gameRedeemStatus');
+        const code = String($('#gameRedeemCode').value || '').trim().toUpperCase();
+        if (!/^NBG-[A-F0-9]{12}$/.test(code)) {
+          status.textContent = 'Inserisci un codice valido (NBG-XXXXXXXXXXXX).';
+          return;
+        }
+        button.disabled = true;
+        status.textContent = 'Verifica del coupon…';
+        try {
+          const {data,error} = await db.functions.invoke('redeem-game-claim', {body:{code}});
+          if (error) throw error;
+          if (!data?.success) throw new Error(data?.message || 'Coupon non valido.');
+          status.textContent = 'Coupon riscattato! ' + (data.reward_label || data.game_key || '');
+          $('#gameRedeemCode').value = '';
+        } catch (err) {
+          status.textContent = err.message || 'Impossibile verificare il coupon.';
+        } finally {
+          button.disabled = false;
+        }
+      };
+      $('#gameImageFile').onchange = () => {
+        const file = $('#gameImageFile').files?.[0];
+        if (!file) return;
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8 * 1024 * 1024) {
+          $('#gameStatus').textContent = 'Usa JPG, PNG o WebP (massimo 8 MB).';
+          $('#gameImageFile').value = '';
+          return;
+        }
+        const preview = $('#gameImagePreview');
+        preview.src = URL.createObjectURL(file);
+        preview.hidden = false;
+      };
+      $('#gamesAdminList').onclick = async e => {
+        const edit = e.target.closest('[data-game-edit]');
+        if (edit) {
+          const game = gamesCache.find(item => item.game_key === edit.dataset.gameEdit);
+          if (game) fillGameForm(game);
+          return;
+        }
+        const toggle = e.target.closest('[data-game-toggle]');
+        if (toggle) {
+          toggle.disabled = true;
+          try { await toggleGame(toggle.dataset.gameToggle, toggle.dataset.enabled === 'true'); }
+          catch (err) { alert(err.message || 'Impossibile aggiornare il gioco.'); toggle.disabled = false; }
+        }
+      };
+      return;
+    }
+
     if (id === 'secret') {
       host.innerHTML = secretPage();
 
@@ -4342,6 +4413,249 @@ async function genericTable(id) {
     </div>`;
   }
 }
+
+/* GAMES MANAGEMENT */
+function gamesPage() {
+  return `
+    <section class="section-card">
+      <div class="section-title">
+        <h2>Gestione giochi</h2>
+        <span class="help">Attiva solo i giochi completi e verificati.</span>
+      </div>
+      <div id="gamesAdminList" class="empty-state">Caricamento giochi…</div>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Configurazione gioco</h2></div>
+      <form id="gameForm" class="upload-box">
+        <div class="form-grid">
+          <label class="field">Gioco
+            <select id="gameKey" name="game_key" required></select>
+          </label>
+          <label class="field">Titolo
+            <input id="gameTitle" name="title" maxlength="120" required>
+          </label>
+          <label class="field">Descrizione del gioco
+            <input id="gameDescription" name="description" maxlength="500" placeholder="Breve descrizione del gioco">
+          </label>
+          <label class="field">Tipo premio
+            <select id="gameRewardType" name="reward_type">
+              <option value="none">Nessun premio configurato</option>
+              <option value="discount_percent">Sconto percentuale (%)</option>
+              <option value="discount_euro">Sconto in euro (€)</option>
+              <option value="free_food">Cibo gratuito</option>
+              <option value="free_drink">Bevanda gratuita</option>
+              <option value="custom">Premio personalizzato</option>
+            </select>
+          </label>
+          <label class="field">Valore premio
+            <input id="gameRewardValue" name="reward_value" type="number" min="0" step="0.01" placeholder="Es. 10">
+          </label>
+          <label class="field">Descrizione premio
+            <input id="gameRewardLabel" name="reward_label" maxlength="180" placeholder="Es. 10% di sconto sul conto">
+          </label>
+          <label class="field">Limite totale dei premi
+            <input id="gameMaxClaims" name="max_claims" type="number" min="1" step="1" placeholder="Vuoto = nessun limite">
+          </label>
+          <label class="field">Probabilità di vincita (%)
+            <input id="gameWinProbability" name="win_probability" type="number" min="0" max="100" step="0.1" value="20">
+          </label>
+          <label class="field">Inizio validità
+            <input id="gameStartsAt" name="starts_at" type="datetime-local">
+          </label>
+          <label class="field">Fine validità
+            <input id="gameEndsAt" name="ends_at" type="datetime-local">
+          </label>
+        </div>
+        <label class="field" style="display:flex;align-items:center;gap:10px;margin-top:14px">
+          <input id="gameEnabled" name="is_enabled" type="checkbox" style="width:18px;height:18px">
+          Attiva questo gioco sul sito
+        </label>
+        <label class="field">Immagine del gioco (JPG, PNG o WebP · max 8 MB)
+          <input id="gameImageFile" type="file" accept="image/jpeg,image/png,image/webp">
+        </label>
+        <img id="gameImagePreview" class="preview-img" hidden alt="Anteprima immagine del gioco">
+        <p id="gameStatus" class="help" aria-live="polite"></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <button class="gold-btn" type="submit">Salva gioco</button>
+          <button class="outline-btn" id="gameReset" type="button">Annulla modifiche</button>
+        </div>
+      </form>
+    </section>
+    <section class="section-card">
+      <div class="section-title"><h2>Verifica e riscatta Coupon</h2></div>
+      <form id="gameRedeemForm" class="upload-box">
+        <label class="field">Codice Coupon
+          <input id="gameRedeemCode" maxlength="16" placeholder="NBG-XXXXXXXXXXXX" autocomplete="off" required>
+        </label>
+        <button class="gold-btn" type="submit">Verifica e riscatta</button>
+        <p id="gameRedeemStatus" class="help" aria-live="polite"></p>
+      </form>
+    </section>
+    <p class="help">I risultati di gioco e i codici vengono generati e verificati sul server. Ogni coupon può essere riscattato una sola volta.</p>
+  `;
+}
+
+let gamesCache = [];
+
+function gameDateInput(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0,16);
+}
+
+async function loadGames() {
+  const list = $('#gamesAdminList');
+  const select = $('#gameKey');
+  if (!list || !select) return;
+  const {data,error} = await db.from('nababi_games')
+    .select('game_key,title,description,is_enabled,image_url,reward_type,reward_value,reward_label,max_claims,win_probability,starts_at,ends_at')
+    .order('title');
+  if (error) throw error;
+  gamesCache = data || [];
+  if (!gamesCache.length) {
+    list.innerHTML = '<div class="empty-state">Nessun gioco trovato nella tabella games.</div>';
+    select.innerHTML = '';
+    return;
+  }
+  select.innerHTML = gamesCache.map(game =>
+    `<option value="${esc(game.game_key)}">${esc(game.title || game.game_key)}</option>`
+  ).join('');
+  list.innerHTML = `<div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Gioco</th><th>Premio</th><th>Stato</th><th>Azioni</th></tr></thead>
+    <tbody>${gamesCache.map(game => {
+      const reward = game.reward_label || (
+        game.reward_type === 'discount_percent' ? (game.reward_value + '%') :
+        game.reward_type === 'discount_euro' ? ('€' + game.reward_value) :
+        game.reward_type === 'free_food' ? 'Cibo gratuito' :
+        game.reward_type === 'free_drink' ? 'Bevanda gratuita' :
+        game.reward_type === 'custom' ? 'Personalizzato' : 'Non configurato'
+      );
+      return `<tr>
+        <td><strong>${esc(game.title || game.game_key)}</strong><br><small>${esc(game.game_key)}</small></td>
+        <td>${esc(reward || '—')}</td>
+        <td><span class="tag ${game.is_enabled ? '' : 'pending'}">${game.is_enabled ? 'ATTIVO' : 'OFF'}</span></td>
+        <td>
+          <button class="outline-btn" type="button" data-game-edit="${esc(game.game_key)}">Modifica</button>
+          <button class="outline-btn" type="button" data-game-toggle="${esc(game.game_key)}" data-enabled="${game.is_enabled ? 'true' : 'false'}">${game.is_enabled ? 'Disattiva' : 'Attiva'}</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+  const selected = gamesCache.find(game => game.game_key === select.value) || gamesCache[0];
+  if (selected) fillGameForm(selected);
+}
+
+function fillGameForm(game) {
+  if (!game) return;
+  $('#gameKey').value = game.game_key || '';
+  $('#gameTitle').value = game.title || '';
+  $('#gameDescription').value = game.description || '';
+  $('#gameRewardType').value = game.reward_type || 'none';
+  $('#gameRewardValue').value = game.reward_value ?? '';
+  $('#gameRewardLabel').value = game.reward_label || '';
+  $('#gameMaxClaims').value = game.max_claims ?? '';
+  $('#gameWinProbability').value = game.win_probability ?? 20;
+  $('#gameStartsAt').value = gameDateInput(game.starts_at);
+  $('#gameEndsAt').value = gameDateInput(game.ends_at);
+  $('#gameEnabled').checked = game.is_enabled === true;
+  const preview = $('#gameImagePreview');
+  if (preview) {
+    preview.src = game.image_url || '';
+    preview.hidden = !game.image_url;
+  }
+  $('#gameImageFile').value = '';
+  $('#gameStatus').textContent = game.image_url ? 'Immagine attuale caricata.' : 'Nessuna immagine impostata.';
+}
+
+function resetGameForm() {
+  const game = gamesCache.find(item => item.game_key === $('#gameKey')?.value) || gamesCache[0];
+  if (game) fillGameForm(game);
+}
+
+async function saveGame(e) {
+  e.preventDefault();
+  const status = $('#gameStatus');
+  const button = e.submitter || $('#gameForm button[type="submit"]');
+  const key = $('#gameKey').value;
+  const currentGame = gamesCache.find(game => game.game_key === key);
+  if (!currentGame) throw new Error('Seleziona un gioco valido.');
+  const title = String($('#gameTitle').value || '').trim();
+  const rewardType = $('#gameRewardType').value;
+  const rewardLabel = String($('#gameRewardLabel').value || '').trim();
+  const rawValue = $('#gameRewardValue').value;
+  const rawLimit = $('#gameMaxClaims').value;
+  const rewardValue = rawValue === '' ? null : Number(rawValue);
+  const maxClaims = rawLimit === '' ? null : Number(rawLimit);
+  const winProbability = Number($('#gameWinProbability').value);
+  if (!title) throw new Error('Inserisci il titolo del gioco.');
+  if (rawValue !== '' && (!Number.isFinite(rewardValue) || rewardValue < 0)) throw new Error('Valore premio non valido.');
+  if (rawLimit !== '' && (!Number.isInteger(maxClaims) || maxClaims < 1)) throw new Error('Il limite deve essere un numero intero maggiore di zero.');
+  if (!Number.isFinite(winProbability) || winProbability < 0 || winProbability > 100) throw new Error('La probabilità deve essere compresa tra 0 e 100%.');
+  if (rewardType === 'discount_percent' && rewardValue !== null && rewardValue > 100) throw new Error('Lo sconto percentuale non può superare il 100%.');
+  const starts = $('#gameStartsAt').value;
+  const ends = $('#gameEndsAt').value;
+  if (starts && ends && new Date(ends) <= new Date(starts)) throw new Error('La fine della validità deve essere successiva all’inizio.');
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+  try {
+    let imageUrl = currentGame.image_url || null;
+    const file = $('#gameImageFile').files?.[0];
+    if (file) {
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8 * 1024 * 1024) {
+        throw new Error('Usa JPG, PNG o WebP con dimensione massima di 8 MB.');
+      }
+      const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+      const randomPart = globalThis.crypto?.randomUUID ? crypto.randomUUID() : String(Date.now());
+      const path = 'games/' + key.replace(/[^a-zA-Z0-9_-]/g,'-') + '/' + randomPart + '.' + ext;
+      const bucket = cfg.STORAGE_BUCKET || 'nababi-media';
+      const {data:uploaded,error:uploadError} = await db.storage.from(bucket).upload(path,file,{
+        cacheControl:'3600',upsert:false,contentType:file.type
+      });
+      if (uploadError) throw uploadError;
+      const {data:publicData} = db.storage.from(bucket).getPublicUrl(uploaded.path);
+      imageUrl = publicData.publicUrl;
+    }
+    const payload = {
+      title,
+      description:String($('#gameDescription').value || '').trim() || null,
+      is_enabled:$('#gameEnabled').checked,
+      image_url:imageUrl,
+      reward_type:rewardType,
+      reward_value:rewardValue,
+      reward_label:rewardLabel || null,
+      max_claims:maxClaims,
+      win_probability:winProbability,
+      starts_at:starts ? new Date(starts).toISOString() : null,
+      ends_at:ends ? new Date(ends).toISOString() : null,
+      updated_at:new Date().toISOString()
+    };
+    const {data,error} = await db.from('nababi_games').update(payload).eq('game_key',key).select('game_key').maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Gioco non aggiornato. Controlla la policy RLS della tabella games per l’account Admin.');
+    status.textContent = 'Gioco salvato correttamente.';
+    await loadGames();
+    const updated = gamesCache.find(game => game.game_key === key);
+    if (updated) fillGameForm(updated);
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+    throw error;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function toggleGame(key, enabled) {
+  const {data,error} = await db.from('nababi_games')
+    .update({is_enabled:!enabled,updated_at:new Date().toISOString()})
+    .eq('game_key',key).select('game_key').maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('Stato non aggiornato. Verifica le policy RLS della tabella games.');
+  await loadGames();
+}
+
+
 
 /* PASSWORD RECOVERY EVENTS */
 $('#forgotPasswordBtn').addEventListener('click', requestPasswordRecovery);
