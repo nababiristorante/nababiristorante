@@ -1122,6 +1122,12 @@
         nav: ['Home', 'Menu', 'Gallery', 'Special Offers', 'About Us', 'Reviews', 'Contact'],
         text: {
           '.site-hero .eyebrow': 'WELCOME TO',
+          '.fusion-book-top': 'Book a Table',
+          '.fusion-menu-search label': 'Search the menu',
+          '.fusion-footer-brand p': 'Good Food. Good Mood.',
+          '.fusion-footer-bottom p': '© 2026 NABABI RISTORANTE. All rights reserved.',
+          '.fusion-footer-bottom a:nth-child(1)': 'Privacy Policy',
+          '.fusion-footer-bottom a:nth-child(2)': 'Terms & Conditions',
           '#home h1': 'NABABI RISTORANTE',
           '#home h2': 'A Perfect Blend of Bangladeshi, Indian & Italian Cuisine',
           '#home .fusion-hero-cta': 'Book a Table',
@@ -1229,6 +1235,7 @@
         reviewLabels: ['Your name *', 'Rating *', 'Your review *'],
         bookingTypes: ['Table', 'Birthday', 'Special event'],
         bookingPlaceholder: 'Special requests (optional)',
+        menuSearchPlaceholder: 'Search dishes and ingredients',
         contactLabels: ['Full name *', 'Email', 'Phone', 'Subject', 'Message *'],
         contactButton: 'Send message',
         directions: 'Get directions',
@@ -1238,6 +1245,12 @@
         nav: ['হোম', 'মেনু', 'গ্যালারি', 'বিশেষ অফার', 'আমাদের পরিচয়', 'রিভিউ', 'যোগাযোগ'],
         text: {
           '.site-hero .eyebrow': 'নবাবিতে আপনাকে স্বাগতম',
+          '.fusion-book-top': 'টেবিল বুক করুন',
+          '.fusion-menu-search label': 'মেনুতে খুঁজুন',
+          '.fusion-footer-brand p': 'ভালো খাবার। ভালো সময়।',
+          '.fusion-footer-bottom p': '© 2026 NABABI RISTORANTE. সর্বস্বত্ব সংরক্ষিত।',
+          '.fusion-footer-bottom a:nth-child(1)': 'গোপনীয়তা নীতি',
+          '.fusion-footer-bottom a:nth-child(2)': 'শর্তাবলি',
           '#home h1': 'নবাবি রিস্টোরান্তে',
           '#home h2': 'বাংলাদেশি, ভারতীয় ও ইতালীয় খাবারের অনন্য মেলবন্ধন',
           '#home .fusion-hero-cta': 'টেবিল বুক করুন',
@@ -1344,6 +1357,7 @@
         reviewLabels: ['আপনার নাম *', 'রেটিং *', 'আপনার রিভিউ *'],
         bookingTypes: ['টেবিল', 'জন্মদিন', 'বিশেষ অনুষ্ঠান'],
         bookingPlaceholder: 'বিশেষ অনুরোধ (ঐচ্ছিক)',
+        menuSearchPlaceholder: 'খাবার ও উপকরণ খুঁজুন',
         contactLabels: ['নাম ও পদবি *', 'ইমেইল', 'ফোন', 'বিষয়', 'মেসেজ *'],
         contactButton: 'মেসেজ পাঠান',
         directions: 'যাওয়ার দিকনির্দেশনা',
@@ -1416,6 +1430,11 @@
             option.textContent = t.bookingTypes[index];
           }
         });
+      }
+      const searchInput = $('#menuQuickSearch');
+      if (searchInput) {
+        remember(searchInput);
+        searchInput.placeholder = t.menuSearchPlaceholder;
       }
       const notes = $('#bookingForm textarea[name="notes"]');
       if (notes) {
