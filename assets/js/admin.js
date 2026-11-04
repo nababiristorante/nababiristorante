@@ -3380,13 +3380,20 @@ async function saveSocialLink(event) {
 }
 
 async function logoManagementPage() {
-  const keys = ['restaurant_logo_url','restaurant_logo_show_site_header','restaurant_logo_show_site_footer','restaurant_logo_show_admin_header','restaurant_logo_show_favicon','restaurant_logo_show_staff_qr'];
+  const keys = ['website_maintenance_mode','restaurant_logo_url','restaurant_logo_show_site_header','restaurant_logo_show_site_footer','restaurant_logo_show_admin_header','restaurant_logo_show_favicon','restaurant_logo_show_staff_qr'];
   const {data,error} = await db.from('site_settings').select('setting_key,setting_value').in('setting_key',keys);
   if (error) throw error;
   const settings = Object.fromEntries((data || []).map(row => [row.setting_key,row.setting_value]));
   const url = settings.restaurant_logo_url || '';
   const enabled = key => settings[key] !== 'false';
   return `<section class="section-card">
+    <div class="section-title"><h2>Stato del sito pubblico</h2></div>
+    <p class="help">OFF mostra una pagina di manutenzione ai visitatori. Admin Panel resta sempre accessibile.</p>
+    <label><input type="checkbox" id="websitePublicEnabled" ${settings.website_maintenance_mode !== "true" ? "checked" : ""}> Sito web attivo (ON)</label>
+    <button id="saveWebsiteStatus" class="gold-btn" type="button" style="margin-top:12px">Salva stato sito</button>
+    <p id="websiteStatusMessage" class="help" aria-live="polite"></p>
+  </section>
+  <section class="section-card">
     <div class="section-title"><h2>Logo Nababi attuale</h2><span class="help">Un solo logo per tutte le aree</span></div>
     <div class="upload-box">
       <img id="currentLogoPreview" class="preview-img" alt="Logo attuale" src="${esc(url)}" ${url ? '' : 'hidden'}>
@@ -3405,6 +3412,22 @@ async function logoManagementPage() {
     <p id="logoPlacementStatus" class="help" aria-live="polite"></p>
   </section>
   ${uploadPanel('logo')}`;
+}
+
+async function saveWebsiteStatus() {
+  if (userRole !== 'admin') return;
+  const button = $('#saveWebsiteStatus');
+  const status = $('#websiteStatusMessage');
+  button.disabled = true;
+  status.textContent = 'Salvataggio…';
+  try {
+    const enabled = $('#websitePublicEnabled').checked;
+    const {error} = await db.from('site_settings').upsert({setting_key:'website_maintenance_mode',setting_value:String(!enabled),updated_at:new Date().toISOString()},{onConflict:'setting_key'});
+    if (error) throw error;
+    status.textContent = enabled ? 'Sito pubblico attivo.' : 'Modalità manutenzione attivata.';
+  } catch (error) {
+    status.textContent = error.message || 'Salvataggio non riuscito.';
+  } finally { button.disabled = false; }
 }
 
 async function saveLogoPlacements() {
@@ -4060,6 +4083,7 @@ async function render(id) {
 
     if (id === 'logo') {
       host.innerHTML = await logoManagementPage();
+      if (userRole === 'admin') $('#saveWebsiteStatus').onclick = saveWebsiteStatus;
       $('#mediaFile').onchange = () => {
         const file = $('#mediaFile').files?.[0];
         if (!file) return;
