@@ -2519,6 +2519,25 @@ function showCouponErrorScreen(message) {
 
 let secretCouponCameraStream = null;
 let secretCouponScanFrame = null;
+let secretCouponQrLibraryPromise = null;
+
+function loadSecretCouponQrLibrary() {
+  if (typeof window.jsQR === 'function') return Promise.resolve(window.jsQR);
+  if (secretCouponQrLibraryPromise) return secretCouponQrLibraryPromise;
+
+  secretCouponQrLibraryPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+    script.async = true;
+    script.onload = () => typeof window.jsQR === 'function'
+      ? resolve(window.jsQR)
+      : reject(new Error('QR decoder could not be initialized.'));
+    script.onerror = () => reject(new Error('QR decoder could not be loaded.'));
+    document.head.appendChild(script);
+  });
+
+  return secretCouponQrLibraryPromise;
+}
 
 function stopSecretCouponScanner() {
   if (secretCouponScanFrame) cancelAnimationFrame(secretCouponScanFrame);
@@ -2528,7 +2547,10 @@ function stopSecretCouponScanner() {
     secretCouponCameraStream = null;
   }
   const video = $('#secretCouponVideo');
-  if (video) video.srcObject = null;
+  if (video) {
+    video.pause();
+    video.srcObject = null;
+  }
   const panel = $('#secretCouponScanner');
   if (panel) panel.hidden = true;
 }
@@ -2540,49 +2562,76 @@ async function setupCouponQrScanner() {
   const status = $('#secretCouponScanStatus');
   const codeInput = $('#secretCouponCode');
   if (!scanButton || !panel || !video || !status || !codeInput) return;
+
   scanButton.onclick = async () => {
     stopSecretCouponScanner();
-    if (!('BarcodeDetector' in window)) {
-      status.textContent = 'QR scanning is not supported by this browser. Enter the coupon number manually.';
-      panel.hidden = false;
-      return;
-    }
+    panel.hidden = false;
+    status.textContent = 'Starting camera…';
+
     try {
-      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera access is unavailable. Open this page over HTTPS in a supported browser.');
+      }
+
+      // Request camera access directly from the button action for mobile Safari compatibility.
       secretCouponCameraStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } }, audio: false
       });
+
+      video.setAttribute('playsinline', '');
+      video.setAttribute('autoplay', '');
+      video.muted = true;
       video.srcObject = secretCouponCameraStream;
-      panel.hidden = false;
-      status.textContent = 'Point the camera at the customer coupon QR code.';
       await video.play();
-      const scan = async () => {
+
+      const decodeQr = await loadSecretCouponQrLibrary();
+      status.textContent = 'Point the camera at the customer coupon QR code.';
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) throw new Error('QR scanner is unavailable in this browser.');
+
+      const scan = () => {
         if (!secretCouponCameraStream) return;
-        try {
-          const codes = await detector.detect(video);
-          const value = String(codes[0]?.rawValue || '').trim();
+
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+          const result = decodeQr(frame.data, frame.width, frame.height, {
+            inversionAttempts: 'dontInvert'
+          });
+          const value = String(result?.data || '').trim();
+
           if (value) {
             if (/^[0-9]{5,9}$/.test(value)) {
               codeInput.value = value;
+              codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+              codeInput.dispatchEvent(new Event('change', { bubbles: true }));
               status.textContent = 'Coupon number loaded. Press COLLECT COUPON to redeem.';
             } else {
               status.textContent = 'This QR code is not a valid Nababi coupon.';
             }
             stopSecretCouponScanner();
+            panel.hidden = false;
             return;
           }
-        } catch (_) {}
+        }
+
         secretCouponScanFrame = requestAnimationFrame(scan);
       };
+
       scan();
     } catch (error) {
       stopSecretCouponScanner();
       panel.hidden = false;
       status.textContent = error.name === 'NotAllowedError'
-        ? 'Camera permission was denied. Enter the coupon number manually.'
-        : 'Camera unavailable. Enter the coupon number manually.';
+        ? 'Camera permission denied. Allow camera access in your browser settings, then try again.'
+        : (error.message || 'Camera unavailable. Enter the coupon number manually.');
     }
   };
+
   $('#stopSecretCouponScan').onclick = stopSecretCouponScanner;
 }
 
