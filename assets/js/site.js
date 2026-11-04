@@ -473,36 +473,44 @@
     return token;
   }
 
+  let customerCouponExpiryTimer = null;
+
+  function hideCustomerCouponOffer(section) {
+    if (customerCouponExpiryTimer) {
+      window.clearTimeout(customerCouponExpiryTimer);
+      customerCouponExpiryTimer = null;
+    }
+    if (section) section.hidden = true;
+    document.querySelector('.fusion-feature-split')?.classList.add('fusion-offer-unavailable');
+  }
+
   async function loadCustomerCouponOffer() {
     const section = $('#customerCouponSection');
     if (!section || !db) return;
-
     try {
       const {data,error} = await db.rpc('get_nababi_coupon_offer');
       if (error) throw error;
-
-      if (!data?.success || data.is_active !== true) {
-        section.hidden = true;
+      const endsAt = data?.ends_at ? new Date(data.ends_at).getTime() : 0;
+      if (!data?.success || data.is_active !== true || !endsAt || endsAt <= Date.now()) {
+        hideCustomerCouponOffer(section);
         return;
       }
-
       section.hidden = false;
-      $('#customerCouponDiscount').textContent =
-        Number(data.discount_percent) + '% DI SCONTO';
-
-      $('#customerCouponPeriod').textContent =
-        'Valido fino al ' +
-        new Date(data.ends_at).toLocaleString('it-IT');
-
-      $('#customerCouponRemaining').textContent =
-        data.remaining == null
-          ? 'Coupon disponibili fino alla fine dell’offerta.'
-          : 'Coupon rimanenti: ' + data.remaining;
-
+      document.querySelector('.fusion-feature-split')?.classList.remove('fusion-offer-unavailable');
+      $('#customerCouponDiscount').textContent = Number(data.discount_percent) + '% DI SCONTO';
+      $('#customerCouponPeriod').textContent = 'Valido fino al ' + new Date(data.ends_at).toLocaleString('it-IT');
+      $('#customerCouponRemaining').textContent = data.remaining == null
+        ? 'Coupon disponibili fino alla fine dell’offerta.'
+        : 'Coupon rimanenti: ' + data.remaining;
       $('#claimCustomerCoupon').onclick = claimCustomerCoupon;
+      if (customerCouponExpiryTimer) window.clearTimeout(customerCouponExpiryTimer);
+      customerCouponExpiryTimer = window.setTimeout(
+        () => hideCustomerCouponOffer(section),
+        Math.min(endsAt - Date.now(), 2147483647)
+      );
     } catch (error) {
       console.error('Nababi coupon offer:', error);
-      section.hidden = true;
+      hideCustomerCouponOffer(section);
     }
   }
 
@@ -510,40 +518,34 @@
     const button = $('#claimCustomerCoupon');
     const status = $('#customerCouponStatus');
     const codePanel = $('#customerCouponCode');
-
     button.disabled = true;
     status.textContent = 'Generazione del coupon…';
     codePanel.hidden = true;
-
     try {
       const visitorToken = getVisitorToken();
-      const {data,error} = await db.rpc('claim_nababi_coupon', {
-        p_visitor_token: visitorToken
-      });
-
+      const {data,error} = await db.rpc('claim_nababi_coupon', { p_visitor_token: visitorToken });
       if (error) throw error;
-      if (!data?.success) {
-        throw new Error(data?.message || 'Coupon non disponibile.');
+      if (!data?.success) throw new Error(data?.message || 'Coupon non disponibile.');
+      const code = String(data.code || '');
+      $('#customerCouponCodeValue').textContent = code;
+      $('#customerCouponExpiry').textContent = 'Scade: ' + new Date(data.expires_at).toLocaleString('it-IT');
+      const qr = $('#customerCouponQr');
+      if (qr && /^[0-9]{5,9}$/.test(code)) {
+        qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=' + encodeURIComponent(code);
+        qr.hidden = false;
       }
-
-      $('#customerCouponCodeValue').textContent = data.code;
-      $('#customerCouponExpiry').textContent =
-        'Scade: ' + new Date(data.expires_at).toLocaleString('it-IT');
       codePanel.hidden = false;
-      status.textContent =
-        'Coupon del ' + data.discount_percent + '% ottenuto con successo!';
-
+      status.textContent = 'Coupon del ' + data.discount_percent + '% ottenuto con successo!';
       $('#copyCustomerCoupon').onclick = async () => {
         try {
-          await navigator.clipboard.writeText(String(data.code));
+          await navigator.clipboard.writeText(code);
           status.textContent = 'Codice copiato.';
         } catch (_) {
-          status.textContent = 'Il tuo codice è: ' + data.code;
+          status.textContent = 'Il tuo codice è: ' + code;
         }
       };
     } catch (error) {
-      status.textContent = error.message ||
-        'Non è stato possibile ottenere il coupon.';
+      status.textContent = error.message || 'Non è stato possibile ottenere il coupon.';
     } finally {
       button.disabled = false;
     }
@@ -1301,7 +1303,7 @@
           '#customerCouponCode > p:first-child': 'আপনার কুপন কোড:',
           '#customerCouponExpiryNotice': 'মনে রাখবেন: মেয়াদ শেষ হওয়ার পর এই কুপন আর ব্যবহার করা যাবে না।',
           '#copyCustomerCoupon': 'কোড কপি করুন',
-          '#customerCouponSection .site-card > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোডটি দেখান।',
+          '#customerCouponSection .fusion-offer-copy > p.help:last-child': 'নাম, ফোন বা ইমেইল দেওয়ার প্রয়োজন নেই। স্টাফকে কোড বা QR দেখান.',
           '#menu > p': 'ভালোবাসা ও ঐতিহ্যে তৈরি আমাদের বিশেষ খাবারগুলো দেখুন।',
           '#gallery > p': 'ছবির মাধ্যমে আমাদের রেস্টুরেন্টের পরিবেশ উপভোগ করুন।',
           '#events > p': 'Nababi Ristorante-এর আয়োজিত অনুষ্ঠানগুলো দেখুন।',
