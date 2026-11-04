@@ -3845,7 +3845,7 @@ async function render(id) {
         return;
       }
       host.innerHTML = await bookingsPage();
-      const calendarDate = $('#bookingCalendarDate');
+      const calendarDate = host.querySelector('#bookingCalendarDate');
       let activeBookingFilter = 'all';
       const filterBookingRows = () => {
         const selectedDate = calendarDate?.value || '';
@@ -3862,14 +3862,16 @@ async function render(id) {
         host.querySelectorAll('[data-booking-filter]').forEach(button => {
           button.setAttribute('aria-pressed', button.dataset.bookingFilter === activeBookingFilter ? 'true' : 'false');
         });
-        const total = $('#bookingDayTotal');
-        const note = $('#bookingCalendarNote');
+        const total = host.querySelector('#bookingDayTotal');
+        const note = host.querySelector('#bookingCalendarNote');
         if (total) total.textContent = String(visible);
         if (note) note.textContent = visible + ' prenotazioni visualizzate.';
       };
       host.querySelectorAll('[data-booking-filter]').forEach(button => {
         button.addEventListener('click', () => {
           activeBookingFilter = activeBookingFilter === button.dataset.bookingFilter ? 'all' : button.dataset.bookingFilter;
+          // A status card should show matching bookings across all dates, not only today's date.
+          if (calendarDate) calendarDate.value = '';
           filterBookingRows();
         });
       });
