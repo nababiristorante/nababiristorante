@@ -594,3 +594,16 @@ body.site-body{background:var(--ref-cream)!important;color:#24170c!important}
   .fusion-quick-panels{grid-template-columns:1fr!important}
   .fusion-quick-card{min-height:165px!important}
 }
+
+
+/* Inline Special Offers coupon and QR */
+.fusion-feature-split .fusion-offer-panel[hidden]{display:none!important}
+.fusion-feature-split.fusion-offer-unavailable{grid-template-columns:minmax(0,1fr)}
+.fusion-feature-split.fusion-offer-unavailable .fusion-about-teaser{grid-column:1/-1}
+.fusion-offer-copy{position:relative;z-index:2;max-width:100%}
+.fusion-coupon-discount{font-size:clamp(25px,4vw,36px);font-weight:800;margin:10px 0}
+.fusion-coupon-period,.fusion-offer-copy .help{line-height:1.5}
+.fusion-coupon-result{margin:16px auto 0;padding:14px;border:1px solid rgba(216,183,106,.5);border-radius:14px;background:rgba(0,0,0,.2);max-width:320px}
+.fusion-coupon-result strong{display:block;font-size:clamp(25px,5vw,34px);letter-spacing:4px;color:#d8b76a;overflow-wrap:anywhere}
+.fusion-coupon-qr{display:block;width:180px;height:180px;object-fit:contain;background:#fff;padding:8px;border-radius:10px;margin:12px auto}
+.fusion-offer-panel .fusion-offer-seal{flex-shrink:0}
