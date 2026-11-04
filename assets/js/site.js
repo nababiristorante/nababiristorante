@@ -1080,6 +1080,38 @@
   }
 
 
+  /* QUICK MENU SEARCH */
+  function setupMenuSearch() {
+    const toggle = $('#menuSearchToggle');
+    const panel = $('#menuSearchPanel');
+    const input = $('#menuQuickSearch');
+    const menu = $('#liveMenu');
+    if (!toggle || !panel || !input || !menu) return;
+
+    function filterMenu() {
+      const query = input.value.trim().toLocaleLowerCase();
+      menu.querySelectorAll('.site-card').forEach(card => {
+        card.hidden = Boolean(query) && !card.textContent.toLocaleLowerCase().includes(query);
+      });
+    }
+
+    toggle.addEventListener('click', () => {
+      const opened = panel.hidden;
+      panel.hidden = !opened;
+      toggle.setAttribute('aria-expanded', String(opened));
+      if (opened) input.focus();
+      else {
+        input.value = '';
+        filterMenu();
+      }
+    });
+    input.addEventListener('input', filterMenu);
+    if (window.MutationObserver) {
+      const observer = new MutationObserver(filterMenu);
+      observer.observe(menu, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
   /* WEBSITE LANGUAGE SWITCHER */
   function setupLanguageSwitcher() {
     const selector = $('#siteLanguage');
@@ -1435,6 +1467,7 @@
     setupBookingStatusLookup();
     setupContactForm();
     setupMobileNavigation();
+    setupMenuSearch();
     setupLanguageSwitcher();
     setupGalleryLightbox();
 
