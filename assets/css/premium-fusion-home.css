@@ -278,3 +278,49 @@ body.site-body{background:#fff0d7!important;color:var(--ref-ink)!important}
  .fusion-quick-card{min-height:170px!important}
  .site-body>section.site-section{padding:48px 16px!important}
 }
+
+
+/* Final reference details: exact top utility row, flag trio and full footer columns */
+.site-header-actions .fusion-header-book{display:inline-flex!important;align-items:center;gap:9px;padding:12px 17px;border-radius:28px;background:linear-gradient(110deg,#f8d77f,#d9a23b);color:#261708!important;text-decoration:none!important;font:700 14px Georgia,serif!important;white-space:nowrap}
+.site-header nav a{font-family:Georgia,serif!important}
+.site-header nav a[href="#customerCouponSection"]{color:#f4d17f!important}
+.fusion-hero-flags{display:flex;gap:12px;margin-top:24px;font-size:31px;filter:drop-shadow(0 3px 5px #0007)}
+.fusion-hero-flags span{display:grid;place-items:center;width:48px;height:48px;border:1px solid #edc66c;border-radius:50%;background:#160e08a8}
+.fusion-footer{padding:0!important;background:linear-gradient(180deg,#063b25,#032819)!important;color:#fff1d4!important}
+.fusion-footer-main{display:grid;grid-template-columns:1.35fr .75fr 1fr 1.2fr;gap:32px;max-width:1400px;margin:auto;padding:42px clamp(20px,5vw,72px) 36px;background:radial-gradient(ellipse at 10% 80%,#16533388,transparent 35%)}
+.fusion-footer-brand .site-logo{display:flex;flex-direction:column;align-items:flex-start;color:#f3cb71!important;text-decoration:none}
+.fusion-footer-brand #siteFooterLogoFallback{display:flex;flex-direction:column;align-items:center;color:#f2cb6c;font:42px/.95 Georgia,serif;letter-spacing:3px}
+.fusion-footer-brand #siteFooterLogoFallback small{font:13px Georgia,serif;letter-spacing:4px}
+.fusion-footer-crown{font-size:35px}
+.fusion-footer-brand p{color:#fff1d4;font:italic 19px Georgia,serif}
+.fusion-footer-main h3{margin:0 0 16px;color:#f2cc70;font:700 20px Georgia,serif}
+.fusion-footer-links{display:flex;flex-direction:column;gap:10px}
+.fusion-footer-links a,.fusion-footer-bottom a{color:#fff2db!important;text-decoration:none!important;font:14px Georgia,serif}
+.fusion-footer-social .social-links{display:flex;flex-wrap:wrap;gap:10px}
+.fusion-footer-connect p{color:#f8e8c9;font:14px/1.6 Georgia,serif}
+.fusion-footer-subscribe{display:inline-flex;padding:11px 16px;border-radius:5px;background:linear-gradient(110deg,#f8d77f,#d9a23b);color:#291a08!important;text-decoration:none!important;font:700 13px Georgia,serif}
+.fusion-footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px clamp(20px,3vw,42px);border-top:1px solid #d9b56a66;background:#031d15}
+.fusion-footer-bottom p{margin:0;color:#fff1d8;font:12px Arial,sans-serif}
+.fusion-footer-bottom>div{display:flex;gap:9px;align-items:center}
+.fusion-footer-bottom a,.fusion-footer-bottom span{font-size:12px}
+.fusion-footer-flags{font-size:19px;white-space:nowrap}
+@media(max-width:850px){
+ .site-header{grid-template-columns:1fr auto!important}
+ .site-header>.site-logo{grid-column:1!important;grid-row:1!important;justify-self:start!important}
+ .site-header>.language-switcher{grid-column:1!important;grid-row:2!important}
+ .site-header-actions{grid-column:2!important;grid-row:1!important}
+ .site-header nav{grid-row:3!important}
+ .site-header-actions .fusion-header-book{font-size:12px!important;padding:10px 12px!important}
+ .fusion-footer-main{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .site-header-actions .fusion-header-book{font-size:0!important;padding:10px 13px!important}
+ .site-header-actions .fusion-header-book span{font-size:12px!important}
+ .fusion-hero-flags{font-size:25px!important}
+ .fusion-hero-flags span{width:40px;height:40px}
+ .fusion-footer-main{grid-template-columns:1fr 1fr;gap:24px 16px;padding:32px 20px}
+ .fusion-footer-brand #siteFooterLogoFallback{font-size:31px}
+ .fusion-footer-brand p{font-size:16px}
+ .fusion-footer-main h3{font-size:17px}
+ .fusion-footer-bottom{flex-wrap:wrap;justify-content:center;text-align:center}
+}
