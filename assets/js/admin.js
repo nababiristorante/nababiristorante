@@ -376,8 +376,12 @@ async function saveRecoveredPassword() {
 
 /* LOGIN */
 
+let loginInProgress = false;
+
 async function signIn(e) {
   e.preventDefault();
+  if (loginInProgress) return;
+  loginInProgress = true;
 
   const btn = $('#loginBtn');
   const email = $('#email')?.value.trim();
@@ -428,6 +432,7 @@ async function signIn(e) {
     showLoginMessage(err.message || 'Accesso non riuscito.');
 
   } finally {
+    loginInProgress = false;
     btn.disabled = false;
     btn.textContent = 'Accedi';
   }
@@ -4535,6 +4540,10 @@ if (db) {
 /* EVENT LISTENERS */
 
 $('#loginForm').addEventListener('submit', signIn);
+$('#loginBtn').addEventListener('click', e => {
+  e.preventDefault();
+  signIn(e);
+});
 
 $('#sideNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
