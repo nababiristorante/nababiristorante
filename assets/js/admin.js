@@ -3735,10 +3735,16 @@ async function bookingsPage() {
       .booking-status-new{background:#fff0c2;color:#805500;border:1px solid #e7c46a}
       .booking-status-confirmed{background:#d9f5e4;color:#17643a;border:1px solid #8fd2aa}
       .booking-status-rejected{background:#ffe0e0;color:#9d2424;border:1px solid #e7a0a0}
-      .booking-calendar-tools{display:grid;grid-template-columns:minmax(180px,1fr) repeat(3,minmax(90px,.7fr));gap:10px;margin:18px 0;padding:16px;border:1px solid rgba(216,183,106,.3);border-radius:14px;background:linear-gradient(135deg,rgba(22,42,33,.8),rgba(7,15,13,.9))}
+      .booking-calendar-tools{display:grid;grid-template-columns:minmax(180px,1.2fr) repeat(5,minmax(90px,.7fr));gap:10px;margin:18px 0;padding:16px;border:1px solid rgba(216,183,106,.3);border-radius:14px;background:linear-gradient(135deg,rgba(22,42,33,.8),rgba(7,15,13,.9))}
       .booking-calendar-tools label{display:grid;gap:7px;color:#e9dcbf;font-size:12px;font-weight:700}
       .booking-calendar-tools input{min-height:42px;padding:9px 11px;border:1px solid #80683a;border-radius:9px;background:#10191d;color:#fff}
-      .booking-calendar-stat{padding:10px;border:1px solid rgba(216,183,106,.22);border-radius:10px;text-align:center}
+      .booking-calendar-stat{min-width:0;padding:10px;border:1px solid rgba(216,183,106,.22);border-radius:10px;text-align:center}
+      button.booking-calendar-stat{font:inherit;cursor:pointer;appearance:none;transition:transform .15s}
+      button.booking-calendar-stat:hover{transform:translateY(-2px)}
+      button.booking-calendar-stat:focus-visible{outline:3px solid #fff;outline-offset:3px}
+      button.booking-calendar-stat[aria-pressed=true]{outline:3px solid #fff;outline-offset:2px}
+      .booking-calendar-stat.is-rejected{background:linear-gradient(145deg,#ff8a72,#d94a42);border:2px solid #ffc0b4}
+      .booking-calendar-stat.is-rejected strong,.booking-calendar-stat.is-rejected span{color:#39050b;font-weight:800}
       .booking-calendar-stat strong{display:block;color:#f1cf70;font-size:22px}
       .booking-calendar-stat span{font-size:11px;color:#d3c9b3}
       .booking-calendar-stat.is-pending{background:linear-gradient(145deg,#f8c43a,#e99b13);border:2px solid #ffdf75;box-shadow:0 0 0 2px rgba(248,196,58,.22),0 8px 18px rgba(233,155,19,.2)}
@@ -3750,18 +3756,20 @@ async function bookingsPage() {
       .booking-calendar-stat.is-cancelled{background:linear-gradient(145deg,#ff6868,#c92335);border:2px solid #ffaaaa;box-shadow:0 0 0 2px rgba(255,104,104,.2),0 8px 18px rgba(201,35,53,.2)}
       .booking-calendar-stat.is-cancelled strong{color:#39050b;font-size:25px}
       .booking-calendar-stat.is-cancelled span{color:#39050b;font-weight:800}
-      @media(max-width:620px){.booking-calendar-tools{grid-template-columns:1fr 1fr}.booking-calendar-tools label{grid-column:1/-1}}
+      @media(max-width:900px){.booking-calendar-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.booking-calendar-tools label{grid-column:1/-1}}
+      @media(max-width:420px){.booking-calendar-tools{grid-template-columns:1fr 1fr}}
     </style>
     <div class="section-title"><h2>Prenotazioni</h2><button class="outline-btn" data-refresh-bookings>Aggiorna</button></div>
-    <p class="help">Seleziona una data per vedere le prenotazioni del giorno. Le richieste restano evidenziate in giallo, confermate in verde e rifiutate in rosso.</p>
+    <p class="help">Tocca uno dei quattro stati per filtrare le prenotazioni. Puoi anche scegliere una data dal calendario.</p>
     <div class="booking-calendar-tools">
       <label>Calendario prenotazioni
         <input id="bookingCalendarDate" type="date" value="${esc(today)}">
       </label>
       <div class="booking-calendar-stat"><strong id="bookingDayTotal">${countFor(today)}</strong><span>Prenotazioni del giorno</span></div>
-      <div class="booking-calendar-stat is-pending"><strong>${rows.filter(row => ['pending','new'].includes(String(row.status || 'pending').toLowerCase())).length}</strong><span>In attesa · Giallo</span></div>
-      <div class="booking-calendar-stat is-confirmed"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'confirmed').length}</strong><span>Confermate · Verde</span></div>
-      <div class="booking-calendar-stat is-cancelled"><strong>${rows.filter(row => ['rejected','cancelled'].includes(String(row.status || '').toLowerCase())).length}</strong><span>Annullate · Rosso</span></div>
+      <button type="button" class="booking-calendar-stat is-pending" data-booking-filter="pending" aria-pressed="false"><strong>${rows.filter(row => ['pending','new'].includes(String(row.status || 'pending').toLowerCase())).length}</strong><span>NEW / PENDING</span></button>
+      <button type="button" class="booking-calendar-stat is-confirmed" data-booking-filter="confirmed" aria-pressed="false"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'confirmed').length}</strong><span>CONFIRMED</span></button>
+      <button type="button" class="booking-calendar-stat is-rejected" data-booking-filter="rejected" aria-pressed="false"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'rejected').length}</strong><span>REJECTED</span></button>
+      <button type="button" class="booking-calendar-stat is-cancelled" data-booking-filter="cancelled" aria-pressed="false"><strong>${rows.filter(row => String(row.status || '').toLowerCase() === 'cancelled').length}</strong><span>CANCELLED</span></button>
     </div>
     <p id="bookingCalendarNote" class="help" aria-live="polite">${countFor(today)} prenotazioni per la data selezionata.</p>
     <div class="table-scroll"><table class="data-table"><thead><tr><th>Cliente</th><th>Contatti</th><th>Data / Ora</th><th>Ospiti</th><th>Stato</th><th>Azioni</th></tr></thead><tbody id="bookingCalendarRows">
@@ -3769,11 +3777,12 @@ async function bookingsPage() {
       const bookingStatus = String(row.status || 'pending').toLowerCase();
       const isNew = bookingStatus === 'pending' || bookingStatus === 'new';
       const isConfirmed = bookingStatus === 'confirmed';
-      const isRejected = ['rejected', 'cancelled'].includes(bookingStatus);
-      const rowClass = isNew ? 'booking-row-new' : isConfirmed ? 'booking-row-confirmed' : isRejected ? 'booking-row-rejected' : '';
+      const isRejected = bookingStatus === 'rejected';
+      const isCancelled = bookingStatus === 'cancelled';
+      const rowClass = isNew ? 'booking-row-new' : isConfirmed ? 'booking-row-confirmed' : (isRejected || isCancelled) ? 'booking-row-rejected' : '';
       const statusClass = isNew ? 'booking-status-new' : isConfirmed ? 'booking-status-confirmed' : isRejected ? 'booking-status-rejected' : '';
-      const statusLabel = isNew ? 'NUOVA · IN ATTESA' : isConfirmed ? 'CONFERMATA' : isRejected ? 'RIFIUTATA' : bookingStatus.toUpperCase();
-      return `<tr class="${rowClass}" data-booking-date="${esc(String(row.booking_date || '').slice(0,10))}">
+      const statusLabel = isNew ? 'NEW / PENDING' : isConfirmed ? 'CONFIRMED' : isRejected ? 'REJECTED' : isCancelled ? 'CANCELLED' : bookingStatus.toUpperCase();
+      return `<tr class="${rowClass}" data-booking-date="${esc(String(row.booking_date || '').slice(0,10))}" data-booking-status="${esc(bookingStatus)}">
       <td>${esc(row.full_name || row.name || row.customer_name || '—')}<br><small>${esc(row.booking_code || '')}</small></td>
       <td>${esc(row.phone || '—')}<br>${esc(row.email || '')}</td>
       <td>${esc(row.booking_date || '—')}<br>${esc(row.booking_time || '—')}</td>
@@ -3837,24 +3846,35 @@ async function render(id) {
       }
       host.innerHTML = await bookingsPage();
       const calendarDate = $('#bookingCalendarDate');
-      const filterBookingDay = () => {
-        if (!calendarDate) return;
-        const selected = calendarDate.value;
+      let activeBookingFilter = 'all';
+      const filterBookingRows = () => {
+        const selectedDate = calendarDate?.value || '';
         let visible = 0;
         host.querySelectorAll('#bookingCalendarRows tr[data-booking-date]').forEach(row => {
-          const match = !selected || row.dataset.bookingDate === selected;
+          const rowStatus = String(row.dataset.bookingStatus || 'pending').toLowerCase();
+          const statusMatches = activeBookingFilter === 'all' ||
+            (activeBookingFilter === 'pending' ? ['pending','new'].includes(rowStatus) : rowStatus === activeBookingFilter);
+          const dateMatches = !selectedDate || row.dataset.bookingDate === selectedDate;
+          const match = statusMatches && dateMatches;
           row.hidden = !match;
           if (match) visible++;
+        });
+        host.querySelectorAll('[data-booking-filter]').forEach(button => {
+          button.setAttribute('aria-pressed', button.dataset.bookingFilter === activeBookingFilter ? 'true' : 'false');
         });
         const total = $('#bookingDayTotal');
         const note = $('#bookingCalendarNote');
         if (total) total.textContent = String(visible);
-        if (note) note.textContent = selected
-          ? visible + ' prenotazioni per ' + selected + '.'
-          : visible + ' prenotazioni visualizzate.';
+        if (note) note.textContent = visible + ' prenotazioni visualizzate.';
       };
-      calendarDate?.addEventListener('change', filterBookingDay);
-      filterBookingDay();
+      host.querySelectorAll('[data-booking-filter]').forEach(button => {
+        button.addEventListener('click', () => {
+          activeBookingFilter = activeBookingFilter === button.dataset.bookingFilter ? 'all' : button.dataset.bookingFilter;
+          filterBookingRows();
+        });
+      });
+      calendarDate?.addEventListener('change', filterBookingRows);
+      filterBookingRows();
       return;
     }
 
