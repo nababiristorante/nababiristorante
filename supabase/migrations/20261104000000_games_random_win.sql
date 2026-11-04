@@ -3,10 +3,7 @@
 alter table public.nababi_games
   alter column win_probability set default 10;
 
-update public.nababi_games
-set win_probability = 10
-where win_probability = 20;
-
+-- Existing per-game probabilities are preserved; only the column default changes.
 -- Remove answer-based forced wins: all games use the configured random probability.
 create or replace function public.play_game_and_issue_claim(
   p_game_key text,
@@ -119,3 +116,7 @@ revoke all on function public.play_game_and_issue_claim(text,text,text)
   from public, anon, authenticated;
 grant execute on function public.play_game_and_issue_claim(text,text,text)
   to service_role;
+
+-- Also harden the other privileged RPCs created by games-management.sql.
+alter function public.issue_game_claim(text,text,text) set search_path = '';
+alter function public.redeem_game_claim(text) set search_path = '';
