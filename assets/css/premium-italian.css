@@ -1,0 +1,250 @@
+/* NABABI RISTORANTE — Italian-inspired premium visual system
+   Presentation-only layer. Booking, coupon, Supabase and language logic remain untouched. */
+:root{
+  --nababi-cream:#f5f0e6;
+  --nababi-paper:#fffdf8;
+  --nababi-ink:#25231f;
+  --nababi-muted:#716b60;
+  --nababi-wine:#702b35;
+  --nababi-wine-dark:#4b1c25;
+  --nababi-olive:#35483b;
+  --nababi-olive-dark:#24352b;
+  --nababi-brass:#b58b4b;
+  --nababi-line:rgba(83,65,45,.16);
+  --nababi-shadow:0 18px 48px rgba(49,37,25,.10);
+}
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+body.site-body{
+  display:block!important;
+  color:var(--nababi-ink)!important;
+  background:var(--nababi-cream)!important;
+  font-family: "Avenir Next",Avenir,"Segoe UI",sans-serif!important;
+  line-height:1.65;
+}
+.site-header{
+  position:sticky!important;top:0;z-index:1000;
+  min-height:78px!important;padding:12px clamp(18px,5vw,76px)!important;
+  display:flex!important;align-items:center;gap:clamp(12px,2vw,28px)!important;
+  background:rgba(255,253,248,.96)!important;
+  border-bottom:1px solid var(--nababi-line)!important;
+  box-shadow:0 8px 30px rgba(39,30,22,.07)!important;
+  backdrop-filter:blur(16px);
+}
+.site-logo,.site-logo-fallback{color:var(--nababi-wine)!important}
+.site-logo-crown{color:var(--nababi-brass)!important;text-shadow:none!important}
+.site-logo-words strong{font-size:27px!important;letter-spacing:-.8px}
+.site-logo-words small{color:var(--nababi-olive)!important;letter-spacing:2.5px!important}
+.site-header nav{gap:clamp(10px,1.7vw,25px)!important}
+.site-header nav a{
+  color:var(--nababi-ink)!important;font-size:12px!important;
+  font-weight:700!important;letter-spacing:.06em;text-transform:uppercase;
+  transition:color .2s ease;
+}
+.site-header nav a:hover,.site-header nav a:focus-visible{color:var(--nababi-wine)!important}
+.language-switcher{
+  border:1px solid var(--nababi-line)!important;background:#fff!important;
+  color:var(--nababi-olive)!important;padding:7px 10px!important;
+}
+.language-switcher select{color:var(--nababi-ink)!important}
+.language-switcher select option{background:#fff;color:var(--nababi-ink)}
+.site-header .site-phone{color:var(--nababi-olive)!important}
+.site-header-whatsapp{border-color:#4b9b68!important;background:#edf6ef!important}
+.site-admin-link{
+  color:var(--nababi-wine)!important;border-color:rgba(112,43,53,.35)!important;
+}
+.site-admin-link:hover{background:#f5e9e8!important}
+#mobileMenuButton{color:var(--nababi-wine)!important;border-color:rgba(112,43,53,.35)!important;background:#fff!important}
+.site-hero{
+  position:relative;isolation:isolate;min-height:min(720px,76vw)!important;
+  padding:clamp(70px,10vw,140px) clamp(24px,9vw,140px)!important;
+  background:
+    linear-gradient(90deg,rgba(26,29,24,.88) 0%,rgba(31,34,27,.66) 48%,rgba(31,34,27,.08) 100%),
+    linear-gradient(0deg,rgba(24,25,20,.24),transparent 50%),
+    url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90') center 52%/cover!important;
+}
+.site-hero>div{max-width:720px!important}
+.site-hero .eyebrow{
+  color:#e5c58b!important;font-size:11px!important;font-weight:800;
+  letter-spacing:.28em!important;text-transform:uppercase;
+}
+.site-hero h1{
+  color:#fffaf0!important;font:clamp(48px,7vw,92px)/.98 Georgia,"Times New Roman",serif!important;
+  letter-spacing:-.045em!important;text-shadow:0 8px 30px rgba(0,0,0,.28)!important;
+  margin:18px 0!important;
+}
+.site-hero h2{
+  color:#f1d7ad!important;font:italic clamp(20px,2.4vw,29px)/1.35 Georgia,serif!important;
+  margin:0 0 18px!important;
+}
+.site-hero p:not(.eyebrow){max-width:540px!important;color:#fffaf0!important;font-size:16px;line-height:1.85}
+.gold-btn,.outline-btn,.google-review-btn{
+  min-height:48px!important;padding:13px 24px!important;border-radius:4px!important;
+  font-size:12px!important;font-weight:800!important;letter-spacing:.1em!important;
+  text-transform:uppercase;text-decoration:none!important;
+  transition:transform .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.gold-btn{
+  color:#fff!important;background:var(--nababi-wine)!important;
+  border:1px solid var(--nababi-wine)!important;box-shadow:0 8px 22px rgba(50,20,25,.18)!important;
+}
+.gold-btn:hover{background:var(--nababi-wine-dark)!important;transform:translateY(-2px)}
+.outline-btn{
+  color:#fffaf0!important;border:1px solid rgba(255,250,240,.78)!important;
+  background:rgba(32,37,30,.24)!important;
+}
+.outline-btn:hover{background:rgba(255,255,255,.14)!important}
+.site-body>section.site-section{
+  padding:clamp(54px,7vw,100px) max(6%,calc((100% - 1220px)/2))!important;
+  border-bottom:1px solid var(--nababi-line)!important;
+  background:var(--nababi-paper)!important;
+}
+.site-body>section.site-section:nth-of-type(even){background:#eee7da!important}
+.site-section h2{
+  color:var(--nababi-wine)!important;
+  font:clamp(31px,3.6vw,46px)/1.12 Georgia,"Times New Roman",serif!important;
+  letter-spacing:-.025em!important;text-align:center!important;margin:0 0 16px!important;
+}
+.site-section h2:after{
+  content:"";display:block;width:54px;height:2px;margin:18px auto 0;
+  background:var(--nababi-brass);
+}
+.site-section>p{color:var(--nababi-muted)!important}
+#liveNewsSection{background:#eae1d2!important}
+#liveNewsSection h2{font-size:clamp(28px,3vw,38px)!important}
+.site-cards{gap:22px!important;margin-top:34px!important}
+.site-card,.news-card{
+  overflow:hidden;border:1px solid var(--nababi-line)!important;border-radius:7px!important;
+  background:#fffdf8!important;box-shadow:var(--nababi-shadow)!important;
+  transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease!important;
+}
+.site-card:hover,.news-card:hover{
+  transform:translateY(-5px)!important;border-color:rgba(181,139,75,.55)!important;
+  box-shadow:0 22px 48px rgba(49,37,25,.15)!important;
+}
+.site-card img,.news-card img{height:220px!important;object-fit:cover}
+.site-card>div,.news-card{padding:20px!important}
+.site-card h3,.site-card h4,.news-card h3{
+  color:var(--nababi-wine)!important;font:600 23px/1.25 Georgia,"Times New Roman",serif!important;
+}
+.site-card p,.news-card p{color:var(--nababi-muted)!important;line-height:1.7!important}
+.site-price,.review-stars{color:var(--nababi-olive)!important;font-weight:800}
+#liveMenu .site-card,#liveGallery .site-card{
+  border:1px solid var(--nababi-line)!important;border-radius:7px!important;
+  background:#fffdf8!important;
+}
+#liveMenu .site-card h3,#liveGallery .site-card h3{color:var(--nababi-wine)!important}
+#liveMenu .site-card p,#liveGallery .site-card p{color:var(--nababi-muted)!important}
+#liveMenu .site-card .site-price{
+  color:var(--nababi-wine)!important;border:1px solid rgba(112,43,53,.22)!important;
+  background:#f8efec!important;border-radius:3px!important;
+}
+#gallery .site-card img{cursor:zoom-in}
+.site-empty{color:var(--nababi-muted)!important;border-color:var(--nababi-line)!important}
+#customerCouponSection{background:#f1e7d8!important}
+#customerCouponSection>.site-card{
+  padding:clamp(26px,5vw,54px)!important;border:1px solid rgba(181,139,75,.45)!important;
+  background:linear-gradient(145deg,#fffdf8,#f7eee2)!important;
+}
+#customerCouponSection .eyebrow{
+  color:var(--nababi-olive)!important;font-size:11px;font-weight:800;letter-spacing:.2em;
+}
+#customerCouponSection h2{color:var(--nababi-wine)!important}
+#customerCouponDiscount{color:var(--nababi-wine)!important}
+#customerCouponCodeValue{color:var(--nababi-wine)!important}
+#reservation,#contact{background:#eae1d2!important}
+#reservation .site-form,#contact .site-form{
+  max-width:850px!important;padding:clamp(20px,4vw,38px)!important;
+  border:1px solid rgba(83,65,45,.18)!important;border-radius:7px!important;
+  background:#fffdf8!important;box-shadow:var(--nababi-shadow)!important;
+}
+.site-form label{color:var(--nababi-ink)!important;font-size:13px!important;font-weight:700!important}
+.site-form input,.site-form select,.site-form textarea{
+  min-height:48px!important;padding:12px 14px!important;
+  border:1px solid rgba(83,65,45,.25)!important;border-radius:4px!important;
+  background:#fff!important;color:var(--nababi-ink)!important;
+}
+.site-form input:focus,.site-form select:focus,.site-form textarea:focus{
+  outline:2px solid rgba(112,43,53,.25)!important;border-color:var(--nababi-wine)!important;
+}
+#bookingMessage[data-state="success"]{color:#27613b!important}
+#bookingMessage[data-state="error"]{color:#a52d32!important}
+.floor-room{border:1px solid var(--nababi-line)!important;border-radius:7px!important;background:#f8f4ec!important}
+.floor-room h4{color:var(--nababi-wine)!important}
+.floor-table{
+  border:1px solid rgba(53,72,59,.3)!important;border-radius:4px!important;
+  background:var(--nababi-olive)!important;color:#fff!important;
+}
+.floor-table.is-selected{outline:3px solid var(--nababi-brass)!important;background:var(--nababi-olive-dark)!important}
+.booking-status-lookup,.whatsapp-booking-card{
+  border:1px solid var(--nababi-line)!important;border-radius:7px!important;
+  background:#fffdf8!important;box-shadow:var(--nababi-shadow)!important;
+}
+.booking-status-lookup h3,.whatsapp-booking-copy strong{color:var(--nababi-wine)!important;font-family:Georgia,serif}
+.whatsapp-booking-card{padding:22px!important}
+.whatsapp-cta{border-radius:4px!important}
+#about,#reviews{background:var(--nababi-paper)!important}
+#about p,#reviews p{color:var(--nababi-muted)!important}
+#reviews .site-card{background:#fffdf8!important}
+.google-review-btn{
+  color:#fff!important;background:var(--nababi-olive)!important;
+  border:1px solid var(--nababi-olive)!important;
+}
+.google-review-btn:hover{background:var(--nababi-olive-dark)!important}
+#contact .contact-eyebrow,#contact .contact-card-label{color:var(--nababi-brass)!important}
+#contact .contact-info-card,#contact .contact-hours-panel{
+  border:1px solid var(--nababi-line)!important;border-radius:7px!important;
+  background:#fffdf8!important;box-shadow:var(--nababi-shadow)!important;
+}
+#contact .contact-info-icon{
+  border:1px solid rgba(181,139,75,.35)!important;border-radius:5px!important;
+  color:var(--nababi-wine)!important;background:#f5eee2!important;
+}
+#contact .contact-info-card h3,#contact .contact-hours-heading h3{color:var(--nababi-wine)!important}
+#contact .contact-info-card p,#contact #liveHours{color:var(--nababi-muted)!important}
+#contact .contact-info-card a{color:var(--nababi-wine)!important}
+#contact .contact-directions-btn{
+  color:#fff!important;background:var(--nababi-wine)!important;
+  border:1px solid var(--nababi-wine)!important;border-radius:4px!important;
+}
+.site-footer{
+  padding:46px 6%!important;color:#eee8dc!important;
+  background:var(--nababi-olive-dark)!important;border-top:4px solid var(--nababi-brass)!important;
+}
+.site-footer a{color:#f1d8a8!important}
+.delivery-section{background:var(--nababi-olive-dark)!important;border-color:rgba(181,139,75,.45)!important}
+.delivery-popup{border-color:var(--nababi-brass)!important;border-radius:7px!important;background:#fffdf8!important}
+.delivery-link{border-radius:5px!important;background:var(--nababi-olive)!important}
+.gallery-lightbox{background:rgba(24,29,24,.97)!important}
+.gallery-lightbox-image{border-color:var(--nababi-brass)!important;border-radius:5px!important}
+.gallery-lightbox-close,.gallery-lightbox-prev,.gallery-lightbox-next{
+  border-color:var(--nababi-brass)!important;border-radius:4px!important;background:var(--nababi-olive-dark)!important;
+}
+@media(max-width:980px) and (min-width:761px){
+  .site-header{gap:12px!important;padding-left:18px!important;padding-right:18px!important}
+  .site-header nav{gap:10px!important}
+  .site-header nav a{font-size:10px!important}
+}
+@media(max-width:760px){
+  .site-header{position:sticky!important;padding:10px 14px!important;gap:9px!important}
+  .site-header nav{background:#fffdf8!important;border-top:1px solid var(--nababi-line)!important}
+  .site-header nav a{color:var(--nababi-ink)!important;border-color:var(--nababi-line)!important;padding:12px!important}
+  .site-hero{min-height:500px!important;padding:58px 24px!important;background-position:60% center!important}
+  .site-hero h1{font-size:clamp(44px,12vw,62px)!important}
+  .site-hero p:not(.eyebrow){font-size:14px!important}
+  .site-body>section.site-section{padding:52px 20px!important}
+  #menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #liveMenu .site-card img{height:165px!important}
+  #liveGallery .site-card img{height:180px!important}
+  .site-form{grid-template-columns:1fr!important}
+  .site-form .wide{grid-column:auto!important}
+}
+@media(max-width:480px){
+  .site-hero{min-height:460px!important;padding:48px 20px!important}
+  .site-hero .gold-btn,.site-hero .outline-btn{display:inline-flex;margin:5px 5px 0 0}
+  #menu .site-cards,#gallery .site-cards,#events .site-cards{grid-template-columns:1fr!important}
+  .site-card img,.news-card img{height:195px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .site-card,.news-card,.gold-btn,.outline-btn{transition:none!important}
+}
