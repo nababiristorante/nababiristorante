@@ -401,7 +401,7 @@ async function signIn(e) {
       throw new Error('Inserisci email e password.');
     }
 
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new Error('Inserisci un indirizzo email valido.');
     }
 
