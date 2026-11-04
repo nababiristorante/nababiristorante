@@ -521,3 +521,10 @@ body.site-body{background:var(--ref-cream)!important;color:#24170c!important}
 .fusion-reference-hero h1{max-width:540px!important}
 .fusion-reference-hero h2{max-width:500px!important}
 .fusion-offer-copy p{max-width:310px}
+
+
+/* Explicit Facebook shortcut in the footer */
+.fusion-facebook-direct{display:inline-flex;align-items:center;gap:8px;margin-top:12px;color:#f4d889!important;text-decoration:none!important;font:700 13px Georgia,serif}
+.fusion-facebook-direct>span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #e4c879;border-radius:50%;background:#1877f2;color:#fff;font:bold 21px Arial,sans-serif}
+.fusion-facebook-direct small{font-size:12px}
+@media(max-width:700px){.fusion-facebook-direct{margin-top:10px}}
