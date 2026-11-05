@@ -4547,11 +4547,13 @@ if (db) {
 
 /* EVENT LISTENERS */
 
-$('#loginForm').addEventListener('submit', signIn);
-$('#loginBtn').addEventListener('click', e => {
-  e.preventDefault();
-  signIn(e);
-});
+// Use the form submit event as the single login entry point.
+// A submit button already triggers this event; a second click handler can
+// cause duplicate login attempts and confusing page behavior.
+const loginForm = $('#loginForm');
+if (loginForm) {
+  loginForm.addEventListener('submit', signIn);
+}
 
 $('#sideNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
