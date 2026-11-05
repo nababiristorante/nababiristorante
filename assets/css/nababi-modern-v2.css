@@ -1,0 +1,128 @@
+/* NABABI RISTORANTE — Modern editorial redesign v2 */
+:root{--nv-ink:#14231d;--nv-green:#173d30;--nv-deep:#0d251d;--nv-cream:#f7f3e9;--nv-paper:#fffdf8;--nv-copper:#c79a58;--nv-muted:#68736b;--nv-line:rgba(23,61,48,.15);--nv-shadow:0 22px 60px rgba(18,38,29,.12)}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body.site-body{margin:0!important;background:var(--nv-cream)!important;color:var(--nv-ink)!important;font-family:Inter,Arial,sans-serif!important}
+body.site-body *{box-sizing:border-box}
+.nababi-contact-bar{display:flex!important;justify-content:center!important;gap:clamp(14px,3vw,42px)!important;flex-wrap:wrap!important;padding:10px 18px!important;background:var(--nv-deep)!important;color:#e9dfca!important;font-size:11px!important;letter-spacing:.35px!important}
+.nababi-contact-bar a{color:inherit!important;text-decoration:none!important}
+.fusion-reference-header{position:sticky!important;top:0!important;z-index:60!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:22px!important;min-height:82px!important;padding:12px clamp(18px,5vw,82px)!important;background:rgba(255,253,248,.96)!important;border:0!important;border-bottom:1px solid var(--nv-line)!important;box-shadow:0 8px 28px rgba(16,38,27,.06)!important;backdrop-filter:blur(16px)!important}
+.fusion-header-top{display:contents!important}
+.fusion-main-logo{display:flex!important;align-items:center!important;flex:0 0 auto!important;text-decoration:none!important}
+.fusion-main-logo .site-logo-crown{font-size:36px!important;color:var(--nv-copper)!important}
+.fusion-main-logo .site-logo-words strong{font:700 27px Georgia,serif!important;letter-spacing:2.5px!important;color:var(--nv-green)!important}
+.fusion-main-logo .site-logo-words small{font:700 9px Arial,sans-serif!important;letter-spacing:5px!important;color:var(--nv-muted)!important}
+.fusion-reference-header nav{display:flex!important;align-items:center!important;justify-content:center!important;gap:clamp(12px,2vw,28px)!important;margin:0!important}
+.fusion-reference-header nav a{padding:10px 0!important;color:var(--nv-ink)!important;font:700 11px Arial,sans-serif!important;letter-spacing:1px!important;text-transform:uppercase!important;text-decoration:none!important}
+.fusion-reference-header nav a:hover{color:var(--nv-copper)!important}
+.fusion-header-actions{display:flex!important;align-items:center!important;gap:10px!important}
+.fusion-header-phone{display:none!important}
+.fusion-book-top,.fusion-reference-header .fusion-book-top{display:inline-flex!important;align-items:center!important;gap:9px!important;padding:14px 19px!important;border:1px solid var(--nv-green)!important;border-radius:2px!important;background:var(--nv-green)!important;color:#fff!important;font:700 11px Arial,sans-serif!important;letter-spacing:.6px!important;text-decoration:none!important;text-transform:uppercase!important}
+.fusion-book-top:hover{background:var(--nv-copper)!important;border-color:var(--nv-copper)!important;color:#14231d!important}
+.fusion-admin-link{display:none!important}.fusion-language-pills{display:flex!important;position:absolute!important;top:-31px!important;right:clamp(18px,5vw,82px)!important;gap:4px!important}
+.fusion-language-pills button{padding:4px 8px!important;border:1px solid #486657!important;border-radius:2px!important;background:var(--nv-deep)!important;color:#fff!important;font:10px Arial,sans-serif!important}
+.fusion-language-pills button.is-active{background:var(--nv-copper)!important;border-color:var(--nv-copper)!important;color:var(--nv-deep)!important}
+.fusion-language-select{display:none!important}.fusion-mobile-toggle{display:none!important}
+#home.fusion-reference-hero{position:relative!important;isolation:isolate!important;display:flex!important;align-items:center!important;min-height:650px!important;padding:80px clamp(25px,9vw,150px)!important;overflow:hidden!important;background:linear-gradient(90deg,rgba(8,31,23,.97) 0%,rgba(8,31,23,.88) 42%,rgba(8,31,23,.22) 100%),url('https://images.unsplash.com/photo-1563379091339-03246963d96a?auto=format&fit=crop&w=2200&q=90') center/cover!important;border:0!important}
+#home.fusion-reference-hero:before{content:"";position:absolute;z-index:-1;inset:22px;border:1px solid rgba(216,178,111,.45);pointer-events:none}
+#home.fusion-reference-hero:after{content:"NABABI  •  ROMA";position:absolute;right:4%;bottom:35px;color:rgba(255,255,255,.65);font:10px Arial,sans-serif;letter-spacing:4px;writing-mode:vertical-rl}
+.fusion-hero-copy{position:relative!important;z-index:4!important;width:min(590px,58%)!important;max-width:590px!important}
+.fusion-reference-hero .eyebrow{color:#e4c18a!important;font:italic 20px Georgia,serif!important;letter-spacing:1px!important}
+.fusion-reference-hero h1{margin:12px 0!important;color:#fffaf0!important;font:700 clamp(52px,7vw,94px)/.96 Georgia,serif!important;letter-spacing:-2px!important;text-transform:none!important;text-shadow:0 5px 25px #0007!important}
+.fusion-reference-hero h2{max-width:540px!important;margin:20px 0 12px!important;color:#e8c995!important;font:italic clamp(20px,2.5vw,31px)/1.3 Georgia,serif!important;text-align:left!important}
+.fusion-reference-hero .fusion-hero-intro{max-width:470px!important;color:#f5f0e6!important;font:15px/1.9 Arial,sans-serif!important}
+.fusion-hero-actions{display:flex!important;gap:12px!important;flex-wrap:wrap!important;margin-top:28px!important}
+.fusion-reference-hero .fusion-hero-cta{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:50px!important;padding:14px 23px!important;border:1px solid var(--nv-copper)!important;border-radius:2px!important;background:var(--nv-copper)!important;color:var(--nv-deep)!important;font:700 11px Arial,sans-serif!important;letter-spacing:.6px!important;text-decoration:none!important;text-transform:uppercase!important}
+.fusion-reference-hero .fusion-hero-cta.secondary{background:transparent!important;color:#fff!important;border-color:rgba(255,255,255,.8)!important}
+.fusion-hero-food{position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important}
+.fusion-hero-dish{position:absolute!important;object-fit:cover!important;border:7px solid rgba(255,250,240,.92)!important;border-radius:50%!important;box-shadow:0 24px 65px #0008!important}
+.fusion-hero-dish-one{width:min(34vw,440px)!important;height:min(34vw,440px)!important;right:8%!important;top:11%!important}
+.fusion-hero-dish-two{width:min(18vw,230px)!important;height:min(18vw,230px)!important;right:35%!important;bottom:2%!important}
+.fusion-hero-dish-three{width:min(14vw,175px)!important;height:min(14vw,175px)!important;right:1%!important;bottom:5%!important}
+.fusion-hero-flags{display:none!important}
+.nababi-benefits{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;padding:25px clamp(18px,5vw,80px)!important;background:var(--nv-green)!important;border:0!important}
+.nababi-benefits>div{display:flex!important;align-items:center!important;justify-content:center!important;gap:13px!important;padding:8px 16px!important;border-right:1px solid rgba(228,193,138,.35)!important}
+.nababi-benefits>div:last-child{border:0!important}.nababi-benefits>div>span{color:#e4c18a!important;font-size:29px!important}
+.nababi-benefits strong{color:#fff!important;font:700 12px Arial,sans-serif!important;letter-spacing:.5px!important}.nababi-benefits small{color:#e1d7c5!important;font:12px Georgia,serif!important}
+.fusion-cuisine{padding:76px clamp(18px,6vw,100px)!important;background:var(--nv-cream)!important;border:0!important}
+.fusion-section-title{display:flex!important;align-items:center!important;justify-content:center!important;gap:20px!important;margin:0 0 34px!important}
+.fusion-section-title span{width:min(10vw,115px)!important;height:1px!important;background:var(--nv-copper)!important}
+.fusion-section-title h2{margin:0!important;color:var(--nv-green)!important;font:700 clamp(25px,3vw,38px) Georgia,serif!important;text-align:center!important}
+.fusion-cuisine-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:17px!important;max-width:1450px!important;margin:auto!important}
+.fusion-cuisine-item{display:flex!important;flex-direction:column!important;overflow:hidden!important;min-height:245px!important;border:1px solid var(--nv-line)!important;border-radius:3px!important;background:var(--nv-paper)!important;text-decoration:none!important;box-shadow:var(--nv-shadow)!important;transition:transform .25s,box-shadow .25s!important}
+.fusion-cuisine-item:hover{transform:translateY(-6px)!important;box-shadow:0 25px 55px #14231d24!important}
+.fusion-cuisine-item img{width:100%!important;height:170px!important;flex:0 0 170px!important;object-fit:cover!important;border:0!important;border-radius:0!important}
+.fusion-cuisine-item strong{padding:14px 14px 4px!important;color:var(--nv-green)!important;font:700 17px Georgia,serif!important}
+.fusion-cuisine-item small{padding:0 14px 15px!important;color:var(--nv-muted)!important;font:11px Arial,sans-serif!important}
+.fusion-feature-split{display:grid!important;grid-template-columns:1fr 1fr!important;gap:24px!important;padding:64px clamp(18px,6vw,100px)!important;background:var(--nv-deep)!important}
+.fusion-offer-panel,.fusion-about-teaser{position:relative!important;display:flex!important;align-items:center!important;gap:22px!important;min-width:0!important;padding:32px!important;border:1px solid rgba(199,154,88,.55)!important;border-radius:3px!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important;overflow:hidden!important}
+.fusion-offer-copy h2,.fusion-about-teaser h2{color:var(--nv-green)!important;font:700 31px Georgia,serif!important}
+.fusion-offer-copy p,.fusion-about-teaser p{color:var(--nv-muted)!important;line-height:1.8!important}
+.fusion-offer-seal{color:var(--nv-copper)!important}.fusion-about-teaser img{width:42%!important;max-height:245px!important;object-fit:cover!important;border-radius:2px!important}
+.fusion-quick-panels{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important;padding:62px clamp(18px,6vw,100px)!important;background:#eae2d2!important}
+.fusion-quick-card{display:block!important;padding:29px!important;border:1px solid var(--nv-line)!important;border-radius:3px!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important;text-decoration:none!important;box-shadow:var(--nv-shadow)!important;transition:transform .2s!important}
+.fusion-quick-card:hover{transform:translateY(-4px)!important}.fusion-quick-card h3{color:var(--nv-green)!important;font:700 23px Georgia,serif!important}
+.fusion-quick-card p,.fusion-quick-card blockquote{color:var(--nv-muted)!important;line-height:1.8!important}.fusion-quick-card b,.fusion-quick-icon{color:var(--nv-copper)!important}
+.site-body>section.site-section{padding:76px clamp(18px,7vw,110px)!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important;border:0!important;border-bottom:1px solid var(--nv-line)!important}
+.site-body>section.site-section:nth-of-type(even){background:#f1ecdf!important}
+.site-section h2,.contact-heading h2,.contact-form-heading h2{color:var(--nv-green)!important;font:700 clamp(30px,3.6vw,45px) Georgia,serif!important;text-align:center!important}
+.site-section>p{color:var(--nv-muted)!important;line-height:1.8!important}
+.site-cards{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))!important;gap:20px!important;max-width:1450px!important;margin:34px auto 0!important}
+.site-card,.news-card{overflow:hidden!important;border:1px solid var(--nv-line)!important;border-radius:3px!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important;box-shadow:var(--nv-shadow)!important}
+.site-card img,.news-card img{width:100%!important;height:205px!important;object-fit:cover!important}
+.site-card h3,.site-card h4,.news-card h3{color:var(--nv-green)!important;font-family:Georgia,serif!important}
+.site-card p,.news-card p{color:var(--nv-muted)!important;line-height:1.7!important}
+.site-price,.review-stars{color:#a47736!important}.site-empty{color:var(--nv-muted)!important}
+#reservation{background:var(--nv-green)!important;color:#fff!important}#reservation h2{color:#fff!important}
+#reservation .site-form,.booking-status-lookup{max-width:800px!important;padding:30px!important;border:1px solid rgba(228,193,138,.55)!important;border-radius:3px!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important;box-shadow:var(--nv-shadow)!important}
+.site-form{gap:17px!important}.site-form label{color:var(--nv-green)!important;font:700 12px Arial,sans-serif!important;letter-spacing:.3px!important}
+.site-form input,.site-form select,.site-form textarea{min-height:48px!important;border:1px solid #d8d0c1!important;border-radius:2px!important;background:#fff!important;color:var(--nv-ink)!important}
+.site-form input:focus,.site-form select:focus,.site-form textarea:focus{outline:2px solid var(--nv-copper)!important;outline-offset:1px!important}
+.site-form button,.google-review-btn,.contact-directions-btn{border:0!important;border-radius:2px!important;background:var(--nv-copper)!important;color:var(--nv-deep)!important;font-weight:700!important}
+#floorMap,.floor-room{border-color:var(--nv-line)!important;background:#f5efe4!important;color:var(--nv-ink)!important}.floor-table{background:var(--nv-green)!important;color:#fff!important}
+#about.fusion-about{display:grid!important;grid-template-columns:1fr 1fr!important;align-items:center!important;gap:60px!important;background:var(--nv-cream)!important}
+.fusion-about-photo img{width:100%!important;max-height:500px!important;object-fit:cover!important}.fusion-about-copy h2{text-align:left!important}
+.fusion-about-copy p{color:var(--nv-muted)!important;line-height:1.9!important}
+#reviews .site-card{max-width:850px!important;margin-inline:auto!important;padding:26px!important}
+#contact{background:#eae2d2!important}
+.contact-info-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px!important}
+.contact-info-card,.contact-hours-panel{border:1px solid var(--nv-line)!important;border-radius:3px!important;background:var(--nv-paper)!important;color:var(--nv-ink)!important}
+.contact-info-card h3,.contact-hours-panel h3{color:var(--nv-green)!important;font-family:Georgia,serif!important}
+.contact-info-card p,.contact-info-card a{color:var(--nv-muted)!important}.contact-info-icon,.contact-card-label,.contact-eyebrow{color:#a47736!important}
+.contact-hours-panel{max-width:920px!important;margin:25px auto!important;padding:27px!important}
+.faq-list{max-width:920px!important;margin:30px auto!important}.faq-item{margin:11px 0!important;padding:18px 20px!important;border:1px solid var(--nv-line)!important;border-radius:3px!important;background:var(--nv-paper)!important}
+.faq-item summary{color:var(--nv-green)!important;font-weight:700!important;cursor:pointer}.faq-item p{color:var(--nv-muted)!important;line-height:1.8!important}
+.fusion-footer{padding:0!important;background:var(--nv-deep)!important;color:#f8f1e3!important}
+.fusion-footer-main{display:grid!important;grid-template-columns:1.3fr 1fr 1fr 1fr 150px!important;gap:30px!important;padding:54px clamp(18px,6vw,100px)!important}
+.fusion-footer h3,.fusion-footer-brand strong{color:#e4c18a!important;font-family:Georgia,serif!important}.fusion-footer a{color:#eee4d1!important}
+.fusion-footer-bottom{padding:20px clamp(18px,6vw,100px)!important;border-top:1px solid #405a4b!important;color:#d7cbb5!important}
+.whatsapp-floating{background:#1e7548!important;box-shadow:0 8px 25px #0003!important}
+@media(max-width:1100px){.fusion-reference-header{gap:12px!important;padding-inline:18px!important}.fusion-reference-header nav{gap:12px!important}.fusion-reference-header nav a{font-size:10px!important}.fusion-cuisine-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}.contact-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.fusion-footer-main{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:760px){
+.nababi-contact-bar{justify-content:center!important;gap:5px 12px!important;padding:8px 10px!important;font-size:10px!important}.nababi-contact-bar a:first-child{width:100%!important;justify-content:center!important}
+.fusion-reference-header{display:flex!important;flex-wrap:wrap!important;gap:9px!important;min-height:0!important;padding:10px 14px!important}
+.fusion-main-logo .site-logo-crown{font-size:32px!important}.fusion-main-logo .site-logo-words strong{font-size:23px!important}.fusion-main-logo .site-logo-words small{font-size:8px!important;letter-spacing:4px!important}
+.fusion-header-actions{margin-left:auto!important}.fusion-header-actions .fusion-book-top{padding:10px 11px!important;font-size:9px!important}.fusion-header-actions .fusion-book-top svg{display:none!important}
+.fusion-mobile-toggle{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:40px!important;height:40px!important;border:1px solid var(--nv-line)!important;border-radius:2px!important;background:var(--nv-green)!important;color:#fff!important}
+.fusion-reference-header nav{display:none!important;order:5!important;flex:1 0 100%!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;padding:6px 0!important}
+.fusion-reference-header nav.is-open{display:flex!important}.fusion-reference-header nav a{padding:12px 10px!important;border-top:1px solid var(--nv-line)!important;font-size:12px!important}
+.fusion-language-pills{position:static!important;order:6!important;display:flex!important;width:100%!important;justify-content:center!important;margin-top:3px!important}
+#home.fusion-reference-hero{min-height:590px!important;padding:48px 24px!important;background-position:62% center!important}
+.fusion-hero-copy{width:100%!important;max-width:100%!important}.fusion-reference-hero h1{font-size:clamp(44px,12vw,64px)!important;letter-spacing:-1px!important}
+.fusion-reference-hero h2{font-size:20px!important}.fusion-reference-hero .fusion-hero-intro{max-width:96%!important;font-size:14px!important}
+.fusion-hero-food{opacity:.36!important}.fusion-hero-dish-one{width:220px!important;height:220px!important;right:-42px!important;top:8%!important}
+.fusion-hero-dish-two{width:120px!important;height:120px!important;right:40%!important;bottom:2%!important}.fusion-hero-dish-three{display:none!important}
+.nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:12px!important}.nababi-benefits>div{justify-content:flex-start!important;padding:10px!important;border-right:0!important}
+.nababi-benefits>div:nth-child(odd){border-right:1px solid rgba(228,193,138,.3)!important}.nababi-benefits>div>span{font-size:23px!important}
+.nababi-benefits strong{font-size:10px!important}.nababi-benefits small{font-size:10px!important}
+.fusion-cuisine{padding:45px 15px!important}.fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.fusion-cuisine-item{min-height:185px!important}.fusion-cuisine-item img{height:125px!important;flex-basis:125px!important}.fusion-cuisine-item strong{font-size:14px!important}
+.fusion-feature-split,.fusion-quick-panels{grid-template-columns:1fr!important;padding:30px 15px!important}
+.fusion-offer-panel,.fusion-about-teaser{padding:19px!important;flex-wrap:wrap!important}.fusion-about-teaser img{width:100%!important;max-height:200px!important}
+.site-body>section.site-section{padding:46px 16px!important}.site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.site-card img,.news-card img{height:145px!important}.site-form{grid-template-columns:1fr!important}.site-form .wide{grid-column:1!important}
+#about.fusion-about{grid-template-columns:1fr!important;gap:27px!important}.fusion-about-photo img{max-height:290px!important}.fusion-about-copy h2{text-align:center!important}
+.contact-info-grid{grid-template-columns:1fr!important}.fusion-footer-main{grid-template-columns:1fr 1fr!important;gap:22px!important;padding:35px 18px!important}
+.fusion-footer-qr{display:none!important}.fusion-footer-bottom{display:flex!important;flex-direction:column!important;gap:8px!important;text-align:center!important}
+}
+@media(max-width:390px){.fusion-header-actions .fusion-book-top{font-size:8px!important;padding:9px 8px!important}.site-cards{grid-template-columns:1fr!important}.fusion-footer-main{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}body.site-body a{transition:none!important}}
