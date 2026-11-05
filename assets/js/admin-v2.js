@@ -134,7 +134,7 @@ async function activityPage(){
   const person=byId.get(String(row.staff_id||row.staffId||''))||byAuth.get(String(row.auth_user_id||row.user_id||''))||byName.get(String(row.staff_name||row.full_name||row.actor_name||'').trim().toLocaleLowerCase());
   const name=person?.full_name||value(row,['staff_name','full_name','actor_name','user_name'])||'Staff';
   const action=value(row,['action','activity','event','description','action_name'])||'Activity recorded';
-  const detail=value(row,['details']);const moduleMatch=detail.match(/Module:\\s*([^—\\n]+)/i);const module=moduleMatch?moduleMatch[1].trim():'—';
+  const detail=value(row,['details']);const moduleMatch=detail.match(/Module:\s*([^—\n]+)/i);const module=moduleMatch?moduleMatch[1].trim():'—';
   const stamp=value(row,['created_at','performed_at','timestamp','activity_at','logged_at']);
   const date=stamp&&!Number.isNaN(new Date(stamp).getTime())?new Date(stamp).toLocaleString():(stamp||'—');
   return '<tr><td><span style="display:inline-flex;align-items:center;gap:10px">'+avatar(person,name)+'<b>'+esc(name)+'</b></span></td><td>'+esc(action)+'</td><td>'+esc(module)+'</td><td>'+esc(date)+'</td></tr>';
