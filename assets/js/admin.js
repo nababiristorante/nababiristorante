@@ -14,6 +14,15 @@ const STAFF_QR_IMAGE =
 
 const $ = s => document.querySelector(s);
 
+// Register login immediately: a later optional admin-module error must not
+// leave the browser to perform a native form submission (page refresh).
+let loginInProgress = false;
+const earlyLoginForm = $('#loginForm');
+if (earlyLoginForm) {
+  earlyLoginForm.addEventListener('submit', signIn);
+}
+
+
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;',
   '<':'&lt;',
@@ -375,8 +384,6 @@ async function saveRecoveredPassword() {
 }
 
 /* LOGIN */
-
-let loginInProgress = false;
 
 async function signIn(e) {
   e.preventDefault();
@@ -4550,10 +4557,7 @@ if (db) {
 // Use the form submit event as the single login entry point.
 // A submit button already triggers this event; a second click handler can
 // cause duplicate login attempts and confusing page behavior.
-const loginForm = $('#loginForm');
-if (loginForm) {
-  loginForm.addEventListener('submit', signIn);
-}
+// Login submit listener is registered at the top of this file.
 
 $('#sideNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
