@@ -108,7 +108,7 @@ function exportAttendanceCsv(){
  const head=['staff_name','attendance_date','check_in','check_out','work_time_minutes','status'];
  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
  const lines=[head.join(',')].concat(attendanceRows.map(x=>[x.staff_name,x.attendance_date,x.check_in,x.check_out,attendanceDuration(x.check_in,x.check_out),x.status].map(quote).join(',')));
- const blob=new Blob(['\\uFEFF'+lines.join('\\r\\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='staff-attendance-'+(attendanceStart||'last-7-days')+'-'+(attendanceEnd||attendanceDateValue(new Date()))+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
