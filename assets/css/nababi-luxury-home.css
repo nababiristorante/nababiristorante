@@ -156,3 +156,33 @@ body.site-body{margin:0;background:#fff4df!important;color:#18251b!important;fon
   .nababi-benefits{order:2!important}
   .fusion-cuisine{order:3!important}
 }
+
+
+/* Reference composition: contact strip → brand header → hero → benefits → dish cards. */
+body.site-body{display:flex!important;flex-direction:column!important}
+body.site-body>.nababi-contact-bar{order:0!important}
+body.site-body>header.fusion-reference-header{order:1!important}
+body.site-body>section.fusion-reference-hero{order:2!important}
+body.site-body>section.nababi-benefits{order:3!important}
+body.site-body>section.fusion-cuisine{order:4!important}
+body.site-body>#menu{order:5!important}
+body.site-body>#gallery{order:6!important}
+body.site-body>#events{order:7!important}
+@media(max-width:700px){
+  body.site-body>.nababi-contact-bar{order:0!important;min-height:38px!important;display:flex!important;flex-wrap:nowrap!important;justify-content:space-around!important;gap:6px!important;padding:6px 8px!important;font-size:10px!important}
+  body.site-body>.nababi-contact-bar a:first-child{display:none!important}
+  body.site-body>.nababi-contact-bar a{font-size:10px!important;gap:4px!important}
+  body.site-body>.nababi-contact-bar a:last-child{display:none!important}
+  body.site-body>header.fusion-reference-header{order:1!important;min-height:72px!important;padding:10px 14px!important}
+  body.site-body>section.fusion-reference-hero{order:2!important;min-height:610px!important;height:auto!important;padding:54px 20px 42px!important;background-position:60% center!important}
+  body.site-body>section.nababi-benefits{order:3!important}
+  body.site-body>section.fusion-cuisine{order:4!important}
+  .fusion-reference-hero .eyebrow{font-size:20px!important}
+  .fusion-reference-hero h1{font-size:clamp(40px,11vw,56px)!important;line-height:1.05!important}
+  .fusion-reference-hero h2{font-size:19px!important;line-height:1.35!important}
+  .fusion-reference-hero .fusion-hero-intro{font-size:14px!important;line-height:1.65!important}
+  .fusion-hero-actions{gap:10px!important}
+  .fusion-reference-hero .fusion-hero-cta{min-height:48px!important;padding:12px 17px!important;font-size:14px!important}
+  .nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
