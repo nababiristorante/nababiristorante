@@ -137,3 +137,26 @@ body.site-body>*{flex-shrink:0}
  .fusion-hero-actions{gap:8px!important}
  .fusion-reference-hero .fusion-hero-cta{min-width:0!important;padding:10px 15px!important}
 }
+
+/* Keep the language selector visible in the reference header. */
+.fusion-reference-header .fusion-language-select {
+  display:flex!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:66px!important;
+  overflow:visible!important;
+  clip:auto!important;
+  clip-path:none!important;
+  white-space:normal!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.fusion-reference-header .fusion-language-select select {
+  display:block!important;
+  width:66px!important;
+  height:auto!important;
+  min-height:32px!important;
+  overflow:visible!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
