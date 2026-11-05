@@ -186,3 +186,186 @@ body.site-body>#events{order:7!important}
   .nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
+
+
+/* ===== COMPLETE NABABI LUXURY SITE SYSTEM — all homepage sections ===== */
+:root{
+ --nb-forest:#062b1b;--nb-deep:#03190f;--nb-green:#0b5031;
+ --nb-gold:#e8bd58;--nb-gold-light:#f8dfa0;--nb-cream:#fff6e4;
+ --nb-paper:#f4e8cf;--nb-ink:#20271f;--nb-muted:#685d49;
+}
+body.site-body{background:var(--nb-cream)!important;color:var(--nb-ink)!important}
+body.site-body>*{flex-shrink:0}
+body.site-body>.nababi-contact-bar{order:0!important}
+body.site-body>header.fusion-reference-header{order:1!important}
+body.site-body>section.fusion-reference-hero{order:2!important}
+body.site-body>section.nababi-benefits{order:3!important}
+body.site-body>section.fusion-cuisine{order:4!important}
+body.site-body>section.fusion-feature-split{order:5!important}
+body.site-body>section.fusion-quick-panels{order:6!important}
+body.site-body>#liveNewsSection{order:7!important}
+body.site-body>#menu{order:8!important}
+body.site-body>#gallery{order:9!important}
+body.site-body>#events{order:10!important}
+body.site-body>#reservation{order:11!important}
+body.site-body>#about{order:12!important}
+body.site-body>#reviews{order:13!important}
+body.site-body>#contact{order:14!important}
+body.site-body>#faq{order:15!important}
+body.site-body>footer.site-footer{order:16!important}
+
+/* Header + top strip */
+.nababi-contact-bar{background:var(--nb-deep)!important;color:#fff4d9!important;border-bottom:1px solid #9d782f!important}
+.fusion-reference-header{background:linear-gradient(110deg,#031b10,#07502f 52%,#031b10)!important;border-bottom:2px solid var(--nb-gold)!important}
+.fusion-main-logo .site-logo-words strong{color:var(--nb-gold-light)!important}
+.fusion-reference-header nav a{color:#fff5df!important}
+.fusion-book-top{background:linear-gradient(110deg,#ffe5a0,#d8a63d)!important;color:#211807!important}
+
+/* Hero */
+.fusion-reference-hero{min-height:560px!important;padding:70px clamp(24px,7vw,112px)!important;background:linear-gradient(90deg,rgba(2,24,14,.96) 0%,rgba(3,37,22,.82) 42%,rgba(3,30,18,.18) 100%),url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2200&q=92') center/cover!important}
+.fusion-reference-hero:before{inset:16px!important;border:1px solid #e8bd5877!important}
+.fusion-hero-copy{width:min(590px,58%)!important;max-width:590px!important}
+.fusion-reference-hero .eyebrow{color:var(--nb-gold-light)!important}
+.fusion-reference-hero h1{color:#f6d47b!important;text-transform:none!important;text-shadow:0 3px 20px #000!important}
+.fusion-reference-hero h2,.fusion-reference-hero .fusion-hero-intro{color:#fff5e2!important}
+.fusion-reference-hero .fusion-hero-cta{background:linear-gradient(110deg,#ffe39a,#d9a43a)!important;border:1px solid #f6d47b!important;color:#201708!important}
+.fusion-reference-hero .fusion-hero-cta.secondary{background:#031d12eF!important;color:#fff5e2!important}
+
+/* Values strip and cuisine cards */
+.nababi-benefits{background:linear-gradient(100deg,#031d12,#07502f,#031d12)!important;border-bottom:2px solid var(--nb-gold)!important}
+.nababi-benefits>div{border-color:#c9a04b!important}
+.fusion-cuisine{background:linear-gradient(180deg,#fff7e6,#f1e1c1)!important;padding:44px clamp(18px,5vw,76px)!important}
+.fusion-section-title h2{color:var(--nb-forest)!important}
+.fusion-cuisine-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:18px!important}
+.fusion-cuisine-item{min-height:235px!important;border:1px solid #bd9140!important;border-radius:14px!important;background:var(--nb-forest)!important;box-shadow:0 10px 25px #3d2a111f!important}
+.fusion-cuisine-item img{height:170px!important;flex-basis:170px!important}
+.fusion-cuisine-item strong{background:var(--nb-forest)!important;color:#fff4df!important;font-size:18px!important}
+.fusion-cuisine-item small{background:var(--nb-forest)!important;color:#f2d58f!important}
+
+/* Feature / promotional and quick information bands */
+.fusion-feature-split{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0!important;background:var(--nb-deep)!important;border-block:2px solid #b78b3b!important}
+.fusion-offer-panel,.fusion-about-teaser{min-width:0!important;padding:clamp(28px,4vw,58px)!important;background:linear-gradient(135deg,#073a23,#03190f)!important;color:var(--nb-cream)!important;border:0!important}
+.fusion-offer-panel{border-right:1px solid #b78b3b!important}
+.fusion-offer-copy h2,.fusion-about-teaser h2{color:var(--nb-gold-light)!important}
+.fusion-offer-copy p,.fusion-about-teaser p{color:#f5e9d1!important}
+.fusion-about-teaser img{width:100%!important;max-height:260px!important;object-fit:cover!important;border:1px solid var(--nb-gold)!important;border-radius:12px!important}
+.fusion-quick-panels{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important;background:var(--nb-deep)!important;border-bottom:2px solid #b78b3b!important}
+.fusion-quick-card{padding:30px!important;min-width:0!important;background:linear-gradient(145deg,#0a4329,#03190f)!important;border:0!important;border-right:1px solid #b78b3b!important;color:var(--nb-cream)!important}
+.fusion-quick-card:last-child{border-right:0!important}
+.fusion-quick-card h3{color:var(--nb-gold-light)!important}
+.fusion-quick-card p{color:#f3e7d0!important}
+
+/* All standard sections: menu, gallery, events, booking, reviews, contact, FAQ */
+body.site-body>section.site-section{padding:clamp(38px,5vw,72px) clamp(18px,5vw,76px)!important;background:var(--nb-cream)!important;color:var(--nb-ink)!important;border-bottom:1px solid #d8bd83!important}
+body.site-body>section.site-section:nth-of-type(even){background:#f1e4ca!important}
+.site-section>h2,.contact-heading h2{margin:0 0 28px!important;text-align:center!important;color:var(--nb-forest)!important;font:700 clamp(28px,3.2vw,42px)/1.15 Georgia,serif!important}
+.site-section>h2:after,.contact-heading h2:after{content:"";display:block;width:90px;height:2px;margin:14px auto 0;background:linear-gradient(90deg,transparent,#c79b43,transparent)!important}
+.site-section>p{color:var(--nb-muted)!important}
+.site-cards{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:22px!important;max-width:1380px!important;margin-inline:auto!important}
+.site-card,.news-card{overflow:hidden!important;background:#fffaf0!important;border:1px solid #d3b36e!important;border-radius:14px!important;box-shadow:0 9px 24px #3b2b1417!important;color:var(--nb-ink)!important}
+.site-card h3,.site-card h4,.news-card h3{color:var(--nb-forest)!important}
+.site-card p,.news-card p{color:#5f5544!important}
+.site-card img,.news-card img{width:100%!important;max-height:250px!important;object-fit:cover!important}
+.site-price,.review-stars,.fusion-review-stars{color:#a87618!important}
+
+/* Reservation form and interactive table map */
+#reservation{background:linear-gradient(135deg,#062b1b,#0a4a2d)!important}
+#reservation>h2{color:var(--nb-gold-light)!important}
+#reservation>h2:after{background:linear-gradient(90deg,transparent,#e8bd58,transparent)!important}
+#reservation .site-form,#contact .site-form,#reviews .site-form{max-width:900px!important;margin:0 auto!important;padding:clamp(18px,3vw,32px)!important;background:#fffaf0!important;border:1px solid #d1ad61!important;border-radius:16px!important;box-shadow:0 14px 36px #0002!important}
+.site-form{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:15px!important}
+.site-form label{display:flex!important;flex-direction:column!important;gap:7px!important;color:var(--nb-forest)!important;font-weight:700!important}
+.site-form .wide,.site-form button.wide,.site-form .notice.wide{grid-column:1/-1!important}
+.site-form input,.site-form select,.site-form textarea{width:100%!important;min-height:46px!important;box-sizing:border-box!important;padding:11px 13px!important;border:1px solid #cbb078!important;border-radius:8px!important;background:#fff!important;color:#20271f!important;font:15px Arial,sans-serif!important}
+.site-form textarea{min-height:110px!important}
+.site-form button,.google-review-btn,.contact-directions-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:46px!important;padding:12px 22px!important;border:1px solid #c69a43!important;border-radius:26px!important;background:linear-gradient(110deg,#ffe39a,#d7a13a)!important;color:#201708!important;font-weight:700!important;text-decoration:none!important}
+#floorMap{padding:18px!important;border:1px solid #d1ad61!important;border-radius:12px!important;background:#f5ebd7!important}
+#floorMap h3{color:var(--nb-forest)!important}
+#floorMap p{color:#665a45!important}
+
+/* About, reviews, contact, FAQ */
+#about{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:center!important;gap:clamp(24px,5vw,64px)!important;background:#f2e5cb!important}
+.fusion-about-photo{position:relative!important;min-width:0!important}
+.fusion-about-photo img{display:block!important;width:100%!important;max-height:470px!important;object-fit:cover!important;border:2px solid #c49a48!important;border-radius:16px!important}
+.fusion-about-copy h2{color:var(--nb-forest)!important;font:700 clamp(28px,3vw,42px)/1.2 Georgia,serif!important}
+.fusion-about-copy p{color:#5b503e!important;font-size:16px!important;line-height:1.8!important}
+#reviews{background:#fff6e4!important}
+#reviews .site-card{max-width:850px!important;margin:22px auto!important}
+#contact{background:#f0e3c8!important}
+.contact-info-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:15px!important;max-width:1300px!important;margin:0 auto 24px!important}
+.contact-info-card,.contact-hours-panel,.faq-item{background:#fffaf0!important;border:1px solid #d0ad65!important;border-radius:13px!important;box-shadow:0 8px 20px #3b2b1410!important;color:var(--nb-ink)!important}
+.contact-info-card{display:flex!important;gap:12px!important;padding:20px!important;min-width:0!important}
+.contact-info-icon{color:#a77a25!important;font-size:28px!important}
+.contact-card-label,.contact-eyebrow{color:#9a6e1e!important;font-weight:700!important;letter-spacing:1.5px!important;font-size:11px!important}
+.contact-info-card h3,.contact-hours-heading h3{color:var(--nb-forest)!important}
+.contact-info-card p,.contact-info-card a,.contact-hours-panel p{color:#554b3b!important;overflow-wrap:anywhere!important}
+.contact-hours-panel{max-width:1300px!important;margin:20px auto!important;padding:22px!important}
+.contact-directions-btn{margin:12px auto 26px!important}
+.contact-form-heading,.contact-form-he{color:var(--nb-forest)!important}
+.faq-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;max-width:1100px!important;margin:auto!important}
+.faq-item{padding:17px 19px!important}
+.faq-item summary{color:var(--nb-forest)!important;font-weight:700!important;cursor:pointer}
+.faq-item p{color:#5b503e!important;line-height:1.65!important}
+
+/* Footer */
+.site-footer{background:linear-gradient(120deg,#03190f,#07502f)!important;border-top:3px solid var(--nb-gold)!important;color:#fff2d5!important}
+.site-footer a{color:var(--nb-gold-light)!important}
+.fusion-footer-main{background:linear-gradient(0deg,#03190ff2,#063b24ed),url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1800&q=85') center/cover!important}
+.fusion-footer-bottom{background:#02150c!important}
+
+/* Tablet and mobile: preserve all sections, stack cleanly, avoid overflow */
+@media(max-width:1000px){
+ .fusion-cuisine-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .contact-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .fusion-quick-panels{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:700px){
+ .nababi-contact-bar{min-height:38px!important;justify-content:center!important;gap:6px 12px!important;flex-wrap:wrap!important;padding:6px 8px!important;font-size:10px!important}
+ .fusion-reference-header{display:flex!important;flex-wrap:wrap!important;gap:6px!important;min-height:68px!important;padding:8px 12px!important}
+ .fusion-main-logo{order:1!important}
+ .fusion-header-actions{display:none!important}
+ #mobileMenuButton{display:inline-flex!important;order:2!important;margin-left:auto!important}
+ .fusion-reference-header nav{display:none!important;order:4!important;flex:1 0 100%!important;width:100%!important;flex-direction:column!important;align-items:stretch!important;gap:0!important}
+ .fusion-reference-header nav.is-open{display:flex!important}
+ .fusion-language-pills{display:flex!important;position:absolute!important;top:-35px!important;right:8px!important;gap:3px!important}
+ .fusion-language-pills button{padding:4px 6px!important;font-size:9px!important}
+ .fusion-language-select{display:none!important}
+ .fusion-reference-hero{min-height:580px!important;padding:54px 22px 42px!important;background:linear-gradient(90deg,rgba(2,24,14,.94),rgba(3,37,22,.72)),url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1200&q=90') 58% center/cover!important}
+ .fusion-hero-copy{width:100%!important;max-width:100%!important}
+ .fusion-reference-hero h1{font-size:clamp(38px,10.5vw,54px)!important;line-height:1.05!important}
+ .fusion-reference-hero h2{font-size:19px!important}
+ .fusion-reference-hero .fusion-hero-intro{font-size:14px!important;line-height:1.65!important}
+ .fusion-hero-food{opacity:.2!important}
+ .fusion-hero-dish-one{width:190px!important;height:190px!important;right:-55px!important;top:12px!important}
+ .fusion-hero-dish-two{width:120px!important;height:120px!important;right:40%!important;bottom:0!important}
+ .fusion-hero-dish-three{display:none!important}
+ .nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:14px 10px!important;gap:8px!important}
+ .nababi-benefits>div{justify-content:flex-start!important;min-height:58px!important;padding:6px!important;border:0!important}
+ .nababi-benefits>div>span{font-size:27px!important}
+ .nababi-benefits strong{font-size:12px!important}
+ .nababi-benefits small{font-size:11px!important}
+ .fusion-cuisine{padding:30px 12px!important}
+ .fusion-section-title h2{font-size:23px!important;text-align:center!important}
+ .fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .fusion-cuisine-item{min-height:160px!important}
+ .fusion-cuisine-item img{height:110px!important;flex-basis:110px!important}
+ .fusion-cuisine-item strong{font-size:14px!important}
+ .fusion-feature-split{grid-template-columns:1fr!important}
+ .fusion-offer-panel{border-right:0!important;border-bottom:1px solid #b78b3b!important}
+ .fusion-quick-panels{grid-template-columns:1fr!important}
+ .fusion-quick-card{border-right:0!important;border-bottom:1px solid #b78b3b!important;min-height:unset!important}
+ body.site-body>section.site-section{padding:34px 15px!important}
+ .site-section>h2,.contact-heading h2{font-size:27px!important;margin-bottom:22px!important}
+ .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+ .site-card img,.news-card img{height:125px!important}
+ #reservation .site-form,#contact .site-form,#reviews .site-form{padding:15px!important}
+ .site-form{grid-template-columns:1fr!important;gap:12px!important}
+ .site-form .wide,.site-form button.wide,.site-form .notice.wide{grid-column:1!important}
+ #about{grid-template-columns:1fr!important;gap:22px!important}
+ .fusion-about-photo img{max-height:280px!important}
+ .contact-info-grid{grid-template-columns:1fr!important;gap:10px!important}
+ .faq-list{grid-template-columns:1fr!important}
+ .site-footer{padding-inline:16px!important}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
