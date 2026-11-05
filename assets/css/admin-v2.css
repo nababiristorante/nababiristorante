@@ -18,3 +18,5 @@
 .check-label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
 .data-table td{max-width:320px;overflow-wrap:anywhere}
 @media(max-width:620px){.admin-form{grid-template-columns:1fr}.permission-grid{grid-template-columns:1fr}.data-table{font-size:12px}.data-table th,.data-table td{padding:9px}}
+
+.nav-heading{padding:10px 12px 5px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:3px}
