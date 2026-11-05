@@ -11,16 +11,16 @@ const labels={dashboard:'dashboard',secret:'secret',discount:'discount',menu_man
 const tableMap={bookings:'bookings',customers:'customers',coupons:'coupons',gallery:'gallery_items',performance:'staff_activity_logs',activity:'staff_activity_logs',attendance:'staff_attendance',tables:'restaurant_tables',delivery:'food_delivery_links',menu_public:'menu_items',news:'breaking_news',reviews:'reviews',hours:'opening_hours',secret:'secret_coupon_boxes',social:'social_links',contact:'contact_messages',discount:'coupon_offer_settings',qr_menu_images:'qr_menu_images',logo:'site_settings',settings:'site_settings',reports:'website_analytics'};
 
 const crudConfigs={
-bookings:{table:'bookings',title:'Bookings',mode:'update',fields:[['status','Status','select',['pending','confirmed','cancelled','completed']],['table_number','Table number','text'],['notes','Notes','textarea'],['confirmation_code','Confirmation code','text']]},
+bookings:{table:'bookings',title:'Bookings',mode:'update',fields:[['status','Status','select',['pending','confirmed','rejected','cancelled']],['table_number','Table number','text'],['notes','Notes','textarea'],['confirmation_code','Confirmation code','text']]},
 customers:{table:'customers',title:'Customers',fields:[['full_name','Full name','text'],['phone','Phone','tel'],['email','Email','email']]},
 coupons:{table:'coupons',title:'Coupons',fields:[['code','Coupon code','text',true],['discount_percent','Discount %','number',true],['is_active','Active','boolean'],['starts_at','Starts at','datetime'],['ends_at','Ends at','datetime']]},
-gallery:{table:'gallery_items',title:'Gallery',fields:[['title','Title','text'],['description','Description','textarea'],['image_url','Image URL','url',true],['sort_order','Display order','number'],['is_active','Active','boolean']]},
+gallery:{table:'gallery_items',title:'Gallery',fields:[['title','Title','text'],['description','Description','textarea'],['image_url','Image','image',true],['sort_order','Display order','number'],['is_active','Active','boolean']]},
 attendance:{table:'staff_attendance',title:'Staff attendance',fields:[['staff_name','Staff name','text'],['attendance_date','Attendance date','date'],['work_date','Work date','date'],['check_in','Check in','time'],['check_out','Check out','time'],['status','Status','select',['present','late','absent','leave']],['notes','Notes','textarea']]},
 tables:{table:'restaurant_tables',title:'Restaurant tables',fields:[['name','Table name','text',true],['capacity','Capacity','number',true],['is_active','Active','boolean'],['notes','Notes','textarea']]},
 delivery:{table:'food_delivery_links',title:'Food delivery links',fields:[['name','Provider name','text',true],['url','URL','url',true],['is_active','Active','boolean'],['sort_order','Display order','number']]},
 social:{table:'social_links',title:'Social links',fields:[['platform','Platform','text',true],['url','URL','url',true],['display_order','Display order','number'],['is_active','Active','boolean']]},
-news:{table:'breaking_news',title:'Breaking news',fields:[['title','Title','text',true],['body','Body','textarea'],['image_url','Image URL','url'],['youtube_url','YouTube URL','url'],['starts_at','Starts at','datetime',true],['ends_at','Ends at','datetime',true],['is_active','Active','boolean']]},
-reviews:{table:'reviews',title:'Reviews',mode:'update',fields:[['customer_name','Customer name','text'],['rating','Rating (1–5)','number',true],['review_text','Review','textarea'],['is_approved','Approved','boolean']]},
+news:{table:'breaking_news',title:'Breaking news',fields:[['title','Title','text',true],['body','Body','textarea'],['image_url','Image','image'],['youtube_url','YouTube URL','url'],['starts_at','Starts at','datetime',true],['ends_at','Ends at','datetime',true],['is_active','Active','boolean']]},
+reviews:{table:'reviews',title:'Reviews',fields:[['customer_name','Customer name','text'],['rating','Rating (1–5)','number',true],['review_text','Review','textarea'],['is_approved','Approved','boolean']]},
 hours:{table:'opening_hours',title:'Opening hours',fields:[['day_of_week','Day number (0–6)','number',true],['day_name','Day name','text',true],['is_closed','Closed','boolean'],['opens_at','Opens at','time'],['closes_at','Closes at','time']]},
 secret:{table:'secret_coupon_boxes',title:'Secret Coupon Box',fields:[['title','Title','text',true],['description','Description','textarea'],['image_url','Image URL','url'],['coupon_id','Coupon ID','number'],['is_active','Active','boolean'],['starts_at','Starts at','datetime'],['ends_at','Ends at','datetime']]},
 qr_menu_images:{table:'qr_menu_images',title:'QR Menu Images',fields:[['image_url','Image URL','url',true],['is_active','Active','boolean'],['sort_order','Display order','number']]},
@@ -63,12 +63,14 @@ function inputFor(field,value=''){
  const required=requiredOrOptions===true;
  const options=Array.isArray(requiredOrOptions)?requiredOrOptions:null;
  const safe=esc(value??'');
+ if(type==='image')return '<label class="field">'+label+'<input name="'+name+'" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="'+name+'_existing" value="'+safe+'">'+(value?'<img class="crud-image-preview" src="'+safe+'" alt="Current image">':'')+'</label>';
  if(type==='boolean')return '<label class="check-label"><input type="checkbox" name="'+name+'" '+(value===true?'checked':'')+'> '+label+'</label>';
  if(type==='textarea')return '<label class="field">'+label+'<textarea name="'+name+'" '+(required?'required':'')+'>'+safe+'</textarea></label>';
  if(type==='select')return '<label class="field">'+label+'<select name="'+name+'">'+(options||[]).map(v=>'<option value="'+esc(v)+'" '+(String(value)===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>';
  let v=safe;
  if(type==='datetime'&&value){const d=new Date(value);if(!Number.isNaN(d.getTime()))v=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
- return '<label class="field">'+label+'<input name="'+name+'" type="'+type+'" value="'+v+'" '+(required?'required':'')+(type==='number'?' step="any"':'')+'></label>';
+ const inputType=type==='datetime'?'datetime-local':type;
+ return '<label class="field">'+label+'<input name="'+name+'" type="'+inputType+'" value="'+v+'" '+(required?'required':'')+(type==='number'?' step="any"':'')+'></label>';
 }
 function displayValue(v){if(v===null||v===undefined||v==='')return '—';if(typeof v==='boolean')return v?'Yes':'No';if(typeof v==='object')return esc(JSON.stringify(v));return esc(v)}
 async function crudPage(id){
@@ -83,7 +85,7 @@ async function crudPage(id){
 let editingRecord=null;
 async function saveCrud(e){
  e.preventDefault();const form=e.target,id=form.dataset.module,cfg=crudConfigs[id],fd=new FormData(form),payload={};
- for(const f of cfg.fields){const [name,,type]=f;let value=type==='boolean'?form.elements[name].checked:fd.get(name);if(type==='number')value=value===''?null:Number(value);if(type==='datetime')value=value?new Date(value).toISOString():null;if(typeof value==='string')value=value.trim();if(value===''&&!f[3])value=null;if(f[3]===true&&(value===null||value===''))throw new Error(f[1]+' is required.');payload[name]=value}
+ for(const f of cfg.fields){const [name,,type]=f;let value;if(type==='boolean')value=form.elements[name].checked;else if(type==='image'){const file=form.elements[name].files?.[0];value=file?await uploadImage(file,id==='gallery'?'gallery':id==='qr_menu_images'?'qr-menu':id==='news'?'news':'secret-coupon'):(fd.get(name+'_existing')||null);if(f[3]===true&&!value)throw new Error(f[1]+' is required.')}else value=fd.get(name);if(type==='number')value=value===''?null:Number(value);if(type==='datetime')value=value?new Date(value).toISOString():null;if(typeof value==='string')value=value.trim();if(value===''&&!f[3])value=null;if(f[3]===true&&(value===null||value===''))throw new Error(f[1]+' is required.');payload[name]=value}
  const key=cfg.key||(cfg.mode==='settings'?'setting_key':'id'),editing=String(fd.get('_key')||'');
  let q;
  if(cfg.mode==='singleton'){payload.id=true;q=db.from(cfg.table).update(payload).eq('id',true)}
@@ -97,7 +99,7 @@ async function editCrudRecord(id,key){
  editingRecord=String(key);await render(id);
  const form=$('#crudForm');if(!form)return;
  form.elements._key.value=String(key);
- for(const [name,,type] of cfg.fields){const el=form.elements[name];if(!el)continue;const value=r.data[name];if(type==='boolean')el.checked=value===true;else if(type==='datetime'&&value){const d=new Date(value);el.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}else el.value=value??''}
+ for(const [name,,type] of cfg.fields){const el=form.elements[name];if(!el)continue;const value=r.data[name];if(type==='boolean')el.checked=value===true;else if(type==='image'){form.elements[name+'_existing'].value=value||'';const preview=el.parentElement.querySelector('img');if(value&&!preview)el.insertAdjacentHTML('afterend','<img class="crud-image-preview" src="'+esc(value)+'" alt="Current image">');else if(value&&preview)preview.src=value;}else if(type==='datetime'&&value){const d=new Date(value);el.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}else el.value=value??''}
  $('#crudHeading').textContent='Edit record';
 }
 
