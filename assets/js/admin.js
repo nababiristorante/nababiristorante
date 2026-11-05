@@ -14,6 +14,13 @@ const STAFF_QR_IMAGE =
 
 const $ = s => document.querySelector(s);
 
+// Register login immediately so later optional-module errors cannot disable it.
+let loginInProgress = false;
+const earlyLoginForm = $('#loginForm');
+if (earlyLoginForm) {
+  earlyLoginForm.addEventListener('submit', signIn);
+}
+
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;',
   '<':'&lt;',
@@ -383,29 +390,36 @@ async function saveRecoveredPassword() {
 
 async function signIn(e) {
   e.preventDefault();
+  if (loginInProgress) return;
+  loginInProgress = true;
 
   const btn = $('#loginBtn');
-  const email = $('#email')?.value.trim();
-  const password = $('#password')?.value;
-
-  showLoginMessage('');
-
-  if (!window.supabase ||
-      !cfg.SUPABASE_URL ||
-      !cfg.SUPABASE_ANON_KEY) {
-    showLoginMessage('Configurazione Supabase mancante.');
-    return;
-  }
-
-  if (!email || !password) {
-    showLoginMessage('Inserisci email e password.');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Accesso in corso…';
 
   try {
+    const email = String($('#email')?.value || '').trim();
+    const password = String($('#password')?.value || '');
+
+    showLoginMessage('');
+
+    if (!window.supabase ||
+        !cfg.SUPABASE_URL ||
+        !cfg.SUPABASE_ANON_KEY) {
+      throw new Error('Configurazione Supabase mancante. Ricarica la pagina e riprova.');
+    }
+
+    if (!email || !password) {
+      throw new Error('Inserisci email e password.');
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error('Inserisci un indirizzo email valido.');
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Accesso in corso…';
+    }
+
     db = window.supabase.createClient(
       cfg.SUPABASE_URL,
       cfg.SUPABASE_ANON_KEY
@@ -417,6 +431,7 @@ async function signIn(e) {
     });
 
     if (error) throw error;
+    if (!data?.user) throw new Error('Supabase non ha restituito un account utente.');
 
     await verifyAdmin(data.user);
     openApp(data.user.email);
@@ -430,11 +445,14 @@ async function signIn(e) {
       await db?.auth.signOut();
     } catch (_) {}
 
-    showLoginMessage(err.message || 'Accesso non riuscito.');
+    showLoginMessage(err?.message || 'Accesso non riuscito.');
 
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Accedi';
+    loginInProgress = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Accedi';
+    }
   }
 }
 
@@ -4841,7 +4859,7 @@ if (db) {
 
 /* EVENT LISTENERS */
 
-$('#loginForm').addEventListener('submit', signIn);
+// Login submit listener is registered at startup above.
 
 $('#sideNav').addEventListener('click', e => {
   const button = e.target.closest('[data-page]');
