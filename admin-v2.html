@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1712">
+  <meta name="description" content="Nababi Ristorante secure administration">
+  <title>NABABI RISTORANTE — Admin</title>
+  <link rel="stylesheet" href="assets/css/admin-v2.css?v=1">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
+  <script defer src="assets/js/admin-v2.js?v=1"></script>
+</head>
+<body>
+  <section id="loginView" class="login-wrap">
+    <form id="loginForm" class="login-card">
+      <div class="crown">♛</div><p class="brand">NABABI <span>RISTORANTE</span></p>
+      <p class="eyebrow" data-i18n="reserved">AREA RISERVATA</p>
+      <h1 data-i18n="welcome">Admin access</h1>
+      <label for="email" data-i18n="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password" data-i18n="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button id="loginButton" class="gold-button" type="submit" data-i18n="login">Accedi</button>
+      <button id="forgotButton" class="text-button" type="button" data-i18n="forgot">Password dimenticata?</button>
+      <p id="loginMessage" class="message" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <div id="appView" class="app-shell" hidden>
+    <aside id="sidebar" class="sidebar">
+      <div class="side-brand"><b>♛ NABABI</b><small>RISTORANTE</small></div>
+      <nav id="navigation" aria-label="Admin navigation"></nav>
+      <button id="logoutButton" class="logout-button" data-i18n="logout">Esci</button>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <button id="menuButton" class="menu-button" aria-label="Open menu">☰</button>
+        <div><p class="eyebrow">NABABI RISTORANTE</p><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions">
+          <select id="languageSelect" aria-label="Language">
+            <option value="it">IT</option><option value="en">EN</option><option value="bn">বাংলা</option>
+          </select>
+          <span id="userLabel" class="user-label"></span>
+        </div>
+      </header>
+      <div id="notice" class="notice" role="status" aria-live="polite"></div>
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+</body>
+</html>
