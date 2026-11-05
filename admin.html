@@ -1,21 +1,22 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080b0b"><title>Nababi Ristorante | Admin</title>
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
-<script src="assets/js/config.js?v=20261103-coupon-qr"></script><script defer src="assets/js/admin.js?v=20261106-login-handler-early-2"></script>
-<style>.logo-placement-options{display:grid;gap:12px;margin-top:14px}.logo-placement-options label{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid rgba(216,183,106,.25);border-radius:10px;background:rgba(16,45,36,.25)}.logo-placement-options input{width:18px;height:18px;accent-color:#d8b76a}.top-brand{display:flex;align-items:center;gap:8px}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080b0b">
+<title>Nababi Ristorante | Area riservata</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#080b0b;color:#f4efe4;font-family:Arial,Helvetica,sans-serif}.panel{width:min(100%,460px);padding:38px 28px;text-align:center;background:#102d24;border:1px solid rgba(216,183,106,.35);border-radius:18px;box-shadow:0 20px 70px #0008}.mark{font-size:34px;color:#d8b76a}.brand{margin:8px 0 28px;font-size:23px;letter-spacing:2px}.brand small{display:block;font-size:10px;letter-spacing:4px;color:#d8b76a;margin-top:5px}.eyebrow{color:#d8b76a;font-size:11px;letter-spacing:3px}h1{font-size:25px;margin:12px 0}p{color:#d5d2c9;line-height:1.7}.link{display:inline-block;margin-top:18px;padding:12px 22px;border-radius:8px;background:#d8b76a;color:#111;text-decoration:none;font-weight:bold}
+</style>
 </head>
-<body class="admin-body">
-<div id="loginScreen" class="login-screen"><form id="loginForm" class="login-card"><div class="brand-mark">♛ <span>Nababi<small>RISTORANTE</small></span></div><p class="eyebrow">AREA RISERVATA</p><h1>Admin Login</h1><div id="loginFields"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="gold-btn full" id="loginBtn" type="submit">Accedi</button><button class="muted-link" id="forgotPasswordBtn" type="button" style="margin-top:14px;background:none;border:0;cursor:pointer">Password dimenticata? Recuperala</button></div><div id="passwordResetFields" hidden><p class="help">Inserisci una nuova password per il tuo account.</p><label>Nuova password<input id="newPassword" type="password" autocomplete="new-password" minlength="8"></label><label>Conferma password<input id="confirmPassword" type="password" autocomplete="new-password" minlength="8"></label><button class="gold-btn full" id="saveNewPasswordBtn" type="button">Salva nuova password</button></div><p id="loginMessage" class="notice" aria-live="polite"></p><a href="index.html" class="muted-link">← Torna al sito</a></form></div>
-<div id="adminApp" class="admin-shell" hidden>
-<aside class="sidebar" id="sidebar"><div class="side-brand"><div class="crown">♛</div><div>Nababi<small>Ristorante</small></div></div><div class="side-label">GESTIONE</div><nav id="sideNav"></nav><div class="side-footer">Nababi Ristorante<br><small>Admin Panel • Mobile ready</small></div></aside>
-<div class="main-wrap"><header class="topbar"><button id="menuToggle" class="icon-btn" aria-label="Apri menu">☰</button><div class="top-brand"><img id="adminHeaderLogo" alt="Nababi Ristorante" hidden style="max-width:145px;max-height:42px;object-fit:contain;vertical-align:middle"><span id="adminHeaderBrandFallback">♛ Nababi</span> <span>Admin</span></div><div class="top-actions"><span id="adminEmail" class="admin-email"></span><button id="logoutBtn" class="outline-btn">Esci</button></div></header>
-<main class="content"><div class="page-heading"><div><p class="eyebrow">NABABI RISTORANTE</p><h1 id="pageTitle">Dashboard</h1></div><span class="live-pill">● ONLINE</span></div><section id="pageContent"></section></main>
-<footer class="admin-footer">Good Food <b>•</b> Good Mood <b>•</b> Nababi Ristorante</footer></div>
-<nav class="mobile-nav" id="mobileNav"><button data-page="dashboard">⌂<small>Home</small></button><button data-page="bookings">▦<small>Prenotazioni</small></button><button data-page="coupons">◇<small>Coupon</small></button><button id="mobileMore">•••<small>Altro</small></button></nav>
-</div>
-</body></html>
+<body>
+<main class="panel">
+<div class="mark">♛</div>
+<div class="brand">NABABI<small>RISTORANTE</small></div>
+<div class="eyebrow">AREA RISERVATA</div>
+<h1>Admin Panel temporaneamente non disponibile</h1>
+<p>Stiamo preparando una nuova versione dell’area amministrativa. Il pannello sarà nuovamente disponibile dopo il completamento degli aggiornamenti.</p>
+<a class="link" href="index.html">Torna al sito</a>
+</main>
+</body>
+</html>
