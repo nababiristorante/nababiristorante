@@ -1,0 +1,50 @@
+/* Screenshot-guided NABABI homepage styling. Existing sections, data hooks and forms are preserved. */
+:root{--ref-green:#063b20;--ref-deep:#032714;--ref-gold:#f4c536;--ref-cream:#fff0cf}
+html{scroll-behavior:smooth}
+body.site-body{background:#fff0cf!important;color:#12331d!important;font-family:Georgia,'Times New Roman',serif!important}
+.nababi-contact-bar{justify-content:space-between!important;padding:7px clamp(16px,4.5vw,70px)!important;background:#032b17!important;color:#fff4d7!important;font:bold 14px Georgia,serif!important;border-bottom:1px solid #d9b22d}
+.fusion-reference-header{position:relative!important;min-height:84px!important;padding:9px clamp(18px,5vw,78px)!important;background:#032b17!important;color:#fff!important;border-bottom:2px solid #d9b22d!important;box-shadow:0 4px 18px #0005!important}
+.fusion-main-logo,.site-logo-fallback{color:#f5ca43!important}
+.site-logo-crown,.site-logo-words strong{color:#f5ca43!important}
+.fusion-reference-header nav a{color:#fff7df!important;font:bold 17px Georgia,serif!important}
+.fusion-reference-header nav a:hover{color:#f5ca43!important}
+.fusion-language-pills button,.fusion-language-select select{background:#064322!important;color:#fff!important;border:1px solid #b58a22!important;border-radius:20px!important}
+.fusion-book-top,.gold-btn,.fusion-hero-cta{background:linear-gradient(180deg,#ffe16b,#e9ad17)!important;color:#171407!important;border:1px solid #ffdf67!important;border-radius:28px!important;font-weight:800!important;box-shadow:0 4px 12px #0003!important}
+.fusion-reference-hero{position:relative!important;min-height:490px!important;padding:55px clamp(22px,7vw,110px)!important;overflow:hidden!important;background:linear-gradient(90deg,rgba(0,25,12,.92),rgba(0,25,12,.38)),url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90') center/cover!important;color:#fff!important}
+.fusion-reference-hero .fusion-hero-copy{position:relative;z-index:2;max-width:650px!important}
+.fusion-reference-hero .eyebrow{color:#ffe078!important;font:italic 32px Georgia,serif!important;letter-spacing:0!important}
+.fusion-reference-hero h1{font:bold clamp(48px,7vw,88px) Georgia,serif!important;text-transform:uppercase!important;line-height:.98!important;color:#f6ca42!important;text-shadow:0 3px 8px #000!important}
+.fusion-reference-hero h2,.fusion-reference-hero .fusion-hero-intro{color:#fff8e9!important;font:italic 22px/1.35 Georgia,serif!important}
+.fusion-hero-dish{border:3px solid #eac34a!important;box-shadow:0 15px 40px #0009!important}
+.fusion-hero-flags,.fusion-hero-photo-credit{display:none!important}
+.nababi-benefits{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;padding:12px 3%!important;background:#063c20!important;color:#fff7dc!important;border-top:3px solid #d8ad2f!important;border-bottom:3px solid #d8ad2f!important}
+.nababi-benefits>div{display:flex!important;justify-content:center!important;align-items:center!important;gap:12px!important;padding:6px 12px!important;border-right:1px solid #e5c44b!important}
+.nababi-benefits>div:last-child{border:0!important}
+.nababi-benefits>div>span{font-size:34px!important;color:#f4ca3f!important}
+.nababi-benefits p{margin:0!important;font: bold 16px Georgia,serif!important}
+.nababi-benefits small{display:block!important;color:#fff4d8!important;font:italic 14px Georgia,serif!important}
+.fusion-cuisine{padding:22px clamp(18px,3vw,45px) 34px!important;background:linear-gradient(180deg,#fff1d5,#f4dfb2)!important}
+.fusion-section-title h2{color:#063a20!important;font:bold clamp(24px,3vw,40px) Georgia,serif!important}
+.fusion-section-title span{background:#063a20!important}
+.fusion-cuisine-grid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:16px!important;margin-top:20px!important}
+.fusion-cuisine-item{position:relative!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;min-width:0!important;padding:0 0 10px!important;border:2px solid #d4a934!important;border-radius:13px!important;background:#063a20!important;color:#fff!important;text-align:center!important;box-shadow:0 7px 12px #3b260c55!important;text-decoration:none!important}
+.fusion-cuisine-item img{width:100%!important;height:132px!important;object-fit:cover!important}
+.fusion-cuisine-item strong{padding:3px 5px 0!important;color:#fff!important;font:bold 20px Georgia,serif!important}
+.fusion-cuisine-item small{color:#fff0c7!important;font:italic 13px Georgia,serif!important}
+.fusion-feature-split,.fusion-quick-panels,.site-section{background:#fff0d0!important}
+.fusion-footer{background:#04351c!important;color:#fff1c9!important;border-top:4px solid #d6aa2e!important}
+.fusion-footer h3,.fusion-footer strong{color:#f4c843!important}
+@media(max-width:760px){
+ .nababi-contact-bar{justify-content:center!important;font-size:11px!important}
+ .fusion-reference-header{padding:10px 14px!important}
+ .fusion-reference-hero{min-height:520px!important;padding:36px 20px!important;background-position:62% center!important}
+ .fusion-reference-hero .fusion-hero-copy{max-width:90%!important}
+ .fusion-reference-hero h1{font-size:clamp(40px,12vw,62px)!important}
+ .fusion-reference-hero h2,.fusion-reference-hero .fusion-hero-intro{font-size:17px!important}
+ .fusion-hero-food{opacity:.52!important}
+ .nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .nababi-benefits>div:nth-child(2){border-right:0!important}
+ .nababi-benefits>div:nth-child(-n+2){border-bottom:1px solid #e5c44b!important}
+ .fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .fusion-cuisine-item img{height:125px!important}
+}
