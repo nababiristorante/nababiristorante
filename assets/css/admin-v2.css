@@ -30,3 +30,18 @@
 @media(max-width:900px){.attendance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.attendance-hero{padding:20px}.attendance-hero h2{font-size:22px}.attendance-filter{display:grid;grid-template-columns:1fr 1fr}.attendance-filter .field{min-width:0}.attendance-filter .gold-button,.attendance-filter .secondary-button{width:100%;margin:0}.attendance-section-head{display:block}.attendance-actions{margin-top:12px}.attendance-actions button{flex:1}}
 @media print{body{background:#fff!important;color:#111!important}.sidebar,.topbar,.notice,.attendance-filter-panel,.attendance-actions,.menu-button{display:none!important}.main-area{margin:0!important}.content{padding:0!important;max-width:none!important}.panel,.attendance-hero,.stat{background:#fff!important;color:#111!important;border:1px solid #bbb!important;box-shadow:none!important;break-inside:avoid}.attendance-hero h2,.panel h2,.stat strong,.data-table th,.attendance-chip b{color:#111!important}.attendance-hero p,.attendance-hero .eyebrow,.help,.attendance-footnote,.stat small{color:#444!important}.data-table th,.data-table td{border-bottom:1px solid #ccc!important}.attendance-status,.attendance-chip{background:#fff!important;color:#111!important;border:1px solid #bbb!important}}
+
+
+/* Individual Staff Attendance report */
+.attendance-person-button{display:inline-flex;align-items:center;gap:9px;min-width:150px;padding:0;border:0;background:transparent;color:var(--ink);text-align:left}
+.attendance-person-button:hover b,.attendance-person-button:focus-visible b{color:var(--gold2);text-decoration:underline}
+.attendance-person-button:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:6px}
+.attendance-person-report{scroll-margin-top:115px}
+.attendance-person-report .attendance-stats{margin:16px 0}
+@media print{
+ body.attendance-person-print .content>.attendance-hero,
+ body.attendance-person-print .content>.attendance-filter-panel,
+ body.attendance-person-print .content>.stats,
+ body.attendance-person-print .content>.panel:not(.attendance-person-report){display:none!important}
+ body.attendance-person-print .attendance-person-report{display:block!important;margin:0!important}
+}
