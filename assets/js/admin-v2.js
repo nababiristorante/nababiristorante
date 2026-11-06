@@ -100,8 +100,9 @@ function displayValue(v){if(v===null||v===undefined||v==='')return '—';if(type
 function breakingNewsMediaCell(row){
  const image=row.image_url?'<div class="news-media-item"><span class="news-media-type">IMAGE</span><img class="news-media-thumb" src="'+esc(row.image_url)+'" alt="Breaking News image" loading="lazy"></div>':'';
  const videoUrl=String(row.youtube_url||'').trim();
- const match=videoUrl.match(/(?:youtu\\.be\\/|youtube\\.com\\/(?:watch\\?v=|embed\\/|shorts\\/))([A-Za-z0-9_-]{11})/i);
- const video=videoUrl?'<div class="news-media-item"><span class="news-media-type video">VIDEO</span>'+(match?'<a href="https://www.youtube.com/watch?v='+match[1]+'" target="_blank" rel="noopener noreferrer"><img class="news-media-thumb" src="https://img.youtube.com/vi/'+match[1]+'/hqdefault.jpg" alt="YouTube video thumbnail" loading="lazy"></a>':'<span class="news-video-link">Video URL saved</span>')+'<a class="news-media-open" href="'+esc(videoUrl)+'" target="_blank" rel="noopener noreferrer">Open video ↗</a></div>':'';
+ let videoId='';
+ try{const u=new URL(videoUrl);videoId=u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop()||'';if(!/^[A-Za-z0-9_-]{11}$/.test(videoId))videoId=''}catch(_){}
+ const video=videoUrl?'<div class="news-media-item"><span class="news-media-type video">VIDEO</span>'+(videoId?'<a href="https://www.youtube.com/watch?v='+videoId+'" target="_blank" rel="noopener noreferrer"><img class="news-media-thumb" src="https://img.youtube.com/vi/'+videoId+'/hqdefault.jpg" alt="YouTube video thumbnail" loading="lazy"></a>':'<span class="news-video-link">Video URL saved</span>')+'<a class="news-media-open" href="'+esc(videoUrl)+'" target="_blank" rel="noopener noreferrer">Open video ↗</a></div>':'';
  return image||video?'<div class="news-media-preview">'+image+video+'</div>':'<span class="news-media-none">No media</span>';
 }
 
