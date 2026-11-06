@@ -45,3 +45,12 @@
  body.attendance-person-print .content>.panel:not(.attendance-person-report){display:none!important}
  body.attendance-person-print .attendance-person-report{display:block!important;margin:0!important}
 }
+
+
+/* Staff QR Code manager */
+.staff-qr-manager{margin-top:16px}
+.staff-qr-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.staff-qr-actions button{width:auto}
+.staff-qr-preview{display:grid;place-items:center;width:min(100%,340px);min-height:300px;margin:22px auto 10px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.staff-qr-preview canvas,.staff-qr-preview img{display:block;max-width:100%;height:auto}
+@media(max-width:560px){.staff-qr-actions{display:grid;grid-template-columns:1fr}.staff-qr-actions button{width:100%}.staff-qr-preview{min-height:250px}}
