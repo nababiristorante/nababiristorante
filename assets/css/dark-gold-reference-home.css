@@ -1,0 +1,122 @@
+/* NABABI dark-gold reference homepage — preserves existing content hooks */
+:root{--nr-bg:#05090b;--nr-panel:#071116;--nr-gold:#e9bd55;--nr-gold2:#ffd978;--nr-text:#f7f0df;--nr-muted:#c9c2b2}
+html{scroll-behavior:smooth;scroll-padding-top:82px}
+body.site-body{display:flex!important;flex-direction:column!important;margin:0!important;background:var(--nr-bg)!important;color:var(--nr-text)!important;font-family:Arial, sans-serif!important}
+body.site-body> *{box-sizing:border-box}
+.nababi-contact-bar{order:0!important;display:none!important}
+.fusion-reference-header{order:1!important;position:relative!important;top:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;min-height:62px!important;padding:7px clamp(14px,4vw,56px)!important;background:#030608!important;border-bottom:1px solid #8c6b2c!important;box-shadow:0 5px 22px #0009!important}
+.fusion-header-top{display:contents!important}
+.fusion-main-logo{order:0!important}
+.fusion-main-logo .site-logo-crown{font-size:38px!important;color:var(--nr-gold)!important}
+.fusion-main-logo .site-logo-words strong{font:700 27px Georgia,serif!important;color:var(--nr-gold2)!important;letter-spacing:0!important}
+.fusion-main-logo .site-logo-words small{font:14px Georgia,serif!important;color:var(--nr-gold2)!important;letter-spacing:1px!important}
+.fusion-reference-header nav{display:flex!important;align-items:center!important;justify-content:center!important;gap:clamp(10px,2vw,26px)!important;margin:0!important}
+.fusion-reference-header nav a{padding:9px 0!important;color:#fff!important;font:600 12px Arial,sans-serif!important;letter-spacing:0!important}
+.fusion-reference-header nav a[data-nav-home]{color:var(--nr-gold2)!important;border-bottom:2px solid var(--nr-gold)!important}
+.fusion-header-actions{position:static!important;display:flex!important;align-items:center!important;gap:12px!important}
+.fusion-header-phone{display:inline-flex!important;align-items:center!important;gap:7px!important;color:#fff!important;text-decoration:none!important;font-size:12px!important}
+.fusion-header-phone svg{width:17px!important;fill:var(--nr-gold)!important}
+.fusion-book-top{display:none!important}
+.fusion-language-select{position:static!important;display:flex!important}
+.fusion-language-select select{background:#11191d!important;color:#fff!important;border:1px solid #6f572c!important;border-radius:18px!important;padding:6px 9px!important;font-size:11px!important}
+.fusion-language-pills{display:none!important}
+.fusion-admin-link{display:none!important}
+.fusion-mobile-toggle{display:none!important}
+.fusion-reference-hero{order:2!important;position:relative!important;isolation:isolate!important;display:flex!important;align-items:center!important;min-height:330px!important;height:330px!important;padding:32px clamp(22px,8vw,115px)!important;overflow:hidden!important;background:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.72) 40%,rgba(0,0,0,.05) 100%),url('https://images.unsplash.com/photo-1563379091339-03246963d96a?auto=format&fit=crop&w=2000&q=90') center 54%/cover!important;border-bottom:1px solid #a47c32!important}
+.fusion-reference-hero:before{content:"";position:absolute;inset:8px;border:1px solid #d9b45c66;pointer-events:none;z-index:0}
+.fusion-hero-copy{position:relative!important;z-index:3!important;max-width:540px!important}
+.fusion-reference-hero .eyebrow{margin:0 0 5px!important;color:var(--nr-gold2)!important;font:12px Arial,sans-serif!important;letter-spacing:4px!important;text-transform:uppercase!important}
+.fusion-reference-hero h1{margin:4px 0 8px!important;color:var(--nr-gold2)!important;font:700 clamp(42px,5vw,68px)/1 Georgia,serif!important;letter-spacing:0!important;text-transform:none!important;text-shadow:0 3px 15px #000!important}
+.fusion-reference-hero h2{margin:0 0 8px!important;color:#f8df9b!important;font:italic clamp(17px,2vw,24px) Georgia,serif!important}
+.fusion-reference-hero .fusion-hero-intro{max-width:430px!important;color:#fff!important;font:13px/1.55 Arial,sans-serif!important}
+.fusion-hero-actions{gap:10px!important}
+.fusion-reference-hero .fusion-hero-cta{padding:11px 19px!important;border:1px solid var(--nr-gold)!important;border-radius:22px!important;background:linear-gradient(120deg,#ffe08a,#d7a535)!important;color:#160f05!important;font:700 12px Arial,sans-serif!important;box-shadow:none!important}
+.fusion-reference-hero .fusion-hero-cta.secondary{background:#05090be8!important;color:#fff!important}
+.fusion-hero-food{display:none!important}
+.fusion-hero-flags,.fusion-hero-photo-credit{display:none!important}
+.nababi-benefits{order:3!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;padding:15px 4%!important;background:#050e13!important;border-bottom:1px solid #7c602d!important}
+.nababi-benefits>div{justify-content:center!important;gap:10px!important;border-right:1px solid #80632d!important}
+.nababi-benefits>div>span{color:var(--nr-gold)!important;font-size:27px!important}
+.nababi-benefits strong{color:#f7df9f!important;font:700 13px Georgia,serif!important}
+.nababi-benefits small{color:#c7c0b0!important;font:11px Arial,sans-serif!important}
+.fusion-cuisine{order:4!important;padding:25px clamp(16px,4vw,58px)!important;background:#05090b!important;border-bottom:1px solid #84642f!important}
+.fusion-section-title{justify-content:flex-start!important;margin-bottom:14px!important}
+.fusion-section-title h2{color:var(--nr-gold2)!important;font:700 clamp(24px,3vw,34px) Georgia,serif!important;text-align:left!important}
+.fusion-section-title span{display:none!important}
+.fusion-cuisine-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important;margin:0!important}
+.fusion-cuisine-item{min-height:145px!important;border:1px solid #80622f!important;border-radius:9px!important;background:#091319!important;box-shadow:0 5px 18px #0008!important;text-align:left!important}
+.fusion-cuisine-item img{height:100px!important;flex-basis:100px!important;object-fit:cover!important}
+.fusion-cuisine-item strong{padding:6px 9px 0!important;color:#fff!important;font:700 14px Georgia,serif!important}
+.fusion-cuisine-item small{padding:2px 9px 7px!important;color:#d1c5a9!important;font:10px Arial,sans-serif!important}
+.fusion-feature-split{order:8!important;display:grid!important;grid-template-columns:1fr 1fr!important;background:#050d12!important;border-top:1px solid #84642f!important;border-bottom:1px solid #84642f!important}
+.fusion-offer-panel,.fusion-about-teaser,.fusion-quick-card{background:#07131a!important;color:var(--nr-text)!important;border-color:#775b2c!important}
+.fusion-about-teaser h2,.fusion-quick-card h3,.fusion-offer-copy h2{color:var(--nr-gold2)!important;font-family:Georgia,serif!important}
+.fusion-about-teaser p,.fusion-quick-card p,.fusion-offer-copy p{color:#e0d8c8!important}
+.fusion-quick-panels{order:9!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;background:#050d12!important;border-bottom:1px solid #84642f!important}
+.fusion-quick-card{min-height:220px!important;border-right:1px solid #775b2c!important}
+.fusion-quick-icon{color:var(--nr-gold)!important}
+.fusion-quick-card h3{font-size:20px!important}
+#gallery{order:5!important}
+#reservation{order:6!important}
+#events{order:7!important}
+#about{order:10!important}
+#reviews{order:11!important}
+#contact{order:12!important}
+#menu{order:13!important}
+#liveNewsSection{order:14!important}
+#faq{order:15!important}
+.site-body>section.site-section{padding:38px clamp(16px,5vw,70px)!important;background:#05090b!important;color:var(--nr-text)!important;border-bottom:1px solid #775b2c!important}
+.site-section h2,.contact-heading h2{color:var(--nr-gold2)!important;font:700 clamp(25px,3vw,36px) Georgia,serif!important}
+.site-section>p{color:#d5cdbd!important}
+.site-cards{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important}
+.site-card,.news-card{background:#09151b!important;border:1px solid #775b2c!important;border-radius:10px!important;color:#f7f0df!important;box-shadow:0 8px 20px #0007!important}
+.site-card h3,.site-card h4,.news-card h3{color:var(--nr-gold2)!important}
+.site-card p,.news-card p{color:#e0d8c8!important}
+.site-card img,.news-card img{height:160px!important;object-fit:cover!important}
+.site-price,.review-stars{color:var(--nr-gold)!important}
+#reservation .site-form,#contact .site-form,#reviews>.site-card{padding:20px!important;background:#08141a!important;border:1px solid #775b2c!important;border-radius:12px!important;color:#fff!important}
+.site-form label{color:#f2d78f!important}
+.site-form input,.site-form select,.site-form textarea{background:#111d22!important;color:#fff!important;border:1px solid #80632f!important;border-radius:7px!important}
+.floor-room{background:#09151b!important;border-color:#80632f!important}
+.floor-room h4{color:var(--nr-gold2)!important}
+.floor-table{background:#0b3324!important;border-color:#c19a4a!important}
+.floor-table.is-selected{background:#17623e!important}
+.contact-info-card,.contact-hours-panel,.faq-item{background:#09151b!important;border:1px solid #775b2c!important;color:#fff!important}
+.contact-info-card h3,.contact-hours-heading h3{color:var(--nr-gold2)!important}
+.contact-info-card p,.contact-info-card a,.contact-hours-panel p{color:#e1d6bd!important}
+.site-footer{order:16!important;background:#030709!important;border-top:2px solid #8c6b2c!important;color:#eee2c7!important}
+.fusion-footer-main{background:#030709!important}
+.fusion-footer-bottom{background:#020507!important}
+.gold-btn,.google-review-btn{background:linear-gradient(120deg,#ffe08a,#d7a535)!important;color:#1c1406!important;border:1px solid #e9bd55!important}
+@media(max-width:760px){
+ .fusion-reference-header{min-height:62px!important;padding:7px 12px!important;flex-wrap:nowrap!important}
+ .fusion-main-logo .site-logo-crown{font-size:30px!important}
+ .fusion-main-logo .site-logo-words strong{font-size:22px!important}
+ .fusion-main-logo .site-logo-words small{font-size:10px!important}
+ .fusion-header-actions{display:none!important}
+ .fusion-mobile-toggle{display:inline-flex!important;position:static!important;margin-left:auto!important;width:38px!important;height:36px!important;border:1px solid #987632!important;border-radius:6px!important;background:#10181c!important;color:var(--nr-gold2)!important}
+ .fusion-reference-header nav{display:none!important;position:absolute!important;top:100%!important;left:0!important;right:0!important;z-index:50!important;flex-direction:column!important;align-items:stretch!important;gap:0!important;padding:8px 14px!important;background:#030709!important;border-top:1px solid #8c6b2c!important}
+ .fusion-reference-header nav.is-open{display:flex!important}
+ .fusion-reference-header nav a{padding:11px 8px!important;border-bottom:1px solid #ffffff18!important}
+ .fusion-reference-hero{height:auto!important;min-height:390px!important;padding:34px 20px!important;background-position:60% center!important}
+ .fusion-reference-hero h1{font-size:clamp(38px,11vw,54px)!important}
+ .fusion-reference-hero .fusion-hero-intro{max-width:90%!important}
+ .nababi-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:10px 7px!important}
+ .nababi-benefits>div{justify-content:flex-start!important;padding:8px 6px!important;border-right:0!important}
+ .nababi-benefits>div:nth-child(odd){border-right:1px solid #80632d!important}
+ .nababi-benefits strong{font-size:11px!important}
+ .nababi-benefits small{font-size:10px!important}
+ .fusion-cuisine-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ .fusion-cuisine-item{min-height:145px!important}
+ .fusion-cuisine-item img{height:105px!important;flex-basis:105px!important}
+ .fusion-feature-split,.fusion-quick-panels{grid-template-columns:1fr!important}
+ .fusion-about-teaser{grid-template-columns:1fr 34%!important}
+ .fusion-about-teaser img{width:100%!important;height:100%!important;object-fit:cover!important}
+ .site-body>section.site-section{padding:30px 13px!important}
+ .site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ .site-card img,.news-card img{height:125px!important}
+ .site-form{grid-template-columns:1fr!important}
+ .site-form .wide{grid-column:1!important}
+ .fusion-footer-main{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:420px){.fusion-cuisine-grid,.site-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}.fusion-about-teaser{grid-template-columns:1fr!important}.fusion-about-teaser img{display:none!important}}
