@@ -39,6 +39,11 @@
   const actionButton = document.getElementById("actionButton");
   const actionMessage =
     document.getElementById("actionMessage");
+  const successCard = document.getElementById("checkInSuccessCard");
+  const successPhoto = document.getElementById("checkInSuccessPhoto");
+  const successLogo = document.getElementById("checkInSuccessLogo");
+  const successName = document.getElementById("checkInSuccessName");
+  const successTime = document.getElementById("checkInSuccessTime");
 
   const backFromPin = document.getElementById("backFromPin");
   const backToStaff = document.getElementById("backToStaff");
@@ -280,6 +285,7 @@
       pinInput.value = "";
 
       showView("action");
+      if (successCard) successCard.hidden = true;
       showMessage(actionMessage, "");
 
       if (data.next_action === "check_in") {
@@ -364,24 +370,48 @@
       }
 
       const eventName =
-        data.event === "check_in" ? "CHECK-IN" : "CHECK-OUT";
+        data.event === "check_in" ? "চেক-ইন" : "চেক-আউট";
 
       pendingPin = null;
 
       actionButton.classList.add("hidden");
 
-      actionTitle.textContent = "Success!";
-      actionDescription.textContent =
-        "Nababi Ristorante · Staff Attendance";
+      actionTitle.textContent = data.event === "check_in" ? "অভিনন্দন!" : "ধন্যবাদ!";
+      actionDescription.textContent = "NABABI RISTORANTE · স্টাফ উপস্থিতি";
 
-      showMessage(
-        actionMessage,
-        eventName + " recorded successfully for " +
-        (data.staff_name || selectedStaff.full_name) + "."
-      );
-
-      if (data.event === "check_in") {
+      if (data.event === "check_in" && successCard) {
+        const name = data.staff_name || selectedStaff.full_name || "প্রিয় সহকর্মী";
+        const rawTime = data.check_in || data.recorded_at || data.punched_at || data.created_at;
+        const parsedTime = rawTime ? new Date(rawTime) : new Date();
+        const shownTime = Number.isNaN(parsedTime.getTime()) ? new Date() : parsedTime;
+        if (successName) successName.textContent = name;
+        if (successTime) successTime.textContent = shownTime.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" });
+        if (successPhoto) {
+          successPhoto.replaceChildren();
+          const photoUrl = safePhotoUrl(selectedStaff.photo_url);
+          if (photoUrl) {
+            const img = document.createElement("img");
+            img.src = photoUrl; img.alt = name;
+            successPhoto.appendChild(img);
+          } else {
+            successPhoto.textContent = getInitials(name);
+          }
+        }
+        if (successLogo) {
+          successLogo.replaceChildren();
+          if (staffBrandLogo && !staffBrandLogo.classList.contains("hidden") && staffBrandLogo.src) {
+            const logo = document.createElement("img");
+            logo.src = staffBrandLogo.src; logo.alt = "NABABI RISTORANTE";
+            successLogo.appendChild(logo);
+          } else {
+            successLogo.textContent = "♛ NABABI RISTORANTE";
+          }
+        }
+        successCard.hidden = false;
+        showMessage(actionMessage, "");
         await showActiveStaffNotices();
+      } else {
+        showMessage(actionMessage, "আপনার " + eventName + " সফলভাবে সংরক্ষণ হয়েছে। ধন্যবাদ।");
       }
 
     } catch (error) {
