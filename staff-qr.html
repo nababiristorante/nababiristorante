@@ -1,11 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="it">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102d24">
-  <title>Nababi Ristorante | Staff Attendance</title>
+  <title>NABABI RISTORANTE | স্টাফ উপস্থিতি</title>
 
   <style>
 :root{color-scheme:dark;--green:#0b211a;--green2:#12382b;--gold:#dfbf78;--cream:#f8f3e8}
@@ -57,7 +57,7 @@ button{font-family:inherit}
 .notice-close{padding:13px;border:0;background:#102d24;color:var(--cream)}
 @media(max-width:360px){body{padding-inline:10px}.staff-grid{gap:10px}.staff-card{min-height:146px;padding:14px 7px}.staff-photo{width:78px;height:78px}.brand{letter-spacing:1.8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
-</style>
+.checkin-success-card{margin-top:18px;padding:22px 16px;border:1px solid #dfbf78;border-radius:20px;background:linear-gradient(155deg,#173e2d,#0a2118);text-align:center;box-shadow:0 16px 42px #0005}.checkin-success-card[hidden]{display:none!important}.checkin-success-logo{min-height:30px;margin-bottom:12px;color:var(--gold);font-family:Georgia,serif;font-weight:800;letter-spacing:2px}.checkin-success-logo img{max-width:150px;max-height:55px;object-fit:contain}.checkin-salam{margin:4px 0 8px;color:#f4d992;font-size:21px;font-weight:800}.checkin-success-card h2{margin:8px 0;color:#f4d992;font-size:32px}.checkin-success-title{margin:0 0 16px;color:#fff;font-weight:750;font-size:17px}.checkin-success-photo{width:112px;height:112px;margin:0 auto 10px;display:grid;place-items:center;overflow:hidden;border:3px solid var(--gold);border-radius:50%;background:#214b37;color:var(--gold);font-size:32px;font-weight:800}.checkin-success-photo img{width:100%;height:100%;object-fit:cover}.checkin-success-card h3{margin:8px 0;color:#fff;font-size:19px}.checkin-time{display:inline-grid;gap:4px;margin:8px auto 15px;padding:10px 22px;border:1px solid #dfbf7866;border-radius:13px;background:#06170f;color:#e8d8b3}.checkin-time strong{color:#f4d992;font-size:25px}.checkin-thanks{color:#e7eee9;line-height:1.75;font-size:14px}.checkin-advice-title{margin-top:20px!important;color:#f4d992!important}.checkin-advice{margin:8px 0;padding:0 20px;color:#e7eee9;text-align:right;line-height:1.8;font-size:13px}.checkin-signoff{margin:18px 0 0;color:#f4d992;font-weight:800}</style>
 </head>
 
 <body>
@@ -69,32 +69,32 @@ button{font-family:inherit}
         <div class="logo-mark">N</div>
         <h1 class="brand">NABABI RISTORANTE</h1>
       </div>
-      <p class="subtitle" style="margin-top:6px">INDIAN FINE DINING · ROMA</p>
-      <p class="subtitle">STAFF ATTENDANCE</p>
+      <p class="subtitle" style="margin-top:6px">ইন্ডিয়ান ফাইন ডাইনিং · রোম</p>
+      <p class="subtitle">স্টাফ উপস্থিতি</p>
     </header>
 
     <section class="panel">
 
       <div id="staffView">
-        <h2>Seleziona il tuo profilo</h2>
+        <h2>আপনার প্রোফাইল নির্বাচন করুন</h2>
         <p class="description">
-          Select your photo and name to continue.
+          আপনার ছবি ও নাম নির্বাচন করে এগিয়ে যান।
         </p>
 
         <div id="loading" class="loading">
-          Loading staff...
+          স্টাফদের তথ্য লোড হচ্ছে...
         </div>
 
         <div id="staffGrid" class="staff-grid"></div>
       </div>
 
       <div id="pinView" class="hidden">
-        <h2>Verifica PIN</h2>
+        <h2>পিন যাচাই</h2>
         <div class="selected-profile"><div id="selectedStaffPhoto" class="staff-photo selected-photo"></div><p id="selectedStaffName" class="description"></p></div>
 
         <form id="pinForm">
           <label class="field-label" for="pin">
-            Inserisci il tuo PIN a 4 cifre
+            আপনার ৪ সংখ্যার পিন লিখুন
           </label>
 
           <input
@@ -113,7 +113,7 @@ button{font-family:inherit}
             class="primary-button"
             type="submit"
           >
-            VERIFICA PIN
+            পিন যাচাই করুন
           </button>
         </form>
 
@@ -124,7 +124,7 @@ button{font-family:inherit}
           class="secondary-button"
           type="button"
         >
-          Torna indietro
+          ফিরে যান
         </button>
       </div>
 
@@ -138,6 +138,18 @@ button{font-family:inherit}
           type="button"
         ></button>
 
+        <section id="checkInSuccessCard" class="checkin-success-card" hidden aria-live="polite">
+          <div id="checkInSuccessLogo" class="checkin-success-logo"></div>
+          <p class="checkin-salam">🌙 আসসালামু আলাইকুম</p><h2>🎉 অভিনন্দন!</h2>
+          <p class="checkin-success-title">আপনার চেক-ইন সফল হয়েছে</p>
+          <div id="checkInSuccessPhoto" class="checkin-success-photo"></div>
+          <h3 id="checkInSuccessName"></h3>
+          <div class="checkin-time"><span>আপনার চেক-ইন হয়েছে</span><strong id="checkInSuccessTime"></strong></div>
+          <div class="checkin-thanks">NABABI RISTORANTE পরিবারের সঙ্গে কাজ করার জন্য আপনাকে আন্তরিক ধন্যবাদ। আপনার সময়, পরিশ্রম ও আন্তরিকতা আমাদের কাছে অনেক মূল্যবান।</div>
+          <h3 class="checkin-advice-title">🌟 আপনার জন্য কিছু আন্তরিক পরামর্শ</h3>
+          <ul class="checkin-advice"><li>কাজ শেষে বাসায় ফেরার পথে সাবধানে চলাফেরা করবেন।</li><li>রাস্তা পার হওয়ার আগে চারপাশ ভালোভাবে দেখে নেবেন।</li><li>নিজের শরীর ও স্বাস্থ্যের যত্ন নেবেন।</li><li>সহকর্মীদের সম্মান করবেন এবং একে অপরকে সহযোগিতা করবেন।</li></ul>
+          <p class="checkin-signoff">আপনার দিনটি সুন্দর ও নিরাপদ হোক। ❤️</p>
+        </section>
         <div
           id="actionMessage"
           class="message"
@@ -150,7 +162,7 @@ button{font-family:inherit}
           class="secondary-button"
           type="button"
         >
-          Torna alla lista Staff
+          স্টাফ তালিকায় ফিরে যান
         </button>
       </div>
 
@@ -158,15 +170,15 @@ button{font-family:inherit}
 
     <div id="staffNoticeModal" class="notice-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="staffNoticeHeading">
       <section class="notice-modal">
-        <h2 id="staffNoticeHeading">Avvisi per lo staff · আজকের নির্দেশনা</h2>
+        <h2 id="staffNoticeHeading">স্টাফদের জন্য আজকের নির্দেশনা</h2>
         <div id="staffNoticeList"></div>
-        <button id="staffNoticeClose" class="notice-close" type="button">পড়েছি · Close</button>
+        <button id="staffNoticeClose" class="notice-close" type="button">পড়েছি · বন্ধ করুন</button>
       </section>
     </div>
 
     <p class="small">
       Nababi Ristorante · Roma<br>
-      Use your own staff profile and personal PIN.
+      নিজের প্রোফাইল ও ব্যক্তিগত পিন ব্যবহার করুন।
     </p>
 
   </main>
