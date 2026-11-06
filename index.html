@@ -1,131 +1,56 @@
 <!doctype html>
-<html lang="it">
+<html lang="bn">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071710">
-  <meta name="description" content="Nababi Ristorante — cucina bengalese nel cuore di Roma.">
-  <title>Nababi Ristorante | Roma</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{--green:#071710;--green2:#10291e;--green3:#183b2b;--gold:#d6b56d;--gold-light:#f0dca7;--cream:#f5f0e5;--muted:#c0c7bd;--line:#ffffff20}
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{margin:0;background:var(--green);color:var(--cream);font-family:"DM Sans",sans-serif}
-    a{color:inherit}
-    .topline{min-height:42px;padding:9px 5vw;display:flex;justify-content:space-between;align-items:center;gap:14px;background:#04110b;border-bottom:1px solid #d6b56d35;color:#d8d5c9;font-size:12px;letter-spacing:.04em}
-    .topline a{text-decoration:none}
-    .top-contact{display:flex;gap:22px;flex-wrap:wrap}
-    .top-right{display:flex;gap:14px;align-items:center}
-    .language{display:flex;gap:5px}
-    .language button{border:1px solid transparent;background:transparent;color:#c8c8bc;padding:5px 7px;border-radius:20px;font:600 11px "DM Sans";cursor:pointer}
-    .language button[aria-pressed=true]{border-color:var(--gold);color:var(--gold-light)}
-    .admin-link{color:var(--gold-light);text-decoration:none;border:1px solid #d6b56d80;padding:7px 13px;border-radius:2px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
-    .admin-link:hover{background:var(--gold);color:#102017}
-    header{height:88px;padding:0 7vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#091c13}
-    .brand{text-decoration:none;display:flex;align-items:center;gap:13px}
-    .brand-mark{color:var(--gold);font-size:36px;line-height:1}
-    .brand-name{font:600 24px/1 "Playfair Display",serif;letter-spacing:.12em;color:var(--cream)}
-    .brand-sub{display:block;margin-top:6px;color:var(--gold);font-size:9px;letter-spacing:.42em}
-    nav{display:flex;gap:30px}
-    nav a{text-decoration:none;color:#e4e2d8;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
-    nav a:hover{color:var(--gold)}
-    .hero{min-height:690px;position:relative;display:flex;align-items:center;overflow:hidden;background:linear-gradient(90deg,rgba(4,18,11,.96) 0%,rgba(4,18,11,.82) 43%,rgba(4,18,11,.18) 100%),url("https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90") center/cover}
-    .hero:after{content:"";position:absolute;inset:18px;border:1px solid #d6b56d45;pointer-events:none}
-    .hero-copy{position:relative;z-index:1;max-width:730px;padding:90px 0 100px 11vw}
-    .eyebrow{display:flex;align-items:center;gap:13px;color:var(--gold);font-size:11px;letter-spacing:.34em;text-transform:uppercase}
-    .eyebrow:before{content:"";width:38px;height:1px;background:var(--gold)}
-    h1{font:500 clamp(52px,7vw,94px)/1.02 "Playfair Display",serif;letter-spacing:-.035em;margin:25px 0 18px}
-    h1 span{display:block;color:var(--gold-light);font-style:italic}
-    .hero-copy p{max-width:490px;color:#e0e1d8;font-size:16px;line-height:1.9}
-    .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:35px}
-    .action{min-width:170px;padding:16px 22px;text-align:center;text-decoration:none;font-size:11px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--gold);transition:.2s}
-    .action.primary{background:var(--gold);color:#102017;font-weight:700}
-    .action.secondary{color:var(--cream);background:#07171066}
-    .action:hover{transform:translateY(-2px);background:var(--gold-light);color:#102017}
-    .intro{padding:105px 8vw 110px;text-align:center;background:linear-gradient(180deg,#10291e,#0a1d14)}
-    .intro .eyebrow{justify-content:center}
-    .intro h2{font:500 clamp(34px,4.2vw,55px)/1.2 "Playfair Display",serif;max-width:780px;margin:22px auto;color:var(--cream)}
-    .intro p{max-width:660px;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.9}
-    .ornament{margin:30px auto 0;color:var(--gold);letter-spacing:.7em}
-    .contact{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:35px;padding:55px 8vw;background:#06140d;border-top:1px solid #d6b56d40}
-    .contact h3{font:500 22px "Playfair Display";color:var(--gold-light);margin:0 0 12px}
-    .contact p,.contact a{color:var(--muted);font-size:13px;line-height:1.8;text-decoration:none}
-    .contact a:hover{color:var(--gold)}
-    footer{padding:22px 8vw;display:flex;justify-content:space-between;align-items:center;gap:15px;background:#040e09;border-top:1px solid var(--line);color:#89958b;font-size:11px}
-    footer a{color:var(--gold-light);text-decoration:none;letter-spacing:.12em;text-transform:uppercase}
-    @media(max-width:760px){
-      .topline{padding:9px 18px;align-items:flex-start}.top-contact{gap:6px;flex-direction:column}.top-right{gap:7px;flex-direction:column;align-items:flex-end}
-      header{height:auto;min-height:78px;padding:14px 22px;flex-wrap:wrap;gap:12px}nav{order:3;width:100%;gap:20px;overflow:auto;padding:8px 0 3px}nav a{font-size:10px;white-space:nowrap}.brand-name{font-size:21px}
-      .hero{min-height:620px;background-position:58% center}.hero-copy{padding:80px 30px}.hero:after{inset:10px}h1{font-size:clamp(48px,13vw,72px)}.hero-copy p{font-size:14px}
-      .intro{padding:75px 27px}.contact{grid-template-columns:1fr;gap:22px;padding:42px 28px}footer{padding:20px 25px;flex-direction:column;text-align:center}
-    }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b2b">
+<meta name="description" content="Nababi Ristorante — Bengali flavours, royal hospitality in Rome.">
+<title>Nababi Ristorante | A Taste of Bengal in Rome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--green:#123b2b;--deep:#09281d;--gold:#f4b942;--coral:#ef6b4a;--cream:#fff8e9;--ink:#18271f;--muted:#66756b;--mint:#e9f3e9}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font-family:"DM Sans","Hind Siliguri",sans-serif;background:#fffdf8}a{color:inherit;text-decoration:none}
+.topbar{background:var(--deep);color:#fff3d7;padding:10px 5.5%;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px}.topbar a:hover{color:var(--gold)}.toplinks{display:flex;gap:22px;flex-wrap:wrap}.topright{display:flex;align-items:center;gap:14px}.langs{display:flex;gap:4px}.langs button{border:1px solid #ffffff45;background:transparent;color:white;border-radius:20px;padding:5px 9px;cursor:pointer;font-weight:700;font-size:10px}.langs button[aria-pressed=true]{background:var(--gold);color:var(--deep);border-color:var(--gold)}.admin{background:var(--coral);color:white;padding:9px 15px;border-radius:30px;font-size:11px;font-weight:800;letter-spacing:.04em}
+header{height:86px;padding:0 6%;display:flex;align-items:center;justify-content:space-between;background:#fffdf8;position:sticky;top:0;z-index:10;box-shadow:0 5px 22px #153d2510}.brand{display:flex;align-items:center;gap:10px}.logo{width:48px;height:48px;border-radius:50%;background:var(--green);color:var(--gold);display:grid;place-items:center;font:28px "Playfair Display";border:2px solid var(--gold)}.brand strong{display:block;font:800 22px "Playfair Display";color:var(--green);letter-spacing:.04em}.brand small{font-size:9px;letter-spacing:.34em;color:#bb7924;font-weight:800}nav{display:flex;align-items:center;gap:27px}nav a{font-size:12px;font-weight:800;color:#294638}nav a:hover{color:var(--coral)}.navcta{background:var(--green);color:white;padding:13px 20px;border-radius:28px}
+.hero{min-height:640px;position:relative;display:flex;align-items:center;background:linear-gradient(90deg,#08271eef 0%,#08271ec9 45%,#08271e10 100%),url("https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90") center/cover;color:white;overflow:hidden}.hero:after{content:"";position:absolute;width:390px;height:390px;border:1px solid #ffffff4d;border-radius:50%;right:7%;top:14%;box-shadow:0 0 0 22px #ffffff0c,0 0 0 44px #ffffff08}.hero-inner{position:relative;z-index:1;padding:80px 8%;max-width:760px}.tag{display:inline-block;background:var(--gold);color:var(--deep);padding:9px 16px;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.hero h1{font:800 clamp(48px,7vw,88px)/1.04 "Playfair Display","Hind Siliguri",serif;margin:24px 0 18px}.hero h1 span{color:var(--gold)}.hero p{font-size:17px;line-height:1.8;max-width:510px;color:#f7f3e9}.buttons{display:flex;gap:13px;flex-wrap:wrap;margin-top:30px}.btn{padding:15px 24px;border-radius:30px;font-size:12px;font-weight:900;display:inline-block;transition:.2s}.btn:hover{transform:translateY(-3px)}.btn-gold{background:var(--gold);color:var(--deep)}.btn-outline{border:1px solid #fff;color:white}
+.ribbon{background:var(--gold);padding:16px 5%;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;color:var(--deep);font-size:12px;font-weight:900;letter-spacing:.06em}.ribbon span:before{content:"✦";margin-right:9px;color:var(--coral)}
+section{scroll-margin-top:90px}.section{padding:88px 7%}.section-head{text-align:center;max-width:700px;margin:0 auto 42px}.kicker{color:#d36b36;font-weight:900;font-size:11px;letter-spacing:.2em;text-transform:uppercase}.section h2{font:800 clamp(34px,4.4vw,52px)/1.15 "Playfair Display","Hind Siliguri",serif;color:var(--green);margin:12px 0}.section-head p{color:var(--muted);line-height:1.8;margin:0}
+.food-section{background:var(--cream)}.food-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.food-card{background:white;border-radius:18px;overflow:hidden;box-shadow:0 12px 32px #153d2510;transition:.25s}.food-card:hover{transform:translateY(-7px);box-shadow:0 18px 40px #153d2520}.food-card img{width:100%;height:205px;object-fit:cover;display:block}.food-copy{padding:19px}.food-copy h3{font:700 21px "Hind Siliguri",sans-serif;color:var(--green);margin:0 0 8px}.food-copy p{font-size:12px;color:var(--muted);line-height:1.65;margin:0}.food-label{display:inline-block;margin-top:13px;color:#c15d35;font-size:10px;font-weight:900;letter-spacing:.12em}
+.story{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;background:white}.story-photo{position:relative}.story-photo img{width:100%;height:440px;object-fit:cover;border-radius:24px}.story-stamp{position:absolute;right:-20px;bottom:25px;background:var(--gold);color:var(--deep);width:125px;height:125px;border-radius:50%;display:grid;place-items:center;text-align:center;font-weight:900;font-size:13px;transform:rotate(9deg);border:7px solid white}.story-copy h2{font:800 clamp(34px,4vw,48px)/1.16 "Playfair Display","Hind Siliguri";color:var(--green);margin:14px 0}.story-copy p{color:var(--muted);line-height:1.9;font-size:14px}
+.offer{background:linear-gradient(115deg,#ef6b4a,#d94d36);color:white;padding:64px 8%;display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap}.offer h2{font:800 clamp(32px,4vw,48px) "Playfair Display","Hind Siliguri";margin:8px 0}.offer p{margin:0;color:#fff1e9}.offer .btn{background:var(--gold);color:var(--deep)}
+.gallery{background:var(--mint)}.gallery-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;grid-template-rows:210px 210px;gap:14px}.gallery-grid img{width:100%;height:100%;object-fit:cover;border-radius:16px}.gallery-grid img:first-child{grid-row:span 2}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.feature{padding:30px 24px;border-radius:18px;background:white;box-shadow:0 10px 30px #153d2510;text-align:center}.feature .emoji{font-size:32px}.feature h3{color:var(--green);font:700 20px "Hind Siliguri";margin:12px 0 6px}.feature p{color:var(--muted);font-size:12px;line-height:1.7;margin:0}
+.contact{background:var(--deep);color:white;display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:35px;padding:60px 7%}.contact h3{font:700 23px "Playfair Display","Hind Siliguri";color:var(--gold);margin:0 0 13px}.contact p,.contact a{color:#d5e0d8;font-size:13px;line-height:1.9}.contact a:hover{color:var(--gold)}footer{padding:22px 7%;background:#061b13;color:#a9b9ae;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:11px}footer a{color:var(--gold);font-weight:800}
+@media(max-width:900px){nav{gap:14px}.food-grid{grid-template-columns:repeat(2,1fr)}.story{gap:35px}.contact{grid-template-columns:1fr 1fr}.contact>div:first-child{grid-column:span 2}}
+@media(max-width:620px){.topbar{padding:9px 15px}.toplinks{gap:6px;flex-direction:column;font-size:10px}.topright{gap:7px;flex-direction:column;align-items:flex-end}.admin{padding:7px 11px}header{height:auto;min-height:75px;padding:12px 18px;flex-wrap:wrap}.brand strong{font-size:19px}.logo{width:42px;height:42px}nav{width:100%;order:3;overflow:auto;gap:20px;padding:8px 0}nav a{white-space:nowrap;font-size:11px}.navcta{padding:9px 14px}.hero{min-height:610px;background-position:60% center}.hero-inner{padding:75px 27px}.hero p{font-size:14px}.ribbon{gap:12px;font-size:10px}.section{padding:65px 22px}.food-grid{gap:12px}.food-card img{height:145px}.food-copy{padding:13px}.food-copy h3{font-size:17px}.food-copy p{font-size:11px}.story{grid-template-columns:1fr;gap:30px}.story-photo img{height:310px}.story-stamp{right:-7px;width:98px;height:98px;font-size:11px}.offer{padding:48px 25px}.gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:160px 140px 140px}.gallery-grid img:first-child{grid-row:span 2}.features{grid-template-columns:1fr}.contact{grid-template-columns:1fr;padding:45px 25px}.contact>div:first-child{grid-column:auto}footer{flex-direction:column;text-align:center}}
+</style>
 </head>
 <body>
-  <div class="topline">
-    <div class="top-contact"><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma">⌖ Via Vespasiano 73/75/77, Roma</a><a href="tel:+393933805350">☎ +39 393 3805350</a></div>
-    <div class="top-right">
-      <div class="language" aria-label="Language">
-        <button type="button" data-lang="it" aria-pressed="true">IT</button>
-        <button type="button" data-lang="en" aria-pressed="false">EN</button>
-        <button type="button" data-lang="bn" aria-pressed="false">বাংলা</button>
-      </div>
-      <a class="admin-link" href="admin-v2.html">Admin Login ↗</a>
-    </div>
-  </div>
-  <header>
-    <a class="brand" href="#home" aria-label="Nababi Ristorante home">
-      <span class="brand-mark" aria-hidden="true">♛</span>
-      <span><span class="brand-name">NABABI</span><span class="brand-sub">RISTORANTE</span></span>
-    </a>
-    <nav aria-label="Main navigation">
-      <a href="#home" data-t="navHome">Home</a>
-      <a href="#story" data-t="navStory">La nostra storia</a>
-      <a href="#contact" data-t="navContact">Contatti</a>
-    </nav>
-  </header>
-  <main>
-    <section class="hero" id="home">
-      <div class="hero-copy">
-        <div class="eyebrow" data-t="eyebrow">Un’esperienza di gusto</div>
-        <h1>Nababi <span>Ristorante</span></h1>
-        <p data-t="heroText">I sapori autentici del Bangladesh, nel cuore di Roma. Una nuova esperienza di ospitalità, cultura e tradizione.</p>
-        <div class="hero-actions">
-          <a class="action primary" href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="discover">Come raggiungerci</a>
-          <a class="action secondary" href="tel:+393933805350" data-t="call">Chiamaci</a>
-        </div>
-      </div>
-    </section>
-    <section class="intro" id="story">
-      <div class="eyebrow" data-t="storyEyebrow">La nostra identità</div>
-      <h2 data-t="storyTitle">Tradizione bengalese. Spirito italiano. Accoglienza senza confini.</h2>
-      <p data-t="storyText">Nababi Ristorante è uno spazio dedicato all’incontro tra sapori, persone e culture. Questa è la nostra nuova casa digitale: costruiremo ogni sezione con cura, un passo alla volta.</p>
-      <div class="ornament" aria-hidden="true">✦　✦　✦</div>
-    </section>
-    <section class="contact" id="contact">
-      <div><h3>Nababi Ristorante</h3><p data-t="contactIntro">Cucina bengalese nel cuore di Roma.</p></div>
-      <div><h3 data-t="visit">Vieni a trovarci</h3><p>Via Vespasiano 73/75/77<br>Roma, Italia</p><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="map">Apri su Google Maps ↗</a></div>
-      <div><h3 data-t="contact">Contatti</h3><p><a href="tel:+393933805350">+39 393 3805350</a><br><a href="mailto:nababiristorante@gmail.com">nababiristorante@gmail.com</a></p></div>
-    </section>
-  </main>
-  <footer><span>© <span id="year"></span> NABABI RISTORANTE · ROMA</span><a href="admin-v2.html">Admin Login ↗</a></footer>
-  <script>
-    const copy={
-      it:{navHome:"Home",navStory:"La nostra storia",navContact:"Contatti",eyebrow:"Un’esperienza di gusto",heroText:"I sapori autentici del Bangladesh, nel cuore di Roma. Una nuova esperienza di ospitalità, cultura e tradizione.",discover:"Come raggiungerci",call:"Chiamaci",storyEyebrow:"La nostra identità",storyTitle:"Tradizione bengalese. Spirito italiano. Accoglienza senza confini.",storyText:"Nababi Ristorante è uno spazio dedicato all’incontro tra sapori, persone e culture. Questa è la nostra nuova casa digitale: costruiremo ogni sezione con cura, un passo alla volta.",contactIntro:"Cucina bengalese nel cuore di Roma.",visit:"Vieni a trovarci",map:"Apri su Google Maps ↗",contact:"Contatti"},
-      en:{navHome:"Home",navStory:"Our story",navContact:"Contact",eyebrow:"A taste to remember",heroText:"Authentic flavours of Bangladesh in the heart of Rome. A fresh experience shaped by hospitality, culture and tradition.",discover:"Find us",call:"Call us",storyEyebrow:"Who we are",storyTitle:"Bengali heritage. Italian spirit. Hospitality without borders.",storyText:"Nababi Ristorante is a place where flavours, people and cultures meet. This is our new digital home: each section will be thoughtfully added, one step at a time.",contactIntro:"Bengali cuisine in the heart of Rome.",visit:"Visit us",map:"Open in Google Maps ↗",contact:"Contact"},
-      bn:{navHome:"হোম",navStory:"আমাদের গল্প",navContact:"যোগাযোগ",eyebrow:"স্বাদের এক নতুন অভিজ্ঞতা",heroText:"রোমের হৃদয়ে বাংলাদেশের আসল স্বাদ। আতিথেয়তা, সংস্কৃতি ও ঐতিহ্যের এক নতুন অভিজ্ঞতা।",discover:"আমাদের ঠিকানা",call:"ফোন করুন",storyEyebrow:"আমাদের পরিচয়",storyTitle:"বাংলার ঐতিহ্য। ইতালির আবহ। সবার জন্য আন্তরিক আতিথেয়তা।",storyText:"Nababi Ristorante হলো স্বাদ, মানুষ ও সংস্কৃতির মিলনস্থল। এটি আমাদের নতুন ডিজিটাল ঠিকানা—ধীরে ধীরে যত্ন নিয়ে প্রতিটি বিভাগ তৈরি করা হবে।",contactIntro:"রোমের হৃদয়ে বাংলা খাবার।",visit:"আমাদের ঠিকানা",map:"Google Maps-এ দেখুন ↗",contact:"যোগাযোগ"}
-    };
-    function setLanguage(lang){
-      const words=copy[lang]||copy.it;
-      document.documentElement.lang=lang;
-      document.querySelectorAll("[data-t]").forEach(el=>{const key=el.dataset.t;if(words[key])el.textContent=words[key]});
-      document.querySelectorAll("[data-lang]").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.lang===lang)));
-    }
-    document.querySelectorAll("[data-lang]").forEach(btn=>btn.addEventListener("click",()=>setLanguage(btn.dataset.lang)));
-    document.getElementById("year").textContent=new Date().getFullYear();
-  </script>
-</body>
-</html>
+<div class="topbar"><div class="toplinks"><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma">⌖ Via Vespasiano 73/75/77, Roma</a><a href="tel:+393933805350">☎ +39 393 3805350</a></div><div class="topright"><div class="langs" aria-label="Language"><button data-lang="bn" aria-pressed="true">বাংলা</button><button data-lang="it" aria-pressed="false">IT</button><button data-lang="en" aria-pressed="false">EN</button></div><a class="admin" href="admin-v2.html">Admin Login ↗</a></div></div>
+<header><a class="brand" href="#home"><span class="logo">♛</span><span><strong>NABABI</strong><small>RISTORANTE</small></span></a><nav><a href="#home" data-t="home">হোম</a><a href="#menu" data-t="menu">জনপ্রিয় খাবার</a><a href="#story" data-t="story">আমাদের গল্প</a><a href="#gallery" data-t="gallery">গ্যালারি</a><a href="#contact" data-t="contact">যোগাযোগ</a><a class="navcta" href="tel:+393933805350" data-t="book">যোগাযোগ করুন</a></nav></header>
+<main>
+<section class="hero" id="home"><div class="hero-inner"><span class="tag" data-t="tag">রোমে বাংলার আসল স্বাদ</span><h1 data-t="headline">স্বাদে ঐতিহ্য,<br><span>আয়োজনে নবাবি</span></h1><p data-t="herotext">বাংলার মশলা, ঐতিহ্যবাহী রান্না আর আন্তরিক আতিথেয়তার এক আনন্দময় ঠিকানা—Nababi Ristorante.</p><div class="buttons"><a class="btn btn-gold" href="#menu" data-t="explore">আমাদের খাবার দেখুন</a><a class="btn btn-outline" href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="find">আমাদের খুঁজে নিন ↗</a></div></div></section>
+<div class="ribbon"><span data-t="r1">বাংলার ঐতিহ্যবাহী স্বাদ</span><span data-t="r2">পরিবার ও বন্ধুদের আড্ডা</span><span data-t="r3">রোমে আন্তরিক আতিথেয়তা</span></div>
+<section class="section food-section" id="menu"><div class="section-head"><span class="kicker" data-t="kmenu">আমাদের পছন্দের স্বাদ</span><h2 data-t="menutitle">জনপ্রিয় বাংলাদেশি খাবার</h2><p data-t="menutext">মশলার সুবাস, রান্নার ঐতিহ্য আর প্রতিটি প্লেটে যত্নের ছোঁয়া।</p></div><div class="food-grid">
+<article class="food-card"><img loading="lazy" src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=85" alt="সুগন্ধি বিরিয়ানি"><div class="food-copy"><h3 data-t="dish1">কাচ্চি বিরিয়ানি</h3><p data-t="desc1">সুগন্ধি চাল ও ঐতিহ্যবাহী মশলার মনভোলানো স্বাদ।</p><span class="food-label">NABABI SPECIAL</span></div></article>
+<article class="food-card"><img loading="lazy" src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=800&q=85" alt="মশলাদার চিকেন কারি"><div class="food-copy"><h3 data-t="dish2">চিকেন কারি</h3><p data-t="desc2">ঘরোয়া ধাঁচের মশলাদার ও সুস্বাদু রান্না।</p><span class="food-label">RICH & FLAVOURFUL</span></div></article>
+<article class="food-card"><img loading="lazy" src="https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=85" alt="ভাত ও সুস্বাদু পদ"><div class="food-copy"><h3 data-t="dish3">বাংলা স্পেশাল থালি</h3><p data-t="desc3">বাংলার খাবারের পরিচিত স্বাদ একসাথে উপভোগ করুন।</p><span class="food-label">TRADITIONAL TASTE</span></div></article>
+<article class="food-card"><img loading="lazy" src="https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=800&q=85" alt="তন্দুরি ও গ্রিল খাবার"><div class="food-copy"><h3 data-t="dish4">তন্দুরি ও গ্রিল</h3><p data-t="desc4">গ্রিলের সুবাসে জমে উঠুক আপনার খাবারের আয়োজন।</p><span class="food-label">MADE WITH CARE</span></div></article>
+</div></section>
+<section class="section story" id="story"><div class="story-photo"><img loading="lazy" src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1000&q=85" alt="রঙিন দক্ষিণ এশীয় খাবারের আয়োজন"><div class="story-stamp">BENGALI<br>HEART<br>♥</div></div><div class="story-copy"><span class="kicker" data-t="ourstory">আমাদের গল্প</span><h2 data-t="storytitle">বাংলার আতিথেয়তা, রোমের প্রাণকেন্দ্রে</h2><p data-t="storytext">খাবার শুধু ক্ষুধা মেটায় না—এটি স্মৃতি, সংস্কৃতি আর মানুষের মিলনের গল্প বলে। Nababi Ristorante-এ আমরা সেই পরিচিত বাংলা আতিথেয়তার উষ্ণতা আপনাদের কাছে তুলে ধরতে চাই।</p><a class="btn btn-gold" href="#contact" data-t="visit">আমাদের সাথে দেখা করুন</a></div></section>
+<section class="offer"><div><span class="tag" data-t="special">বিশেষ আয়োজন</span><h2 data-t="offertitle">প্রিয়জনদের নিয়ে উপভোগ করুন</h2><p data-t="offertext">পরিবার, বন্ধু কিংবা বিশেষ দিনের খাবারের আয়োজন—আপনাদের স্বাগত।</p></div><a class="btn" href="tel:+393933805350" data-t="call">এখনই ফোন করুন</a></section>
+<section class="section gallery" id="gallery"><div class="section-head"><span class="kicker" data-t="kgallery">স্বাদের রঙিন ঝলক</span><h2 data-t="gallerytitle">আমাদের খাবারের গ্যালারি</h2><p data-t="gallerytext">বাংলার রান্নার রং, পরিবেশন আর আনন্দের কিছু মুহূর্ত।</p></div><div class="gallery-grid"><img loading="lazy" src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=900&q=85" alt="ভারতীয় উপমহাদেশের খাবার"><img loading="lazy" src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=700&q=85" alt="কারি"><img loading="lazy" src="https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=700&q=85" alt="ভাতের পদ"><img loading="lazy" src="https://images.unsplash.com/photo-1567337710282-00832b415979?auto=format&fit=crop&w=700&q=85" alt="গ্রিল খাবার"><img loading="lazy" src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=700&q=85" alt="খাবারের পরিবেশন"></div></section>
+<section class="section"><div class="section-head"><span class="kicker" data-t="why">কেন নবাবি</span><h2 data-t="whytitle">প্রতিটি আয়োজনে আন্তরিকতা</h2></div><div class="features"><div class="feature"><div class="emoji">🍛</div><h3 data-t="f1">বাংলার পরিচিত স্বাদ</h3><p data-t="fp1">ঐতিহ্যবাহী রান্না ও মশলার সুবাসে ভরপুর খাবারের অভিজ্ঞতা।</p></div><div class="feature"><div class="emoji">✨</div><h3 data-t="f2">উষ্ণ আতিথেয়তা</h3><p data-t="fp2">আপনার পরিবার ও বন্ধুদের জন্য আন্তরিক পরিবেশ।</p></div><div class="feature"><div class="emoji">📍</div><h3 data-t="f3">রোমে আমাদের ঠিকানা</h3><p data-t="fp3">শহরের প্রাণকেন্দ্রে এসে উপভোগ করুন বাংলা খাবার।</p></div></div></section>
+<section class="contact" id="contact"><div><h3>Nababi Ristorante ♛</h3><p data-t="contactintro">রোমে বাংলার স্বাদ ও আতিথেয়তা।</p></div><div><h3 data-t="address">ঠিকানা</h3><p>Via Vespasiano 73/75/77<br>Roma, Italia</p><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="map">Google Maps-এ দেখুন ↗</a></div><div><h3 data-t="getintouch">যোগাযোগ</h3><p><a href="tel:+393933805350">+39 393 3805350</a><br><a href="mailto:nababiristorante@gmail.com">nababiristorante@gmail.com</a></p><a class="admin" href="admin-v2.html">Admin Login ↗</a></div></section>
+</main><footer><span>© <span id="year"></span> NABABI RISTORANTE · ROMA</span><a href="admin-v2.html">Admin Login ↗</a></footer>
+<script>
+const translations={
+bn:{home:"হোম",menu:"জনপ্রিয় খাবার",story:"আমাদের গল্প",gallery:"গ্যালারি",contact:"যোগাযোগ",book:"যোগাযোগ করুন",tag:"রোমে বাংলার আসল স্বাদ",headline:"স্বাদে ঐতিহ্য,<br><span>আয়োজনে নবাবি</span>",herotext:"বাংলার মশলা, ঐতিহ্যবাহী রান্না আর আন্তরিক আতিথেয়তার এক আনন্দময় ঠিকানা—Nababi Ristorante.",explore:"আমাদের খাবার দেখুন",find:"আমাদের খুঁজে নিন ↗",r1:"বাংলার ঐতিহ্যবাহী স্বাদ",r2:"পরিবার ও বন্ধুদের আড্ডা",r3:"রোমে আন্তরিক আতিথেয়তা",kmenu:"আমাদের পছন্দের স্বাদ",menutitle:"জনপ্রিয় বাংলাদেশি খাবার",menutext:"মশলার সুবাস, রান্নার ঐতিহ্য আর প্রতিটি প্লেটে যত্নের ছোঁয়া।",dish1:"কাচ্চি বিরিয়ানি",desc1:"সুগন্ধি চাল ও ঐতিহ্যবাহী মশলার মনভোলানো স্বাদ।",dish2:"চিকেন কারি",desc2:"ঘরোয়া ধাঁচের মশলাদার ও সুস্বাদু রান্না।",dish3:"বাংলা স্পেশাল থালি",desc3:"বাংলার খাবারের পরিচিত স্বাদ একসাথে উপভোগ করুন।",dish4:"তন্দুরি ও গ্রিল",desc4:"গ্রিলের সুবাসে জমে উঠুক আপনার খাবারের আয়োজন।",ourstory:"আমাদের গল্প",storytitle:"বাংলার আতিথেয়তা, রোমের প্রাণকেন্দ্রে",storytext:"খাবার শুধু ক্ষুধা মেটায় না—এটি স্মৃতি, সংস্কৃতি আর মানুষের মিলনের গল্প বলে। Nababi Ristorante-এ আমরা সেই পরিচিত বাংলা আতিথেয়তার উষ্ণতা আপনাদের কাছে তুলে ধরতে চাই।",visit:"আমাদের সাথে দেখা করুন",special:"বিশেষ আয়োজন",offertitle:"প্রিয়জনদের নিয়ে উপভোগ করুন",offertext:"পরিবার, বন্ধু কিংবা বিশেষ দিনের খাবারের আয়োজন—আপনাদের স্বাগত।",call:"এখনই ফোন করুন",kgallery:"স্বাদের রঙিন ঝলক",gallerytitle:"আমাদের খাবারের গ্যালারি",gallerytext:"বাংলার রান্নার রং, পরিবেশন আর আনন্দের কিছু মুহূর্ত।",why:"কেন নবাবি",whytitle:"প্রতিটি আয়োজনে আন্তরিকতা",f1:"বাংলার পরিচিত স্বাদ",fp1:"ঐতিহ্যবাহী রান্না ও মশলার সুবাসে ভরপুর খাবারের অভিজ্ঞতা।",f2:"উষ্ণ আতিথেয়তা",fp2:"আপনার পরিবার ও বন্ধুদের জন্য আন্তরিক পরিবেশ।",f3:"রোমে আমাদের ঠিকানা",fp3:"শহরের প্রাণকেন্দ্রে এসে উপভোগ করুন বাংলা খাবার।",contactintro:"রোমে বাংলার স্বাদ ও আতিথেয়তা।",address:"ঠিকানা",map:"Google Maps-এ দেখুন ↗",getintouch:"যোগাযোগ"},
+it:{home:"Home",menu:"Piatti",story:"La nostra storia",gallery:"Galleria",contact:"Contatti",book:"Contattaci",tag:"Il gusto autentico del Bangladesh a Roma",headline:"Tradizione nel gusto,<br><span>ospitalità regale</span>",herotext:"Sapori bengalesi, ricette tradizionali e calorosa ospitalità: benvenuti da Nababi Ristorante.",explore:"Scopri i piatti",find:"Dove siamo ↗",r1:"Sapori autentici del Bangladesh",r2:"Momenti da condividere",r3:"Ospitalità nel cuore di Roma",kmenu:"I nostri sapori",menutitle:"I piatti più amati",menutext:"Profumi di spezie, tradizione e cura in ogni piatto.",dish1:"Kacchi Biryani",desc1:"Riso profumato e spezie della tradizione.",dish2:"Pollo al curry",desc2:"Una ricetta ricca di spezie e gusto.",dish3:"Thali bengalese",desc3:"I sapori della cucina bengalese in un unico piatto.",dish4:"Tandoori e griglia",desc4:"Il profumo della griglia per il tuo pasto.",ourstory:"La nostra storia",storytitle:"L’ospitalità bengalese nel cuore di Roma",storytext:"Il cibo racconta ricordi, cultura e incontri. Da Nababi Ristorante vogliamo condividere con voi il calore della tradizionale ospitalità bengalese.",visit:"Vieni a trovarci",special:"Un’occasione speciale",offertitle:"Condividi il gusto con chi ami",offertext:"In famiglia, con gli amici o per un giorno speciale: siete i benvenuti.",call:"Chiamaci ora",kgallery:"Un’esplosione di sapori",gallerytitle:"La nostra galleria",gallerytext:"Colori, piatti e momenti della cucina bengalese.",why:"Perché Nababi",whytitle:"Cura e ospitalità in ogni occasione",f1:"Sapori del Bangladesh",fp1:"Un’esperienza ricca di ricette tradizionali e spezie.",f2:"Calorosa ospitalità",fp2:"Un ambiente accogliente per famiglia e amici.",f3:"A Roma",fp3:"Vieni a gustare la cucina bengalese nel cuore della città.",contactintro:"Sapori bengalesi e ospitalità a Roma.",address:"Indirizzo",map:"Apri Google Maps ↗",getintouch:"Contatti"},
+en:{home:"Home",menu:"Our food",story:"Our story",gallery:"Gallery",contact:"Contact",book:"Get in touch",tag:"Authentic Bangladeshi taste in Rome",headline:"Tradition in every bite,<br><span>royal hospitality</span>",herotext:"Bangladeshi spices, traditional cooking and warm hospitality — welcome to Nababi Ristorante.",explore:"Explore our food",find:"Find us ↗",r1:"Authentic Bengali flavours",r2:"Moments to share",r3:"Warm hospitality in Rome",kmenu:"A taste to remember",menutitle:"Popular Bengali favourites",menutext:"Aroma of spices, treasured recipes and care in every plate.",dish1:"Kacchi Biryani",desc1:"Fragrant rice with traditional aromatic spices.",dish2:"Chicken Curry",desc2:"A comforting, flavourful curry with warming spices.",dish3:"Bengali Special Thali",desc3:"Enjoy familiar Bengali favourites together.",dish4:"Tandoori & Grill",desc4:"Make your meal memorable with smoky grilled flavours.",ourstory:"Our story",storytitle:"Bengali hospitality in the heart of Rome",storytext:"Food is more than a meal — it carries memories, culture and connection. At Nababi Ristorante, we want to share the warmth of Bengali hospitality with you.",visit:"Come visit us",special:"A special occasion",offertitle:"Share a delicious moment",offertext:"With family, friends or for a special day — you are welcome here.",call:"Call us now",kgallery:"A feast for the eyes",gallerytitle:"Our food gallery",gallerytext:"Colours, dishes and joyful moments from Bengali cuisine.",why:"Why Nababi",whytitle:"Care and hospitality in every visit",f1:"Bengali flavours",fp1:"A food experience inspired by traditional recipes and spices.",f2:"Warm hospitality",fp2:"A welcoming place for family and friends.",f3:"In Rome",fp3:"Enjoy Bengali cuisine in the heart of the city.",contactintro:"Bengali flavours and hospitality in Rome.",address:"Address",map:"Open Google Maps ↗",getintouch:"Contact"}
+};
+function setLang(lang){const dict=translations[lang]||translations.bn;document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(el=>{const val=dict[el.dataset.t];if(val)el.innerHTML=val});document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lang===lang)));}
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
+document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+</body></html>
