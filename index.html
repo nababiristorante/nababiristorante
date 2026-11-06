@@ -25,6 +25,8 @@ footer{background:#10120f;color:#d6d4ca;padding:68px 7% 22px}.footer-grid{displa
 @media(max-width:950px){nav{gap:15px}.hero{min-height:600px}.hero-visual{height:440px}.menu-cards{grid-template-columns:repeat(2,1fr)}.menu-card,.menu-card img{height:330px;min-height:330px}.footer-grid{gap:25px}}
 @media(max-width:650px){.topline{padding:0 16px;font-size:8px}.topright{gap:8px}.topline .location{max-width:58%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}header{height:auto;min-height:76px;padding:13px 18px;flex-wrap:wrap}.brand-mark{height:36px;width:36px;font-size:20px}.brand-name strong{font-size:18px}nav{order:3;width:100%;overflow-x:auto;padding:12px 0 4px;gap:21px}nav a{white-space:nowrap;font-size:9px}.nav-cta{padding:9px 12px}.hero{grid-template-columns:1fr;padding:22px 22px 55px;gap:25px;min-height:0}.hero-copy{padding:28px 0 0}.hero h1{font-size:58px;margin:20px 0}.hero-copy p{font-size:13px}.hero-visual{height:340px;margin:0 10px 0 8px}.hero-caption{left:-8px;bottom:15px;font-size:12px;padding:12px 14px}.marquee{gap:12px;padding:14px 8px;font-size:8px}.marquee span:after{margin-left:12px}.section{padding:70px 22px}.intro-grid{grid-template-columns:1fr;gap:42px}.intro-photo{height:350px;margin-right:12px}.intro-copy h2{font-size:42px}.menu-cards{grid-template-columns:1fr 1fr;gap:10px}.menu-card,.menu-card img{height:260px;min-height:260px}.menu-info{padding:14px}.menu-info h3{font-size:19px}.menu-info p{font-size:10px}.experience{grid-template-columns:1fr;padding:70px 22px;gap:30px}.experience-images img{height:155px}.gallery-grid{grid-template-columns:1fr 1fr;grid-template-rows:145px 125px 125px;gap:8px}.gallery-grid img:first-child{grid-row:span 2}.gallery-grid img:last-child{grid-column:span 1}.values{grid-template-columns:1fr}.value{padding:26px 15px}.value+.value{border-left:0;border-top:1px solid #c9c3b8}.visit{padding:55px 22px;align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr;gap:22px;padding-bottom:30px}footer{padding:50px 22px 20px}.copyright{flex-direction:column}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/config.js"></script>
 </head>
 <body>
 <div class="topline"><a class="location" href="https://maps.google.com/?q=Via+Vespasiano+73+Roma">ROME, ITALY · VIA VESPASIANO 73/75/77</a><div class="topright"><a href="tel:+393933805350">+39 393 3805350</a><div class="languages"><button class="active" data-lang="en">EN</button><button data-lang="it">IT</button><button data-lang="bn">বাংলা</button></div><a href="admin-v2.html" style="color:var(--copper)">ADMIN ↗</a></div></div>
@@ -54,5 +56,18 @@ bn:{navHome:"হোম",navStory:"আমাদের গল্প",navMenu:"ম�
 function setLanguage(lang){const d=copy[lang]||copy.en;document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(el=>{const value=d[el.dataset.t];if(value!==undefined)el.innerHTML=value});document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang))}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.lang)));
 document.getElementById("year").textContent=new Date().getFullYear();
+</script>
+<script>
+(async()=>{
+ try{
+  const cfg=window.NABABI_CONFIG||{};
+  if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY)return;
+  const client=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+  const {data,error}=await client.from('site_settings').select('setting_value').eq('setting_key','website_maintenance_mode').maybeSingle();
+  if(error||String(data?.setting_value||'false').toLowerCase()!=='true')return;
+  document.documentElement.style.background='#171916';
+  document.body.innerHTML='<main style="min-height:100vh;display:grid;place-items:center;padding:28px;background:#171916;color:#f4f0e8;text-align:center;font-family:DM Sans,Arial,sans-serif"><section style="max-width:620px"><div style="color:#c98259;font-size:34px;margin-bottom:20px">♛ NABABI RISTORANTE</div><p style="letter-spacing:.2em;color:#c98259;font-size:11px">ROMA · ITALY</p><h1 style="font-family:Georgia,serif;font-size:clamp(32px,7vw,54px);font-weight:500;margin:18px 0">We’ll be back soon.</h1><p style="color:#c9c6bb;line-height:1.8">Our website is temporarily unavailable while we make improvements. Thank you for your patience.</p><a href="admin-v2.html" style="display:inline-block;margin-top:22px;color:#c98259;text-decoration:none;border:1px solid #76513c;padding:12px 20px">Admin access ↗</a></section></main>';
+ }catch(e){console.warn('Maintenance check unavailable; public site remains visible.',e)}
+})();
 </script>
 </body></html>
