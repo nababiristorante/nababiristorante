@@ -200,8 +200,11 @@ async function signIn(e){e.preventDefault();const b=$('#loginButton');b.disabled
 $('#loginForm').addEventListener('submit',signIn);
 $('#forgotButton').addEventListener('click',async()=>{const email=$('#email').value.trim();if(!email){message('Enter your email first.');return}try{if(!db)db=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);const r=await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(r.error)throw r.error;message('Recovery email sent.')}catch(e){message(e.message)}});
 $('#navigation').addEventListener('click',e=>{const b=e.target.closest('[data-module]');if(b)render(b.dataset.module)});
-$('#content').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;try{
+$('#content').addEventListener('click',async e=>{const person=e.target.closest('[data-attendance-staff]');if(person){selectedAttendanceStaff=person.dataset.attendanceStaff;render('attendance');return}const b=e.target.closest('button');if(!b)return;try{
 if(b.id==='exportAttendanceCsv')exportAttendanceCsv();
+else if(b.id==='exportIndividualAttendanceCsv')exportIndividualAttendanceCsv();
+else if(b.id==='printIndividualAttendance'){document.body.classList.add('attendance-person-print');window.print()}
+else if(b.id==='closeIndividualAttendance'){selectedAttendanceStaff='';render('attendance')}
 else if(b.id==='printAttendance')window.print();
 else if(b.id==='resetAttendanceFilter'){attendanceStart='';attendanceEnd='';render('attendance')}
 else if(b.dataset.module)render(b.dataset.module);
