@@ -148,3 +148,30 @@ body{overflow-x:hidden}
 .secret-fireworks{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden}.secret-firework-burst{position:absolute;width:1px;height:1px}.secret-firework-burst i{position:absolute;left:0;top:0;width:5px;height:9px;border-radius:2px;background:hsl(var(--hue) 95% 65%);box-shadow:0 0 10px hsl(var(--hue) 95% 65%);transform:rotate(var(--angle)) translateY(0);opacity:0;animation:secret-firework-pop 1.15s cubic-bezier(.12,.7,.25,1) forwards}.secret-firework-burst i:nth-child(3n){width:4px;height:4px;border-radius:50%}.secret-firework-burst i:nth-child(3n + 1){animation-delay:.08s}.secret-firework-burst i:nth-child(3n + 2){animation-delay:.16s}@keyframes secret-firework-pop{0%{opacity:0;transform:rotate(var(--angle)) translateY(0) scale(.3)}12%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(.85)}}
 @media(max-width:560px){.secret-coupon-heading{align-items:flex-start}.secret-coupon-mark{font-size:38px}.secret-coupon-result{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.secret-fireworks{display:none}}
+
+
+/* Full-screen Secret Coupon Box success and error result pages */
+.secret-result-screen{position:fixed;inset:0;z-index:10001;display:grid;place-items:center;overflow:auto;padding:24px 16px;background:radial-gradient(ellipse at 50% 0,#263c31 0,transparent 58%),linear-gradient(145deg,#07130e,#10251a);isolation:isolate}
+.secret-result-screen::before,.secret-result-screen::after{content:"";position:fixed;width:260px;height:260px;border:1px solid #c8a85a33;border-radius:50%;pointer-events:none}
+.secret-result-screen::before{top:-150px;left:-90px}.secret-result-screen::after{right:-120px;bottom:-170px;width:340px;height:340px}
+.secret-result-card{position:relative;z-index:2;width:min(100%,560px);padding:clamp(26px,6vw,54px) clamp(20px,5vw,44px);text-align:center;border:1px solid #b997506e;border-radius:26px;background:linear-gradient(155deg,#18392aee,#0d1e16f5);box-shadow:0 24px 90px #0009}
+.secret-result-icon{display:grid;place-items:center;width:94px;height:94px;margin:0 auto 18px;border-radius:50%;font-size:54px;background:#d9b65c1c;border:1px solid #d9b65c88;box-shadow:0 0 42px #d9b65c24}
+.secret-result-card .eyebrow{color:#d9bd78;letter-spacing:2px;font-size:11px}
+.secret-result-card h2{margin:10px 0 14px;font-size:clamp(32px,7vw,52px);line-height:1.08;color:#f5d889}
+.secret-result-message{max-width:420px;margin:0 auto 20px;color:#e7eee9;font-size:17px;line-height:1.6}
+.secret-result-discount{margin:18px auto 26px;color:#a8f0bd;font-size:clamp(48px,11vw,76px);font-weight:900;line-height:1;text-shadow:0 0 30px #45df8066}
+.secret-result-discount span{display:block;margin-top:8px;color:#d8e7dc;font-size:12px;letter-spacing:4px}
+.secret-result-hint{margin:0 0 24px;color:#f5b5ad;font-size:14px}
+.secret-result-screen.is-error{background:radial-gradient(ellipse at 50% 0,#4a211f 0,transparent 58%),linear-gradient(145deg,#160a0a,#281211)}
+.secret-result-screen.is-error .secret-result-card{border-color:#c86b6177;background:linear-gradient(155deg,#3a1d1bee,#21100ff5)}
+.secret-result-screen.is-error .secret-result-icon{color:#ffaaa3;background:#8d302b33;border-color:#d96e65}
+.secret-result-screen.is-error .secret-result-card h2{color:#ffb1aa}
+.secret-result-screen .gold-button{width:100%;max-width:330px;min-height:52px;margin-top:8px;font-size:15px}
+.secret-fireworks{position:fixed;inset:0;z-index:10002;pointer-events:none;overflow:hidden}
+.secret-firework-burst{position:absolute;width:1px;height:1px;animation:secret-firework-rise 1.9s ease-out var(--burst-delay,0ms) both}
+.secret-firework-burst i{position:absolute;left:0;top:0;width:5px;height:13px;border-radius:3px;background:hsl(var(--hue) 100% 68%);box-shadow:0 0 12px 3px hsl(var(--hue) 100% 65% / .8);transform:rotate(var(--angle)) translateY(0);opacity:0;animation:secret-firework-pop 1.8s cubic-bezier(.12,.7,.25,1) var(--burst-delay,0ms) forwards}
+.secret-firework-burst i:nth-child(3n){width:7px;height:7px;border-radius:50%}
+@keyframes secret-firework-rise{0%{opacity:0;transform:scale(.2)}18%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}
+@keyframes secret-firework-pop{0%{opacity:0;transform:rotate(var(--angle)) translateY(0) scale(.2)}12%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(.9)}}
+@media(max-width:560px){.secret-result-screen{padding:14px}.secret-result-card{border-radius:20px}.secret-result-message{font-size:15px}.secret-result-icon{width:78px;height:78px;font-size:44px}}
+@media(prefers-reduced-motion:reduce){.secret-fireworks{display:none}}
