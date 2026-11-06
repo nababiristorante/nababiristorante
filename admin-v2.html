@@ -29,14 +29,15 @@
   </section>
 
   <div id="appView" class="app-shell" hidden>
-    <aside id="sidebar" class="sidebar">
+    <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Close navigation"></button>
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation">
       <div class="side-brand"><b>♛ NABABI</b><small>RISTORANTE</small></div>
       <nav id="navigation" aria-label="Admin navigation"></nav>
       <button id="logoutButton" class="logout-button" data-i18n="logout">Esci</button>
     </aside>
     <main class="main-area">
       <header class="topbar">
-        <button id="menuButton" class="menu-button" aria-label="Open menu">☰</button>
+        <button id="menuButton" class="menu-button" aria-label="Open navigation menu" aria-controls="sidebar" aria-expanded="false">☰</button>
         <div><p class="eyebrow">NABABI RISTORANTE</p><h1 id="pageTitle">Dashboard</h1></div>
         <div class="top-actions">
           <select id="languageSelect" aria-label="Language">
