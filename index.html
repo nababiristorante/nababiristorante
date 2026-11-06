@@ -1,868 +1,131 @@
-         
 <!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#070a0b">
-  <meta name="description" content="Nababi Ristorante — autentica cucina bengalese e sapori dell'Oriente a Roma.">
-  <title>Nababi Ristorante | Cucina Bengalese a Roma</title>
-
-  <link rel="icon" id="siteFavicon" href="data:,">
-  <link rel="stylesheet" href="assets/css/style.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/site.js?v=20261104-inline-coupon-qr"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071710">
+  <meta name="description" content="Nababi Ristorante — cucina bengalese nel cuore di Roma.">
+  <title>Nababi Ristorante | Roma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    .site-header {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-      flex-wrap:wrap;
+    :root{--green:#071710;--green2:#10291e;--green3:#183b2b;--gold:#d6b56d;--gold-light:#f0dca7;--cream:#f5f0e5;--muted:#c0c7bd;--line:#ffffff20}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--green);color:var(--cream);font-family:"DM Sans",sans-serif}
+    a{color:inherit}
+    .topline{min-height:42px;padding:9px 5vw;display:flex;justify-content:space-between;align-items:center;gap:14px;background:#04110b;border-bottom:1px solid #d6b56d35;color:#d8d5c9;font-size:12px;letter-spacing:.04em}
+    .topline a{text-decoration:none}
+    .top-contact{display:flex;gap:22px;flex-wrap:wrap}
+    .top-right{display:flex;gap:14px;align-items:center}
+    .language{display:flex;gap:5px}
+    .language button{border:1px solid transparent;background:transparent;color:#c8c8bc;padding:5px 7px;border-radius:20px;font:600 11px "DM Sans";cursor:pointer}
+    .language button[aria-pressed=true]{border-color:var(--gold);color:var(--gold-light)}
+    .admin-link{color:var(--gold-light);text-decoration:none;border:1px solid #d6b56d80;padding:7px 13px;border-radius:2px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .admin-link:hover{background:var(--gold);color:#102017}
+    header{height:88px;padding:0 7vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#091c13}
+    .brand{text-decoration:none;display:flex;align-items:center;gap:13px}
+    .brand-mark{color:var(--gold);font-size:36px;line-height:1}
+    .brand-name{font:600 24px/1 "Playfair Display",serif;letter-spacing:.12em;color:var(--cream)}
+    .brand-sub{display:block;margin-top:6px;color:var(--gold);font-size:9px;letter-spacing:.42em}
+    nav{display:flex;gap:30px}
+    nav a{text-decoration:none;color:#e4e2d8;font-size:12px;letter-spacing:.13em;text-transform:uppercase}
+    nav a:hover{color:var(--gold)}
+    .hero{min-height:690px;position:relative;display:flex;align-items:center;overflow:hidden;background:linear-gradient(90deg,rgba(4,18,11,.96) 0%,rgba(4,18,11,.82) 43%,rgba(4,18,11,.18) 100%),url("https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=2000&q=90") center/cover}
+    .hero:after{content:"";position:absolute;inset:18px;border:1px solid #d6b56d45;pointer-events:none}
+    .hero-copy{position:relative;z-index:1;max-width:730px;padding:90px 0 100px 11vw}
+    .eyebrow{display:flex;align-items:center;gap:13px;color:var(--gold);font-size:11px;letter-spacing:.34em;text-transform:uppercase}
+    .eyebrow:before{content:"";width:38px;height:1px;background:var(--gold)}
+    h1{font:500 clamp(52px,7vw,94px)/1.02 "Playfair Display",serif;letter-spacing:-.035em;margin:25px 0 18px}
+    h1 span{display:block;color:var(--gold-light);font-style:italic}
+    .hero-copy p{max-width:490px;color:#e0e1d8;font-size:16px;line-height:1.9}
+    .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:35px}
+    .action{min-width:170px;padding:16px 22px;text-align:center;text-decoration:none;font-size:11px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--gold);transition:.2s}
+    .action.primary{background:var(--gold);color:#102017;font-weight:700}
+    .action.secondary{color:var(--cream);background:#07171066}
+    .action:hover{transform:translateY(-2px);background:var(--gold-light);color:#102017}
+    .intro{padding:105px 8vw 110px;text-align:center;background:linear-gradient(180deg,#10291e,#0a1d14)}
+    .intro .eyebrow{justify-content:center}
+    .intro h2{font:500 clamp(34px,4.2vw,55px)/1.2 "Playfair Display",serif;max-width:780px;margin:22px auto;color:var(--cream)}
+    .intro p{max-width:660px;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.9}
+    .ornament{margin:30px auto 0;color:var(--gold);letter-spacing:.7em}
+    .contact{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:35px;padding:55px 8vw;background:#06140d;border-top:1px solid #d6b56d40}
+    .contact h3{font:500 22px "Playfair Display";color:var(--gold-light);margin:0 0 12px}
+    .contact p,.contact a{color:var(--muted);font-size:13px;line-height:1.8;text-decoration:none}
+    .contact a:hover{color:var(--gold)}
+    footer{padding:22px 8vw;display:flex;justify-content:space-between;align-items:center;gap:15px;background:#040e09;border-top:1px solid var(--line);color:#89958b;font-size:11px}
+    footer a{color:var(--gold-light);text-decoration:none;letter-spacing:.12em;text-transform:uppercase}
+    @media(max-width:760px){
+      .topline{padding:9px 18px;align-items:flex-start}.top-contact{gap:6px;flex-direction:column}.top-right{gap:7px;flex-direction:column;align-items:flex-end}
+      header{height:auto;min-height:78px;padding:14px 22px;flex-wrap:wrap;gap:12px}nav{order:3;width:100%;gap:20px;overflow:auto;padding:8px 0 3px}nav a{font-size:10px;white-space:nowrap}.brand-name{font-size:21px}
+      .hero{min-height:620px;background-position:58% center}.hero-copy{padding:80px 30px}.hero:after{inset:10px}h1{font-size:clamp(48px,13vw,72px)}.hero-copy p{font-size:14px}
+      .intro{padding:75px 27px}.contact{grid-template-columns:1fr;gap:22px;padding:42px 28px}footer{padding:20px 25px;flex-direction:column;text-align:center}
     }
-
-    .site-header nav {
-      display:flex;
-      align-items:center;
-      gap:18px;
-      flex-wrap:wrap;
-    }
-
-    .site-header nav a {
-      color:inherit;
-      text-decoration:none;
-    }
-
-    .site-logo {
-      font-weight:700;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .site-logo small {
-      display:block;
-      font-size:10px;
-      letter-spacing:3px;
-    }
-
-    .site-logo img {
-      display:block;
-      width:auto;
-      max-width:180px;
-      max-height:64px;
-      object-fit:contain;
-    }
-
-    .site-logo img[hidden],
-    .site-logo [hidden] {
-      display:none !important;
-    }
-
-    .site-hero {
-      min-height:520px;
-      display:flex;
-      align-items:center;
-      padding:64px 7%;
-      background:
-        linear-gradient(90deg,rgba(4,15,11,.94),rgba(4,15,11,.58)),
-        url('https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1800&q=85')
-        center/cover;
-    }
-
-    .site-hero>div {
-      max-width:720px;
-    }
-
-    .delivery-section {
-      padding:34px 7%;
-      text-align:center;
-      background:linear-gradient(135deg,#102d24,#080d0f);
-      border-bottom:1px solid rgba(216,183,106,.3);
-    }
-
-    .footer-platforms {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:14px;
-      margin-top:18px;
-    }
-
-    .footer-delivery-links,
-    .footer-delivery-links[hidden] {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    }
-
-    .footer-platform-icons {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:12px;
-    }
-
-    .footer-platform-icons .delivery-link {
-      display:grid;
-      place-items:center;
-      width:38px;
-      height:38px;
-      padding:3px;
-      border:0;
-      border-radius:8px;
-      background:transparent;
-    }
-
-    .footer-platform-icons .brand-logo {
-      width:30px;
-      height:30px;
-    }
-
-    .footer-platforms .social-links {
-      margin:0;
-    }
-
-    .delivery-popup {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:14px;
-      width:max-content;
-      max-width:calc(100vw - 28px);
-      margin:12px auto 0;
-      padding:12px 16px;
-      border:1px solid #d8b76a;
-      border-radius:16px;
-      background:#080d0f;
-      box-shadow:0 12px 30px #0009;
-    }
-
-    .delivery-popup[hidden] { display:none; }
-
-    .delivery-link {
-      display:grid;
-      place-items:center;
-      width:54px;
-      height:54px;
-      border:1px solid rgba(216,183,106,.35);
-      border-radius:12px;
-      background:#183e31;
-      text-decoration:none;
-    }
-
-    .delivery-link:hover,
-    .delivery-link:focus-visible {
-      background:#245640;
-      outline:2px solid #d8b76a;
-      outline-offset:3px;
-    }
-
-    .delivery-link .brand-logo {
-      width:34px;
-      height:34px;
-    }
-
-    .site-hero h1 {
-      font-size:clamp(38px,7vw,72px);
-      margin:10px 0;
-    }
-
-    .site-section {
-      padding:64px max(6%,calc((100% - 1180px)/2));
-    }
-
-    .site-section h2 {
-      text-align:center;
-    }
-
-    .site-cards {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:20px;
-      margin-top:28px;
-    }
-
-    .site-card,.news-card {
-      overflow:hidden;
-      border:1px solid rgba(216,183,106,.25);
-      border-radius:14px;
-      background:rgba(16,45,36,.55);
-    }
-
-    .site-card img,.news-card img {
-      width:100%;
-      height:190px;
-      object-fit:cover;
-      display:block;
-    }
-
-    .site-card>div,.news-card {
-      padding:20px;
-    }
-
-    .site-price,.review-stars {
-      color:#d8b76a;
-      font-weight:700;
-    }
-
-    .site-empty {
-      opacity:.8;
-      padding:18px;
-      text-align:center;
-    }
-
-    .google-review-btn {
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      margin:24px auto 0;
-      padding:13px 22px;
-      border:1px solid #d8b76a;
-      border-radius:999px;
-      background:#183e31;
-      color:#f7f1e5;
-      font-weight:700;
-      text-decoration:none;
-      text-align:center;
-    }
-
-    .google-review-btn:hover,
-    .google-review-btn:focus-visible {
-      background:#d8b76a;
-      color:#102d24;
-      outline:none;
-    }
-
-    .site-form {
-      max-width:720px;
-      margin:28px auto;
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:14px;
-    }
-
-    .site-form label {
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-
-    .site-form input,
-    .site-form select,
-    .site-form textarea {
-      width:100%;
-      padding:12px;
-      border-radius:8px;
-      border:1px solid #bda56c;
-      background:#fff;
-      color:#17251e;
-      font:inherit;
-    }
-
-    .site-form .wide {
-      grid-column:1/-1;
-    }
-
-    .site-form button:disabled {
-      opacity:.6;
-    }
-
-    #bookingMessage {
-      grid-column:1/-1;
-      min-height:24px;
-    }
-
-    #bookingMessage[data-state="success"] {
-      color:#78d69b;
-    }
-
-    #bookingMessage[data-state="error"] {
-      color:#ff9a9a;
-    }
-
-    .floor-room { margin:18px 0; padding:16px; border:1px solid rgba(216,183,106,.28); border-radius:14px; background:rgba(16,45,36,.35); }
-    .floor-room h4 { margin:0 0 12px; color:#d8b76a; }
-    .floor-table-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:10px; }
-    .floor-table { display:flex; flex-direction:column; gap:5px; padding:12px 8px; border:1px solid #d8b76a; border-radius:10px; background:#183e31; color:#f7f1e5; cursor:pointer; }
-    .floor-table small { font-size:11px; }
-    .floor-table.is-selected { outline:3px solid #d8b76a; background:#285a42; }
-    .floor-table.is-unavailable,.floor-table:disabled { opacity:.48; cursor:not-allowed; border-color:#888; }
-
-    .site-footer {
-      text-align:center;
-      padding:32px 6%;
-    }
-
-    #mobileMenuButton {
-      display:none;
-    }
-
-    @media(max-width:760px) {
-      .site-header {
-        padding:14px;
-        position:relative;
-      }
-
-      #mobileMenuButton {
-        display:none;
-      }
-
-      .site-header nav {
-        display:flex;
-        width:100%;
-        flex-direction:row;
-        align-items:center;
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        white-space:nowrap;
-        gap:16px;
-        padding:8px 0;
-        -webkit-overflow-scrolling:touch;
-      }
-
-      .site-header nav a {
-        flex:0 0 auto;
-      }
-
-      .site-phone {
-        display:none;
-      }
-
-      .site-hero {
-        min-height:470px;
-        padding:48px 22px;
-      }
-
-      .site-section {
-        padding:44px 20px;
-      }
-
-      .site-form {
-        grid-template-columns:1fr;
-      }
-
-      .site-form .wide {
-        grid-column:auto;
-      }
-    }
-  
-    /* Mobile navigation: compact header with an expandable menu */
-    @media(max-width:760px) {
-      .site-header {
-        display:flex;
-        flex-wrap:wrap;
-        align-items:center;
-        gap:10px;
-      }
-      #mobileMenuButton {
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        margin-left:auto;
-        min-height:42px;
-      }
-      .site-header nav {
-        display:none;
-        width:100%;
-        flex:1 0 100%;
-        flex-direction:column;
-        align-items:stretch;
-        flex-wrap:nowrap;
-        gap:0;
-        padding:7px 0 2px;
-        overflow:visible;
-        white-space:normal;
-      }
-      .site-header nav.is-open { display:flex; }
-      .site-header nav a {
-        display:block;
-        padding:11px 12px;
-        border-top:1px solid rgba(216,183,106,.18);
-      }
-      .site-header > .gold-btn { padding:9px 13px; }
-    }
-
   </style>
-  <link rel="stylesheet" href="assets/css/homepage-reference-v3.css?v=20261107-1">
 </head>
-
-<body class="site-body">
-
-<div class="nababi-contact-bar">
-  <a href="https://www.google.com/maps/search/?api=1&amp;query=Via+Vespasiano+73%2F75%2F77%2C+Roma" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">📍</span> Via Vespasiano 73/75/77, Roma</a>
-  <a href="tel:+393933805350"><span aria-hidden="true">☎</span> +39 393 3805350</a>
-  <a href="mailto:nababiristorante@gmail.com"><span aria-hidden="true">✉</span> nababiristorante@gmail.com</a>
-</div>
-<header class="site-header fusion-reference-header">
-  <div class="fusion-header-top">
-    <div class="fusion-language-pills" aria-label="Choose language">
-      <button type="button" data-site-language="it" class="is-active">🇮🇹 Italiano</button>
-      <button type="button" data-site-language="en">🇬🇧 English</button>
-      <button type="button" data-site-language="bn">🇧🇩 বাংলা</button>
+<body>
+  <div class="topline">
+    <div class="top-contact"><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma">⌖ Via Vespasiano 73/75/77, Roma</a><a href="tel:+393933805350">☎ +39 393 3805350</a></div>
+    <div class="top-right">
+      <div class="language" aria-label="Language">
+        <button type="button" data-lang="it" aria-pressed="true">IT</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="bn" aria-pressed="false">বাংলা</button>
+      </div>
+      <a class="admin-link" href="admin-v2.html">Admin Login ↗</a>
     </div>
-    <label class="language-switcher fusion-language-select" aria-label="Choose website language">
-      <select id="siteLanguage" aria-label="Choose language">
-        <option value="it">🇮🇹 Italiano</option><option value="en">🇬🇧 English</option><option value="bn">🇧🇩 বাংলা</option>
-      </select>
-    </label>
-    <a class="site-logo fusion-main-logo" href="#home" aria-label="Nababi Ristorante - Home">
-      <img id="siteHeaderLogo" alt="Nababi Ristorante" hidden>
-      <span id="siteHeaderLogoFallback" class="site-logo-fallback"><span class="site-logo-crown" aria-hidden="true">♛</span><span class="site-logo-words"><strong>NABABI</strong><small>RISTORANTE</small></span></span>
+  </div>
+  <header>
+    <a class="brand" href="#home" aria-label="Nababi Ristorante home">
+      <span class="brand-mark" aria-hidden="true">♛</span>
+      <span><span class="brand-name">NABABI</span><span class="brand-sub">RISTORANTE</span></span>
     </a>
-    <div class="fusion-header-actions">
-      <a class="fusion-header-phone" href="tel:+393933805350" aria-label="Call Nababi">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2.8 9.4 2l2 4.7-2.1 1.6a15 15 0 0 0 6.4 6.4l1.6-2.1 4.7 2-.8 2.8a3 3 0 0 1-3.3 2.1A18.5 18.5 0 0 1 4.5 6.1a3 3 0 0 1 2.1-3.3Z"/></svg>
-        <span>+39 393 3805350</span>
-      </a>
-      <a class="fusion-book-top" href="#reservation"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6M17 2v6M3 10h18M8 14h3M8 17h3"/></svg>Prenota un tavolo</a>
-    </div>
-    <button id="mobileMenuButton" class="fusion-mobile-toggle" type="button" aria-expanded="false" aria-controls="mainNavigation" aria-label="Open menu">☰</button>
-  </div>
-  <nav id="mainNavigation" aria-label="Main navigation">
-    <a href="#home" data-nav-home>Home</a><a href="#menu">Menu <span class="fusion-chevron">⌄</span></a>
-    <a href="#gallery">Gallery</a><a href="#discounts">Discounts</a>
-    <a href="#reservation">Reservation</a><a href="#about">About Us</a><a href="#reviews">Reviews</a><a href="#contact">Contact</a>
-    <button type="button" id="menuSearchToggle" class="fusion-search-link" aria-label="Search menu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
-  </nav>
-  <div id="menuSearchPanel" class="fusion-menu-search" hidden><label for="menuQuickSearch">Cerca nel menu</label><input id="menuQuickSearch" type="search" placeholder="Cerca piatti e ingredienti"></div>
-  <a class="site-admin-link fusion-admin-link" href="admin-v2.html" aria-label="Admin Login">Admin Login</a>
-</header>
-<section class="site-hero fusion-reference-hero" id="home">
-  <div class="fusion-hero-food" aria-hidden="true">
-    <img class="fusion-hero-dish fusion-hero-dish-one" src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&amp;fit=crop&amp;w=650&amp;q=90" alt="" fetchpriority="high">
-    <img class="fusion-hero-dish fusion-hero-dish-two" src="https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&amp;fit=crop&amp;w=520&amp;q=88" alt="" loading="lazy">
-    <img class="fusion-hero-dish fusion-hero-dish-three" src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&amp;fit=crop&amp;w=420&amp;q=88" alt="" loading="lazy">
-  </div>
-  <div class="fusion-hero-copy">
-    <p class="eyebrow">স্বাগতম · Benvenuti da</p>
-    <h1>Nababi Ristorante</h1>
-    <h2>Autentici sapori del Bangladesh, nel cuore di Roma.</h2>
-    <p class="fusion-hero-intro">Un viaggio nei sapori del Bangladesh: biryani profumato, curry tradizionali, kebab e specialità preparate con spezie autentiche e passione.</p>
-    <div class="fusion-hero-actions">
-      <a class="gold-btn fusion-hero-cta" href="#menu">♙ Scopri la cucina bengalese</a>
-      <a class="gold-btn fusion-hero-cta secondary" href="#reservation">Prenota un Tavolo</a>
-    </div>
-  </div>
-  <div class="fusion-hero-flags" aria-label="Bangladesh, India and Italy"><span title="Bangladesh">🇧🇩</span><span title="India">🇮🇳</span><span title="Italy">🇮🇹</span></div>
-  <div class="fusion-hero-photo-credit">BANGLADESH · INDIA · ITALY</div>
-</section>
-
-<section class="nababi-benefits" aria-label="I valori di Nababi">
-  <div><span aria-hidden="true">♨</span><p><strong>Ingredienti Freschi</strong><small>Sempre di qualità</small></p></div>
-  <div><span aria-hidden="true">♨</span><p><strong>Cucina Autentica</strong><small>Tradizione Bengalese</small></p></div>
-  <div><span aria-hidden="true">♡</span><p><strong>Atmosfera Accogliente</strong><small>Per tutta la famiglia</small></p></div>
-  <div><span aria-hidden="true">♧</span><p><strong>Accoglienza Familiare</strong><small>Sempre con il sorriso</small></p></div>
-</section>
-
-<section class="fusion-cuisine" aria-label="Our special cuisine">
-  <div class="fusion-section-title"><span></span><h2>বিশেষ বাঙালি খাবার · Specialità Bengalese</h2><span></span></div>
-  <div class="fusion-cuisine-grid">
-    <a class="fusion-cuisine-item" href="#menu"><img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&amp;fit=crop&amp;w=700&amp;q=90" alt="Biryani bengalese" loading="lazy"><strong>Biryani</strong><small>Riso speziato e aromatico</small></a>
-    <a class="fusion-cuisine-item" href="#menu"><img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&amp;fit=crop&amp;w=700&amp;q=90" alt="Pollo curry" loading="lazy"><strong>Pollo Curry</strong><small>Tradizione e gusto</small></a>
-    <a class="fusion-cuisine-item" href="#menu"><img src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&amp;fit=crop&amp;w=700&amp;q=90" alt="Pesce curry" loading="lazy"><strong>Pesce Curry</strong><small>Sapore autentico</small></a>
-    <a class="fusion-cuisine-item" href="#menu"><img src="https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&amp;fit=crop&amp;w=700&amp;q=90" alt="Kebab alla griglia" loading="lazy"><strong>Kebab</strong><small>Griglia perfetta</small></a>
-    <a class="fusion-cuisine-item" href="#menu"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&amp;fit=crop&amp;w=700&amp;q=90" alt="Piatti vegetariani" loading="lazy"><strong>Piatti Vegetariani</strong><small>Freschezza e salute</small></a>
-  </div>
-</section>
-<section class="reference-middle-row" aria-label="Gallery, reservation and events">
-  <a class="reference-photo-card reference-gallery-card" href="#gallery">
-    <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&amp;fit=crop&amp;w=1000&amp;q=90" alt="Interno del ristorante Nababi" loading="lazy">
-    <span class="reference-card-copy"><strong>La Nostra Gallery</strong><small>Vivi l’atmosfera del nostro ristorante attraverso le immagini.</small><b>♧ Vedi Gallery →</b></span>
-  </a>
-  <div class="reference-booking-panel">
-    <h2>⌁　Prenota il Tuo Tavolo　⌁</h2>
-    <p>Scegli il tipo di evento e vivi un’esperienza indimenticabile.</p>
-    <div class="reference-booking-types">
-      <a href="#reservation"><span>♜</span><strong>Tavolo Normale</strong><small>Dine &amp; Enjoy</small><b>→</b></a>
-      <a href="#reservation"><span>♛</span><strong>Compleanno</strong><small>Festeggia con noi</small><b>→</b></a>
-      <a href="#reservation"><span>♧</span><strong>Eventi Speciali</strong><small>Eventi su misura</small><b>→</b></a>
-    </div>
-  </div>
-  <a class="reference-photo-card reference-event-card" href="#events">
-    <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&amp;fit=crop&amp;w=900&amp;q=90" alt="Sala per feste ed eventi" loading="lazy">
-    <span class="reference-card-copy"><strong>Compleanni &amp; Eventi</strong><small>Rendi speciale ogni momento.</small><b>Richiedi Info →</b></span>
-  </a>
-</section>
-
-<section class="reference-lower-row" aria-label="About, reviews and location">
-  <div class="reference-spice-image" role="img" aria-label="Spezie e ingredienti della cucina indiana"></div>
-  <article class="reference-about-card">
-    <span class="reference-overline">NABABI RISTORANTE</span><h2>Chi Siamo</h2>
-    <p>Nato dalla passione per la cucina indiana, il nostro ristorante porta a Roma i sapori autentici dell’India, con piatti preparati secondo le ricette tradizionali e un tocco di modernità.</p>
-    <a href="#about">Scopri di più　↗</a>
-  </article>
-  <article class="reference-review-card">
-    <h2>Cosa Dicono di Noi</h2><p>La soddisfazione dei nostri clienti è la nostra migliore ricompensa.</p>
-    <div id="referenceReviewPreview" class="reference-review-preview"><span>★★★★★</span><blockquote>Scopri le recensioni dei nostri ospiti e la loro esperienza da Nababi.</blockquote><a href="#reviews">Leggi le recensioni →</a></div>
-  </article>
-  <a class="reference-location-card" href="https://www.google.com/maps/search/?api=1&amp;query=Via+Vespasiano+73%2F75%2F77%2C+Roma" target="_blank" rel="noopener noreferrer">
-    <img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&amp;fit=crop&amp;w=900&amp;q=90" alt="Roma al tramonto" loading="lazy">
-    <span><strong>Vieni a trovarci</strong><small>⌖ Via Vespasiano 73/75/77, Roma</small><small>◷ Aperto tutti i giorni · 12:00 - 23:00</small><b>Contattaci →</b></span>
-  </a>
-</section>
-
-<section class="site-section reference-discounts" id="discounts">
-  <h2>Discounts &amp; Offerte Speciali</h2>
-  <p>Scopri le promozioni disponibili e richiedi il tuo coupon Nababi.</p>
-  <article class="fusion-offer-panel" id="customerCouponSection" hidden>
-    <div class="fusion-offer-ornament">✧</div><div class="fusion-offer-copy">
-      <p class="eyebrow">OFFERTA SPECIALE NABABI</p><h2>Offerte Speciali</h2><p>Ottieni uno sconto esclusivo con il nostro coupon</p>
-      <p id="customerCouponDiscount" class="site-price fusion-coupon-discount">—</p><p id="customerCouponPeriod" class="fusion-coupon-period">Offerta valida per un periodo limitato.</p><p id="customerCouponRemaining" class="help"></p>
-      <button id="claimCustomerCoupon" class="gold-btn" type="button">Ottieni il Coupon →</button><p id="customerCouponStatus" class="help" aria-live="polite"></p>
-      <div id="customerCouponCode" class="fusion-coupon-result" hidden><p>Il tuo codice coupon:</p><strong id="customerCouponCodeValue"></strong><p id="customerCouponExpiry"></p><img id="customerCouponQr" class="fusion-coupon-qr" alt="QR Code del tuo coupon" hidden><p id="customerCouponExpiryNotice" class="help">Attenzione: dopo la data di scadenza, il coupon non sarà più utilizzabile.</p><button id="copyCustomerCoupon" class="outline-btn" type="button">Copia codice</button></div>
-      <p class="help">Mostra il codice o il QR allo staff.</p>
-    </div><div class="fusion-offer-seal"><span>OFFERTA</span><strong>★</strong><span>NABABI</span></div>
-  </article>
-</section>
-
-<section class="site-section" id="liveNewsSection">
-  <h2>Novità e comunicazioni</h2>
-
-  <div id="liveNews" class="site-cards">
-    <p class="site-empty">Caricamento…</p>
-  </div>
-</section>
-
-
-
-
-<section class="site-section" id="menu">
-  <h2>Il Nostro Menu Bengalese</h2>
-
-
-  <div id="liveMenu" class="site-cards">
-    <p class="site-empty">Caricamento menu…</p>
-  </div>
-</section>
-
-<section class="site-section" id="gallery">
-  <h2>La Nostra Gallery</h2>
-
-
-  <div id="liveGallery" class="site-cards">
-    <p class="site-empty">Caricamento immagini…</p>
-  </div>
-</section>
-
-<section class="site-section" id="events">
-  <h2>Eventi Speciali</h2>
-
-
-  <div id="liveEvents" class="site-cards">
-    <p class="site-empty">Caricamento eventi…</p>
-  </div>
-</section>
-
-<section class="site-section" id="reservation">
-  <h2>Prenota il Tuo Tavolo</h2>
-
-  <form id="bookingForm" class="site-form">
-    <label>Nome e cognome *
-      <input name="full_name" autocomplete="name" required maxlength="120">
-    </label>
-    <label>Telefono <span data-contact-required> (telefono o email obbligatori)</span>
-      <input name="phone" type="tel" autocomplete="tel" maxlength="40">
-    </label>
-    <label>Email <span data-contact-required> (telefono o email obbligatori)</span>
-      <input name="email" type="email" autocomplete="email" maxlength="160">
-    </label>
-    <label>Numero ospiti *
-      <select name="guests" required>
-        <option value="1" >1</option><option value="2" selected>2</option><option value="3" >3</option><option value="4" >4</option><option value="5" >5</option><option value="6" >6</option><option value="7" >7</option><option value="8" >8</option><option value="9" >9</option><option value="10" >10</option><option value="11" >11</option><option value="12" >12</option><option value="13" >13</option><option value="14" >14</option><option value="15" >15</option><option value="16" >16</option>
-      </select>
-    </label>
-    <label>Data *
-      <input name="booking_date" type="date" required>
-    </label>
-    <label>Ora *
-      <input name="booking_time" type="time" required>
-    </label>
-    <label class="wide">Tipo di prenotazione *
-      <select name="booking_type" required>
-        <option value="table">Prenotazione tavolo</option>
-        <option value="birthday">Compleanno</option>
-        <option value="anniversary">Anniversario di matrimonio</option>
-      </select>
-    </label>
-    <div id="floorMap" class="wide" aria-live="polite">
-      <h3>Scegli il tuo tavolo</h3>
-      <p>Seleziona data e ora per vedere i tavoli disponibili.</p>
-    </div>
-    <input type="hidden" name="selected_table_id" required>
-    <label class="wide">Note (facoltativo)
-      <textarea name="notes" rows="3" maxlength="1000" placeholder="Richieste particolari"></textarea>
-    </label>
-    <button class="gold-btn wide" type="submit">Invia richiesta</button>
-    <p id="bookingMessage" class="notice wide" aria-live="polite"></p>
-  </form>
-
-  <div class="booking-status-lookup site-card" style="max-width:720px;margin:24px auto;padding:20px">
-    <h3>Controlla la tua prenotazione</h3>
-    <p>Inserisci il codice ricevuto dopo aver inviato la richiesta.</p>
-    <form id="bookingStatusForm" class="site-form" style="margin:12px 0">
-      <label class="wide">Codice prenotazione
-        <input name="booking_code" type="text" placeholder="NAB-XXXXXXXXXXXX" autocomplete="off" maxlength="16" required>
-      </label>
-      <button class="gold-btn wide" type="submit">Verifica stato</button>
-      <p id="bookingStatusResult" class="notice wide" aria-live="polite"></p>
-    </form>
-  </div>
-
-  <div class="whatsapp-booking-card">
-    <div class="whatsapp-booking-copy">
-      <span class="whatsapp-mini-label">CONTATTO DIRETTO</span>
-      <strong>Preferisci WhatsApp?</strong>
-      <small>Scrivici per informazioni o prenotazioni.</small>
-    </div>
-    <a class="whatsapp-cta" href="https://wa.me/393337687319?text=Ciao%20Nababi%20Ristorante%2C%20vorrei%20avere%20informazioni." target="_blank" rel="noopener noreferrer" aria-label="Scrivi a Nababi Ristorante su WhatsApp">
-      <span>Scrivici su WhatsApp</span><span aria-hidden="true">↗</span>
-    </a>
-  </div>
-</section>
-
-<section class="site-section fusion-about" id="about">
-  <div class="fusion-about-photo">
-    <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=85" alt="Una tavola ricca di piatti da condividere" loading="lazy">
-    <span class="fusion-photo-stamp">NABABI<br><small>ROMA · ITALIA</small></span>
-  </div>
-  <div class="fusion-about-copy">
-    <span class="fusion-overline">LA NOSTRA STORIA</span>
-    <h2>Più di un ristorante.<br><em>Un luogo d’incontro.</em></h2>
-    <p>Nababi nasce dall’amore per la cucina, dalle tradizioni del Bangladesh e dell’India e dal desiderio di accogliere ogni ospite con calore, nel cuore di Roma.</p>
-    <p>Ogni tavola è un invito a scoprire sapori, condividere momenti e sentirsi a casa.</p>
-    <a class="gold-btn" href="#reservation">Vieni a trovarci</a>
-  </div>
-</section>
-
-<section class="site-section" id="reviews">
-
-  <h2>Cosa Dicono di Noi</h2>
-
-
-  <div id="liveReviews" class="site-cards">
-    <p class="site-empty">Caricamento recensioni…</p>
-  </div>
-
-  <div class="site-card" style="padding:20px;margin:22px 0;max-width:720px">
-    <h3 id="reviewFormHeading">Lascia la tua recensione</h3>
-    <p id="reviewFormIntro" class="help">Raccontaci la tua esperienza. La recensione sarà pubblicata dopo la verifica del nostro team.</p>
-    <form id="customerReviewForm" class="site-form" style="margin-top:14px">
-      <label>Nome *</label>
-      <input name="customer_name" type="text" maxlength="120" minlength="2" autocomplete="name" required>
-      <label>Valutazione *</label>
-      <select name="rating" required>
-        <option value="5">★★★★★ — 5</option>
-        <option value="4">★★★★☆ — 4</option>
-        <option value="3">★★★☆☆ — 3</option>
-        <option value="2">★★☆☆☆ — 2</option>
-        <option value="1">★☆☆☆☆ — 1</option>
-      </select>
-      <label>La tua recensione *</label>
-      <textarea name="review_text" rows="4" minlength="5" maxlength="3000" required></textarea>
-      <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
-        <label>Sito web <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+    <nav aria-label="Main navigation">
+      <a href="#home" data-t="navHome">Home</a>
+      <a href="#story" data-t="navStory">La nostra storia</a>
+      <a href="#contact" data-t="navContact">Contatti</a>
+    </nav>
+  </header>
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <div class="eyebrow" data-t="eyebrow">Un’esperienza di gusto</div>
+        <h1>Nababi <span>Ristorante</span></h1>
+        <p data-t="heroText">I sapori autentici del Bangladesh, nel cuore di Roma. Una nuova esperienza di ospitalità, cultura e tradizione.</p>
+        <div class="hero-actions">
+          <a class="action primary" href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="discover">Come raggiungerci</a>
+          <a class="action secondary" href="tel:+393933805350" data-t="call">Chiamaci</a>
+        </div>
       </div>
-      <button class="google-review-btn" type="submit">Invia recensione</button>
-      <p id="customerReviewStatus" class="help" role="status" aria-live="polite"></p>
-    </form>
-  </div>
-
-  <a class="google-review-btn"
-     href="https://g.page/r/CW3lALmyTJ-yEAE/review"
-     target="_blank" rel="noopener noreferrer">
-    ⭐ Scrivi una recensione su Google
-  </a>
-
-</section>
-
-<section class="site-section" id="contact">
-
-  <div class="contact-heading">
-    <span class="contact-eyebrow">NABABI RISTORANTE · ROMA</span>
-    <h2>Vieni a trovarci</h2>
-  </div>
-
-  <div class="contact-info-grid">
-    <article class="contact-info-card contact-address-card">
-      <span class="contact-info-icon" aria-hidden="true">⌖</span>
-      <div>
-        <span class="contact-card-label">DOVE SIAMO</span>
-        <h3>Il nostro ristorante</h3>
-        <p>Via Vespasiano 73/75/77, Roma</p>
-      </div>
-    </article>
-
-    <article class="contact-info-card">
-      <span class="contact-info-icon" aria-hidden="true">☎</span>
-      <div>
-        <span class="contact-card-label">TELEFONO</span>
-        <h3>Chiamaci</h3>
-        <p><a href="tel:+393933805350">+39 393 3805350</a></p>
-      </div>
-    </article>
-
-    <article class="contact-info-card contact-whatsapp-card">
-      <span class="contact-info-icon" aria-hidden="true">◉</span>
-      <div>
-        <span class="contact-card-label">WHATSAPP</span>
-        <h3>Scrivici direttamente</h3>
-        <p><a href="https://wa.me/393337687319" target="_blank" rel="noopener noreferrer">+39 333 7687319 <span aria-hidden="true">↗</span></a></p>
-      </div>
-    </article>
-
-    <article class="contact-info-card">
-      <span class="contact-info-icon" aria-hidden="true">✉</span>
-      <div>
-        <span class="contact-card-label">EMAIL</span>
-        <h3>Mandaci un’email</h3>
-        <p><a href="mailto:nababiristorante@gmail.com">nababiristorante@gmail.com</a></p>
-      </div>
-    </article>
-  </div>
-
-  <div class="contact-hours-panel">
-    <div class="contact-hours-heading">
-      <span class="contact-info-icon" aria-hidden="true">◷</span>
-      <div>
-        <span class="contact-card-label">TI ASPETTIAMO</span>
-        <h3>Orari di apertura</h3>
-      </div>
-    </div>
-    <div id="liveHours">
-      <p>Orari: contattaci per conferma.</p>
-    </div>
-  </div>
-
-  <a class="contact-directions-btn"
-     href="https://www.google.com/maps/search/?api=1&query=Via+Vespasiano+73+Roma"
-     target="_blank" rel="noopener noreferrer">
-    <span aria-hidden="true">➤</span> Indicazioni stradali <span aria-hidden="true">↗</span>
-  </a>
-
-  <div class="contact-form-heading">
-    <span class="contact-eyebrow">SIAMO QUI PER TE</span>
-    <h2>Scrivici un messaggio</h2>
-
-  <form id="contactForm" class="site-form">
-    <label>
-      Nome e cognome *
-      <input name="full_name" autocomplete="name" required maxlength="120">
-    </label>
-
-    <label>
-      Email
-      <input name="email" type="email" autocomplete="email" maxlength="160">
-    </label>
-
-    <label>
-      Telefono
-      <input name="phone" type="tel" autocomplete="tel" maxlength="40">
-    </label>
-
-    <label>
-      Oggetto
-      <input name="subject" maxlength="160">
-    </label>
-
-    <label class="wide">
-      Messaggio *
-      <textarea name="message" rows="5" required maxlength="4000"></textarea>
-    </label>
-
-    <button class="gold-btn wide" type="submit">Invia messaggio</button>
-    <p id="contactMessage" class="notice" aria-live="polite"></p>
-  </form>
-
-  <section class="site-section" id="faq">
-    <h2>Domande frequenti</h2>
-
-    <div class="faq-list">
-      <details class="faq-item">
-        <summary>Prenotazioni / Reservations / বুকিং</summary>
-        <p><strong>IT:</strong> Puoi richiedere un tavolo chiamandoci al <a href="tel:+393933805350">+39 393 3805350</a>, scrivendoci su <a href="https://wa.me/393337687319" target="_blank" rel="noopener noreferrer">WhatsApp</a> oppure compilando il modulo Prenotazioni.</p>
-        <p><strong>EN:</strong> Request a table by calling us, messaging us on WhatsApp, or using the Reservations form.</p>
-        <p><strong>বাংলা:</strong> ফোন, WhatsApp অথবা ওয়েবসাইটের বুকিং ফর্ম দিয়ে টেবিলের অনুরোধ করতে পারেন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Orari / Opening hours / খোলার সময়</summary>
-        <p><strong>IT:</strong> Consulta gli orari aggiornati nella sezione Contatti del sito. In caso di dubbi, contattaci prima della visita.</p>
-        <p><strong>EN:</strong> Check the updated hours in the Contact section. If unsure, please contact us before visiting.</p>
-        <p><strong>বাংলা:</strong> ওয়েবসাইটের Contact অংশে আপডেট করা সময় দেখুন। নিশ্চিত না হলে আসার আগে যোগাযোগ করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Dove siamo / Location / ঠিকানা</summary>
-        <p><strong>IT:</strong> Ci trovi in Via Vespasiano 73/75/77, Roma. Usa il link Indicazioni stradali nella sezione Contatti.</p>
-        <p><strong>EN:</strong> Find us at Via Vespasiano 73/75/77, Rome. Use the directions link in the Contact section.</p>
-        <p><strong>বাংলা:</strong> আমাদের ঠিকানা Via Vespasiano 73/75/77, Roma। Contact অংশের Directions লিংক ব্যবহার করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Takeaway / Asporto / খাবার নিয়ে যাওয়া</summary>
-        <p><strong>IT:</strong> Contattaci per verificare la disponibilità del servizio takeaway e le modalità.</p>
-        <p><strong>EN:</strong> Please contact us to confirm takeaway availability and arrangements.</p>
-        <p><strong>বাংলা:</strong> Takeaway সুবিধা ও নিয়ম জানতে আমাদের সঙ্গে যোগাযোগ করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Consegna a domicilio / Delivery / হোম ডেলিভারি</summary>
-        <p><strong>IT:</strong> Consulta gli eventuali link di consegna pubblicati sul sito oppure contattaci per conoscere le opzioni disponibili.</p>
-        <p><strong>EN:</strong> Check any delivery links shown on the website or contact us for current options.</p>
-        <p><strong>বাংলা:</strong> ওয়েবসাইটে দেওয়া ডেলিভারি লিংক দেখুন অথবা বর্তমান সুবিধা জানতে যোগাযোগ করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Pagamenti / Payments / পেমেন্ট</summary>
-        <p><strong>IT:</strong> Contattaci per confermare i metodi di pagamento accettati.</p>
-        <p><strong>EN:</strong> Please contact us to confirm the accepted payment methods.</p>
-        <p><strong>বাংলা:</strong> কোন কোন পেমেন্ট গ্রহণ করা হয়, তা জানতে যোগাযোগ করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Menu vegetariano / Vegetarian options / নিরামিষ খাবার</summary>
-        <p><strong>IT:</strong> Per conoscere i piatti vegetariani disponibili e gli ingredienti, chiedi al nostro staff.</p>
-        <p><strong>EN:</strong> Ask our staff about available vegetarian dishes and their ingredients.</p>
-        <p><strong>বাংলা:</strong> নিরামিষ খাবার ও উপকরণ সম্পর্কে আমাদের কর্মীদের জিজ্ঞাসা করুন।</p>
-      </details>
-
-      <details class="faq-item">
-        <summary>Eventi e compleanni / Events and birthdays / অনুষ্ঠান ও জন্মদিন</summary>
-        <p><strong>IT:</strong> Per feste, compleanni o gruppi, contattaci indicando data, numero di ospiti e richiesta.</p>
-        <p><strong>EN:</strong> For parties, birthdays, or groups, contact us with your date, guest count, and request.</p>
-        <p><strong>বাংলা:</strong> অনুষ্ঠান, জন্মদিন বা গ্রুপ বুকিংয়ের জন্য তারিখ, অতিথির সংখ্যা ও প্রয়োজন জানিয়ে যোগাযোগ করুন।</p>
-      </details>
-    </div>
-  </section>
-
-</section>
-
-<footer class="site-footer fusion-footer">
-  <div class="fusion-footer-main">
-    <div class="fusion-footer-brand">
-      <div class="site-logo"><img id="siteFooterLogo" alt="Nababi Ristorante" hidden><span id="siteFooterLogoFallback"><span class="fusion-footer-crown">♛</span><strong>NABABI</strong><small>RISTORANTE</small></span></div>
-      <p>Buon cibo. Buon umore.</p>
-    </div>
-    <div class="fusion-footer-links"><h3>Link rapidi</h3><a href="#home">Home</a><a href="#menu">Menu</a><a href="#gallery">Gallery</a><a href="#discounts">Discounts</a><a href="#reservation">Reservation</a><a href="#contact">Contact</a><a href="admin-v2.html" aria-label="Admin Login">Admin Login</a></div>
-    <div class="fusion-footer-social"><h3>Seguici</h3><div id="publicSocialLinks" class="social-links fusion-live-social" aria-label="Social network" hidden></div><a class="fusion-facebook-direct" href="https://www.facebook.com/share/1EG84uBwWR/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Seguici su Facebook"><span aria-hidden="true">f</span><small>Facebook</small></a><div class="footer-platforms"><div id="foodDelivery" class="footer-delivery-links" aria-label="Food delivery" hidden><div id="publicDeliveryLinks" class="footer-platform-icons"></div></div></div></div>
-    <div class="fusion-footer-connect"><h3>Resta aggiornato</h3><p>Scopri le ultime offerte e novità!</p><a href="#contact" class="fusion-footer-subscribe">Contattaci <span>→</span></a></div>
-    <div class="fusion-footer-qr"><a href="https://www.facebook.com/share/1EG84uBwWR/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Apri la pagina Facebook di Nababi"><img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;data=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1EG84uBwWR%2F%3Fmibextid%3DwwXIfr" alt="Codice QR per Facebook Nababi" loading="lazy"></a><span>Scansiona per Facebook</span></div>
-  </div>
-  <div class="fusion-footer-bottom"><p>© 2026 NABABI RISTORANTE. Tutti i diritti riservati.</p><div><a href="#contact">Privacy</a><span>|</span><a href="#contact">Termini e condizioni</a></div><span class="fusion-footer-flags">🇮🇹 🇧🇩 🇬🇧</span></div>
-</footer>
-
-<a class="whatsapp-floating" href="https://wa.me/393337687319?text=Ciao%20Nababi%20Ristorante%2C%20vorrei%20avere%20informazioni." target="_blank" rel="noopener noreferrer" aria-label="Apri WhatsApp e contatta Nababi Ristorante">
-  <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16.02 3.2A12.7 12.7 0 0 0 5.1 22.37L3.3 28.9l6.7-1.75A12.72 12.72 0 1 0 16.02 3.2Zm0 23.1c-1.95 0-3.86-.52-5.53-1.5l-.4-.23-3.98 1.04 1.06-3.88-.26-.4a10.35 10.35 0 1 1 9.11 4.97Zm5.68-7.75c-.31-.16-1.85-.91-2.14-1.01-.29-.1-.5-.16-.71.16-.21.31-.82 1.01-1 1.22-.19.21-.37.23-.68.08-.31-.16-1.31-.48-2.5-1.53-.92-.82-1.54-1.84-1.72-2.15-.18-.31-.02-.48.14-.64.14-.14.31-.37.47-.55.16-.19.21-.32.31-.53.1-.21.05-.4-.03-.56-.08-.16-.71-1.71-.97-2.34-.25-.61-.51-.53-.71-.54l-.61-.01c-.21 0-.55.08-.84.4-.29.31-1.1 1.07-1.1 2.61s1.13 3.03 1.29 3.24c.16.21 2.22 3.39 5.38 4.75.75.32 1.33.52 1.78.66.75.24 1.43.21 1.97.13.6-.09 1.85-.76 2.11-1.49.26-.74.26-1.37.18-1.5-.08-.13-.29-.21-.6-.37Z"/></svg>
-  <span>WhatsApp</span>
-</a>
+    </section>
+    <section class="intro" id="story">
+      <div class="eyebrow" data-t="storyEyebrow">La nostra identità</div>
+      <h2 data-t="storyTitle">Tradizione bengalese. Spirito italiano. Accoglienza senza confini.</h2>
+      <p data-t="storyText">Nababi Ristorante è uno spazio dedicato all’incontro tra sapori, persone e culture. Questa è la nostra nuova casa digitale: costruiremo ogni sezione con cura, un passo alla volta.</p>
+      <div class="ornament" aria-hidden="true">✦　✦　✦</div>
+    </section>
+    <section class="contact" id="contact">
+      <div><h3>Nababi Ristorante</h3><p data-t="contactIntro">Cucina bengalese nel cuore di Roma.</p></div>
+      <div><h3 data-t="visit">Vieni a trovarci</h3><p>Via Vespasiano 73/75/77<br>Roma, Italia</p><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma" target="_blank" rel="noopener" data-t="map">Apri su Google Maps ↗</a></div>
+      <div><h3 data-t="contact">Contatti</h3><p><a href="tel:+393933805350">+39 393 3805350</a><br><a href="mailto:nababiristorante@gmail.com">nababiristorante@gmail.com</a></p></div>
+    </section>
+  </main>
+  <footer><span>© <span id="year"></span> NABABI RISTORANTE · ROMA</span><a href="admin-v2.html">Admin Login ↗</a></footer>
+  <script>
+    const copy={
+      it:{navHome:"Home",navStory:"La nostra storia",navContact:"Contatti",eyebrow:"Un’esperienza di gusto",heroText:"I sapori autentici del Bangladesh, nel cuore di Roma. Una nuova esperienza di ospitalità, cultura e tradizione.",discover:"Come raggiungerci",call:"Chiamaci",storyEyebrow:"La nostra identità",storyTitle:"Tradizione bengalese. Spirito italiano. Accoglienza senza confini.",storyText:"Nababi Ristorante è uno spazio dedicato all’incontro tra sapori, persone e culture. Questa è la nostra nuova casa digitale: costruiremo ogni sezione con cura, un passo alla volta.",contactIntro:"Cucina bengalese nel cuore di Roma.",visit:"Vieni a trovarci",map:"Apri su Google Maps ↗",contact:"Contatti"},
+      en:{navHome:"Home",navStory:"Our story",navContact:"Contact",eyebrow:"A taste to remember",heroText:"Authentic flavours of Bangladesh in the heart of Rome. A fresh experience shaped by hospitality, culture and tradition.",discover:"Find us",call:"Call us",storyEyebrow:"Who we are",storyTitle:"Bengali heritage. Italian spirit. Hospitality without borders.",storyText:"Nababi Ristorante is a place where flavours, people and cultures meet. This is our new digital home: each section will be thoughtfully added, one step at a time.",contactIntro:"Bengali cuisine in the heart of Rome.",visit:"Visit us",map:"Open in Google Maps ↗",contact:"Contact"},
+      bn:{navHome:"হোম",navStory:"আমাদের গল্প",navContact:"যোগাযোগ",eyebrow:"স্বাদের এক নতুন অভিজ্ঞতা",heroText:"রোমের হৃদয়ে বাংলাদেশের আসল স্বাদ। আতিথেয়তা, সংস্কৃতি ও ঐতিহ্যের এক নতুন অভিজ্ঞতা।",discover:"আমাদের ঠিকানা",call:"ফোন করুন",storyEyebrow:"আমাদের পরিচয়",storyTitle:"বাংলার ঐতিহ্য। ইতালির আবহ। সবার জন্য আন্তরিক আতিথেয়তা।",storyText:"Nababi Ristorante হলো স্বাদ, মানুষ ও সংস্কৃতির মিলনস্থল। এটি আমাদের নতুন ডিজিটাল ঠিকানা—ধীরে ধীরে যত্ন নিয়ে প্রতিটি বিভাগ তৈরি করা হবে।",contactIntro:"রোমের হৃদয়ে বাংলা খাবার।",visit:"আমাদের ঠিকানা",map:"Google Maps-এ দেখুন ↗",contact:"যোগাযোগ"}
+    };
+    function setLanguage(lang){
+      const words=copy[lang]||copy.it;
+      document.documentElement.lang=lang;
+      document.querySelectorAll("[data-t]").forEach(el=>{const key=el.dataset.t;if(words[key])el.textContent=words[key]});
+      document.querySelectorAll("[data-lang]").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.lang===lang)));
+    }
+    document.querySelectorAll("[data-lang]").forEach(btn=>btn.addEventListener("click",()=>setLanguage(btn.dataset.lang)));
+    document.getElementById("year").textContent=new Date().getFullYear();
+  </script>
 </body>
 </html>
