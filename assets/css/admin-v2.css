@@ -133,3 +133,10 @@ body{overflow-x:hidden}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
+
+
+/* Menu Manager dish image thumbnails and form preview */
+.dish-image-preview-wrap{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0c1b14}
+.dish-image-preview-wrap img{display:block;width:112px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.dish-thumb{display:block;width:58px;height:48px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
+.dish-thumb-placeholder{display:grid;place-items:center;width:58px;height:48px;border:1px dashed var(--line);border-radius:7px;color:var(--muted)}
