@@ -1,0 +1,54 @@
+/* Fixes based on the user's live mobile screenshot */
+.fusion-reference-hero{background:#080b0c!important;background-image:linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.58) 48%,rgba(0,0,0,.10) 100%)!important}
+.fusion-reference-hero .fusion-hero-food{display:block!important;position:absolute!important;z-index:1!important;inset:0 0 0 auto!important;width:58%!important;height:100%!important;pointer-events:none!important}
+.fusion-reference-hero .fusion-hero-food:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#050708 0%,rgba(5,7,8,.28) 44%,rgba(5,7,8,.02) 100%)!important}
+.fusion-reference-hero .fusion-hero-dish{display:block!important;position:absolute!important;object-fit:cover!important;border:2px solid #c59a43!important;box-shadow:0 8px 25px #000b!important}
+.fusion-reference-hero .fusion-hero-dish-one{right:4%!important;top:18%!important;width:76%!important;height:68%!important;border-radius:46% 46% 16px 16px!important}
+.fusion-reference-hero .fusion-hero-dish-two{right:57%!important;bottom:8%!important;width:35%!important;height:34%!important;border-radius:50%!important}
+.fusion-reference-hero .fusion-hero-dish-three{right:0!important;bottom:5%!important;width:29%!important;height:28%!important;border-radius:50%!important}
+.fusion-reference-hero .fusion-hero-copy{z-index:3!important}
+.fusion-reference-hero .fusion-hero-flags,.fusion-reference-hero .fusion-hero-photo-credit{display:none!important}
+.fusion-main-logo #siteHeaderLogo{display:none!important}
+.fusion-main-logo #siteHeaderLogoFallback{display:flex!important;align-items:center!important;gap:8px!important}
+.fusion-main-logo .site-logo-crown{display:inline-block!important;color:#f1c65e!important;font-size:35px!important;text-shadow:0 0 12px #b78936!important}
+.fusion-main-logo .site-logo-words strong,.fusion-main-logo .site-logo-words small{color:#f3d47f!important}
+.fusion-main-logo{min-width:0!important}
+.fusion-reference-header nav{min-width:0!important}
+.fusion-section-title{min-width:0!important;max-width:100%!important}
+.fusion-section-title h2{white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;max-width:100%!important}
+.fusion-cuisine{min-width:0!important;overflow:hidden!important}
+.fusion-cuisine-grid{min-width:0!important;max-width:100%!important}
+.fusion-cuisine-item{min-width:0!important;overflow:hidden!important}
+.fusion-cuisine-item img{display:block!important;min-width:0!important;background:#14232a!important;object-fit:cover!important}
+.reference-photo-card img,.reference-location-card img{display:block!important}
+@media(max-width:650px){
+ .fusion-reference-header{display:flex!important;flex-wrap:nowrap!important;justify-content:space-between!important;gap:8px!important;min-height:58px!important;padding:7px 13px!important}
+ .fusion-main-logo{order:0!important;flex:0 1 auto!important}
+ .fusion-main-logo .site-logo-crown{font-size:30px!important}
+ .fusion-main-logo .site-logo-words strong{font-size:20px!important}
+ .fusion-main-logo .site-logo-words small{font-size:10px!important}
+ .fusion-language-select{display:none!important}
+ .fusion-mobile-toggle{order:2!important;display:inline-flex!important;flex:0 0 42px!important;width:42px!important;height:40px!important;margin:0!important}
+ .fusion-reference-header nav{display:none!important}
+ .fusion-reference-header nav.is-open{display:flex!important}
+ .fusion-reference-hero{height:auto!important;min-height:480px!important;padding:28px 18px 30px!important;align-items:flex-start!important;background-image:linear-gradient(180deg,rgba(0,0,0,.18),#030607 57%,#030607 100%)!important}
+ .fusion-reference-hero .fusion-hero-food{inset:0 0 auto!important;width:100%!important;height:225px!important;opacity:.96!important}
+ .fusion-reference-hero .fusion-hero-food:after{background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.05) 45%,#030607 100%)!important}
+ .fusion-reference-hero .fusion-hero-dish-one{right:7%!important;top:12px!important;width:68%!important;height:190px!important;border-radius:48% 48% 12px 12px!important}
+ .fusion-reference-hero .fusion-hero-dish-two{right:63%!important;top:108px!important;bottom:auto!important;width:28%!important;height:92px!important}
+ .fusion-reference-hero .fusion-hero-dish-three{right:0!important;top:125px!important;bottom:auto!important;width:24%!important;height:82px!important}
+ .fusion-reference-hero .fusion-hero-copy{margin-top:205px!important;max-width:100%!important}
+ .fusion-reference-hero .eyebrow{font-size:10px!important;letter-spacing:3px!important}
+ .fusion-reference-hero h1{font-size:clamp(36px,10vw,48px)!important;line-height:1.02!important;overflow-wrap:normal!important}
+ .fusion-reference-hero h2{font-size:18px!important;line-height:1.25!important}
+ .fusion-reference-hero .fusion-hero-intro{max-width:100%!important;font-size:13px!important;line-height:1.5!important}
+ .fusion-hero-actions{flex-wrap:wrap!important;gap:9px!important}
+ .fusion-reference-hero .fusion-hero-cta{max-width:100%!important;text-align:center!important;padding:11px 14px!important;font-size:12px!important}
+ .fusion-cuisine{display:block!important;padding:20px 13px!important}
+ .fusion-section-title{display:block!important;width:100%!important;margin:0 0 13px!important}
+ .fusion-section-title h2{font-size:clamp(25px,7vw,32px)!important;line-height:1.2!important;white-space:normal!important}
+ .fusion-section-title:after{font-size:12px!important}
+ .fusion-cuisine-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;width:100%!important}
+ .fusion-cuisine-item{width:100%!important;min-width:0!important;min-height:140px!important}
+ .fusion-cuisine-item img{width:100%!important;height:105px!important;object-fit:cover!important}
+}
