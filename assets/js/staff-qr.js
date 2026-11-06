@@ -201,13 +201,13 @@
 
     if (error) {
       loading.textContent =
-        "Unable to load staff. Please contact the administrator.";
+        "স্টাফদের তথ্য আনা যাচ্ছে না। অনুগ্রহ করে অ্যাডমিনের সঙ্গে যোগাযোগ করুন।";
       console.error("Staff list error:", error);
       return;
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      loading.textContent = "No active staff found.";
+      loading.textContent = "কোনো সক্রিয় স্টাফ পাওয়া যায়নি।";
       return;
     }
 
@@ -251,12 +251,12 @@
     const pin = pinInput.value.trim();
 
     if (!/^[0-9]{4}$/.test(pin)) {
-      showMessage(pinMessage, "Please enter your 4-digit PIN.");
+      showMessage(pinMessage, "অনুগ্রহ করে ৪ সংখ্যার পিন লিখুন।");
       return;
     }
 
     setBusy(verifyButton, true, "VERIFICA PIN");
-    showMessage(pinMessage, "Verifying your PIN...");
+    showMessage(pinMessage, "আপনার পিন যাচাই করা হচ্ছে...");
 
     try {
       const { data, error } = await db.rpc(
@@ -275,7 +275,7 @@
 
         showMessage(
           pinMessage,
-          data?.message || "PIN verification failed."
+          data?.message || "পিন যাচাই করা যায়নি। আবার চেষ্টা করুন।"
         );
 
         return;
@@ -289,33 +289,33 @@
       showMessage(actionMessage, "");
 
       if (data.next_action === "check_in") {
-        actionTitle.textContent = "Buongiorno!";
+        actionTitle.textContent = "আসসালামু আলাইকুম!";
         actionDescription.textContent =
-          "Your attendance has not started today.";
+          "আজকের উপস্থিতি এখনো শুরু হয়নি।";
 
-        actionButton.textContent = "CHECK IN";
+        actionButton.textContent = "চেক-ইন করুন";
         actionButton.classList.remove("hidden");
         actionButton.disabled = false;
       } else if (data.next_action === "check_out") {
-        actionTitle.textContent = "Fine turno";
+        actionTitle.textContent = "শিফট শেষ";
         actionDescription.textContent =
-          "Your check-in is recorded. You can now check out.";
+          "আপনার চেক-ইন সংরক্ষিত হয়েছে। এখন চেক-আউট করতে পারবেন।";
 
-        actionButton.textContent = "CHECK OUT";
+        actionButton.textContent = "চেক-আউট করুন";
         actionButton.classList.remove("hidden");
         actionButton.disabled = false;
       } else if (data.next_action === "completed") {
         pendingPin = null;
 
-        actionTitle.textContent = "Attendance completed";
+        actionTitle.textContent = "আজকের উপস্থিতি সম্পন্ন";
         actionDescription.textContent =
-          "La tua presenza di oggi è già completata.";
+          "আজকের উপস্থিতি ইতিমধ্যে সম্পন্ন হয়েছে।";
 
         actionButton.classList.add("hidden");
 
         showMessage(
           actionMessage,
-          "Check-in and Check-out are already completed for today."
+          "আজকের চেক-ইন ও চেক-আউট দুটোই সম্পন্ন হয়েছে।"
         );
       } else {
         pendingPin = null;
@@ -331,7 +331,7 @@
 
       showMessage(
         pinMessage,
-        "Connection error. Please try again."
+        "সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
       );
     } finally {
       setBusy(verifyButton, false, "VERIFICA PIN");
@@ -344,7 +344,7 @@
     const currentAction = actionButton.textContent;
     setBusy(actionButton, true, currentAction);
 
-    showMessage(actionMessage, "Recording attendance...");
+    showMessage(actionMessage, "উপস্থিতি সংরক্ষণ করা হচ্ছে...");
 
     try {
       const { data, error } = await db.rpc(
@@ -363,7 +363,7 @@
 
         showMessage(
           actionMessage,
-          data?.message || "Attendance could not be recorded."
+          data?.message || "উপস্থিতি সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।"
         );
 
         return;
@@ -449,13 +449,13 @@
 
   function start() {
     if (!SUPABASE || typeof SUPABASE.createClient !== "function") {
-      loading.textContent = "Supabase library could not be loaded.";
+      loading.textContent = "সিস্টেম লোড হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।";
       return;
     }
 
     if (!supabaseUrl || !anonKey) {
       loading.textContent =
-        "Supabase configuration is missing. Check config.js.";
+        "সিস্টেম কনফিগারেশন পাওয়া যায়নি। অ্যাডমিনের সঙ্গে যোগাযোগ করুন।";
       console.error("Supabase config keys were not found.");
       return;
     }
