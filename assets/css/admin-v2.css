@@ -108,3 +108,28 @@
   .topbar h1{font-size:18px}
   .top-actions select{font-size:12px}
 }
+
+
+/* Keyboard focus, compact laptops and resilient mobile overflow */
+:where(button,a,input,select,textarea):focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+.main-area,.content,.panel{min-width:0}
+@media(min-width:901px) and (max-width:1180px){
+  .sidebar{width:224px}
+  .main-area{margin-left:224px}
+  .topbar{padding-left:22px;padding-right:22px}
+  .content{padding:22px}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .sidebar{height:100vh;height:100dvh}
+  .sidebar nav{padding-bottom:12px}
+  .sidebar-backdrop{touch-action:manipulation}
+  .menu-button{min-width:44px;min-height:44px;touch-action:manipulation}
+  .topbar{z-index:10}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
