@@ -97,6 +97,14 @@ function inputFor(field,value=''){
  return '<label class="field">'+label+'<input name="'+name+'" type="'+inputType+'" value="'+v+'" '+(required?'required':'')+(type==='number'?' step="any"':'')+'></label>';
 }
 function displayValue(v){if(v===null||v===undefined||v==='')return '—';if(typeof v==='boolean')return v?'Yes':'No';if(typeof v==='object')return esc(JSON.stringify(v));return esc(v)}
+function breakingNewsMediaCell(row){
+ const image=row.image_url?'<div class="news-media-item"><span class="news-media-type">IMAGE</span><img class="news-media-thumb" src="'+esc(row.image_url)+'" alt="Breaking News image" loading="lazy"></div>':'';
+ const videoUrl=String(row.youtube_url||'').trim();
+ let videoId='';
+ try{const u=new URL(videoUrl);videoId=u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop()||'';if(!/^[A-Za-z0-9_-]{11}$/.test(videoId))videoId=''}catch(_){}
+ const video=videoUrl?'<div class="news-media-item"><span class="news-media-type video">VIDEO</span>'+(videoId?'<a href="https://www.youtube.com/watch?v='+videoId+'" target="_blank" rel="noopener noreferrer"><img class="news-media-thumb" src="https://img.youtube.com/vi/'+videoId+'/hqdefault.jpg" alt="YouTube video thumbnail" loading="lazy"></a>':'<span class="news-video-link">Video URL saved</span>')+'<a class="news-media-open" href="'+esc(videoUrl)+'" target="_blank" rel="noopener noreferrer">Open video ↗</a></div>':'';
+ return image||video?'<div class="news-media-preview">'+image+video+'</div>':'<span class="news-media-none">No media</span>';
+}
 
 function attendanceDateValue(d){const x=new Date(d);return [x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-')}
 function attendanceDuration(a,b){if(!a||!b)return null;const toMin=v=>{const p=String(v).slice(0,5).split(':').map(Number);return p.length===2&&p.every(Number.isFinite)?p[0]*60+p[1]:null};let x=toMin(a),y=toMin(b);if(x===null||y===null)return null;if(y<x)y+=1440;return y-x}
@@ -228,9 +236,14 @@ async function crudPage(id){
  const cfg=crudConfigs[id],r=await db.from(cfg.table).select('*').limit(150);if(r.error)throw r.error;
  const rows=r.data||[],key=cfg.key||'id',canEdit=cfg.mode!=='readonly',canCreate=cfg.mode!=='update'&&cfg.mode!=='singleton'&&!cfg.noCreate,canDelete=cfg.mode!=='update'&&cfg.mode!=='singleton'&&id!=='about';
  const showForm=canEdit&&(canCreate||!!editingRecord||(cfg.mode==='singleton'&&rows.length>0));const form=showForm?'<section class="panel"><h2 id="crudHeading">'+(editingRecord?'Edit record':cfg.mode==='singleton'?'Edit settings':'Add record')+'</h2><form id="crudForm" class="admin-form" data-module="'+id+'"><input type="hidden" name="_key" value="'+esc(editingRecord||'')+'">'+cfg.fields.map(f=>inputFor(f)).join('')+'<div class="form-actions"><button class="gold-button" type="submit">'+t('save')+'</button><button class="secondary-button" id="cancelCrud" type="button">'+t('cancel')+'</button></div><p id="crudStatus" class="message"></p></form></section>':'';
- const cols=rows.length?Object.keys(rows[0]).filter(k=>!['visitor_token_hash'].includes(k)).slice(0,7):[];
- const table=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr>'+cols.map(k=>'<th>'+esc(k)+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(k=>'<td>'+displayValue(row[k])+'</td>').join('')+'<td>'+(canEdit?'<button class="small-button" data-edit-record="'+esc(row[key])+'" data-module="'+id+'">Edit</button> ':'')+(canDelete?'<button class="small-button danger-button" data-delete-record="'+esc(row[key])+'" data-module="'+id+'">Delete</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('empty')+'</div>';
- const note=id==='about'?'Only edit keys already used by the website. Adding a new key does not automatically connect it to the public About section.':id==='discount'?'This is a single settings row; saving updates the existing row only.':id==='bookings'?'Booking records are preserved; this panel edits their status and staff notes without deleting reservations.':'Changes are subject to the existing Supabase Row Level Security policies.';
+ let table;
+ if(id==='news'){
+  table=rows.length?'<div class="table-wrap"><table class="data-table news-admin-table"><thead><tr><th>Title</th><th>Saved media</th><th>Body</th><th>Starts</th><th>Ends</th><th>Status</th><th>Actions</th></tr></thead><tbody>'+rows.map(row=>'<tr><td><b>'+displayValue(row.title)+'</b></td><td>'+breakingNewsMediaCell(row)+'</td><td class="news-body-cell">'+displayValue(row.body)+'</td><td>'+displayValue(row.starts_at)+'</td><td>'+displayValue(row.ends_at)+'</td><td><span class="news-active-state '+(row.is_active?'active':'inactive')+'">'+(row.is_active?'Active':'Inactive')+'</span></td><td><button class="small-button" data-edit-record="'+esc(row[key])+'" data-module="'+id+'">Edit</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('empty')+'</div>';
+ }else{
+  const cols=rows.length?Object.keys(rows[0]).filter(k=>!['visitor_token_hash'].includes(k)).slice(0,7):[];
+  table=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr>'+cols.map(k=>'<th>'+esc(k)+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(k=>'<td>'+displayValue(row[k])+'</td>').join('')+'<td>'+(canEdit?'<button class="small-button" data-edit-record="'+esc(row[key])+'" data-module="'+id+'">Edit</button> ':'')+(canDelete?'<button class="small-button danger-button" data-delete-record="'+esc(row[key])+'" data-module="'+id+'">Delete</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('empty')+'</div>';
+ }
+ const note=id==='about'?'Only edit keys already used by the website. Adding a new key does not automatically connect it to the public About section.':id==='discount'?'This is a single settings row; saving updates the existing row only.':id==='bookings'?'Booking records are preserved; this panel edits their status and staff notes without deleting reservations.':id==='news'?'Saved image thumbnails and YouTube video previews are shown below. Existing news records and media are not changed by this view.':'Changes are subject to the existing Supabase Row Level Security policies.';
  return '<section class="panel"><p class="help">'+note+'</p></section>'+form+'<section class="panel"><h2>'+cfg.title+'</h2>'+table+'</section>';
 }
 let editingRecord=null,attendanceRows=[],attendanceStart='',attendanceEnd='',selectedAttendanceStaff='';
