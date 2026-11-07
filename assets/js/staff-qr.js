@@ -98,30 +98,71 @@
     }
   }
 
-  async function showActiveStaffNotices() {
+  async function showStaffNoticeMessages(eventType) {
     if (!staffNoticeModal || !staffNoticeList) return;
-    try {
-      const { data, error } = await db.rpc("staff_qr_active_announcements");
-      if (error) throw error;
-      const notices = Array.isArray(data) ? data : [];
-      if (!notices.length) return;
 
-      staffNoticeList.replaceChildren();
-      notices.forEach(notice => {
-        const item = document.createElement("article");
-        item.className = "notice-item";
-        const heading = document.createElement("h3");
-        heading.textContent = notice.title || "Staff notice";
-        const body = document.createElement("p");
-        body.textContent = notice.message || "";
-        item.append(heading, body);
-        staffNoticeList.appendChild(item);
-      });
-      staffNoticeModal.classList.remove("hidden");
-      if (staffNoticeClose) staffNoticeClose.focus();
-    } catch (error) {
-      console.error("Staff announcements could not be loaded:", error);
+    const isCheckIn = eventType === "check_in";
+    const messages = isCheckIn
+      ? {
+          title: "অভিনন্দন! নতুন কর্মদিবসের শুভেচ্ছা",
+          lines: [
+            "NABABI RISTORANTE",
+            "আসসালামু আলাইকুম। নবাবি রেস্টুরেন্ট পরিবারে আপনাকে স্বাগতম। নতুন কর্মদিবসের জন্য আপনাকে অভিনন্দন।",
+            "সততা, দায়িত্বশীলতা ও আন্তরিকতার সঙ্গে নিজের কাজ সম্পন্ন করুন।",
+            "অতিথিদের সঙ্গে সবসময় ভদ্র ও সম্মানজনক আচরণ করুন।",
+            "সহকর্মীদের সহযোগিতা করুন এবং কর্মস্থলের নিয়ম মেনে চলুন।",
+            "সময়কে মূল্য দিন এবং নিজের দায়িত্বের প্রতি যত্নশীল থাকুন।",
+            "আপনার সুন্দর কর্মদিবস ও সফলতা কামনা করছি। ধন্যবাদ — NABABI RISTORANTE"
+          ]
+        }
+      : {
+          title: "ধন্যবাদ! আজকের দায়িত্ব সম্পন্ন",
+          lines: [
+            "NABABI RISTORANTE",
+            "আসসালামু আলাইকুম। আজকের দায়িত্ব পালন সম্পন্ন করার জন্য আপনাকে আন্তরিক ধন্যবাদ।",
+            "বাড়ি ফেরার আগে নিজের প্রয়োজনীয় জিনিসপত্র সঙ্গে নিয়েছেন কি না দেখে নিন।",
+            "রাস্তায় সতর্ক থাকুন এবং নিরাপদে বাড়ি পৌঁছান।",
+            "পরিবারের সঙ্গে সময় কাটান এবং পর্যাপ্ত বিশ্রাম নিন।",
+            "আগামী কর্মদিবসে নতুন উদ্যম ও দায়িত্ববোধ নিয়ে ফিরে আসুন।",
+            "আপনার নিরাপদ যাত্রা ও সুস্থতা কামনা করছি। ধন্যবাদ — NABABI RISTORANTE"
+          ]
+        };
+
+    staffNoticeList.replaceChildren();
+    const item = document.createElement("article");
+    item.className = "notice-item";
+    const heading = document.createElement("h3");
+    heading.textContent = messages.title;
+    item.appendChild(heading);
+    messages.lines.forEach(line => {
+      const body = document.createElement("p");
+      body.textContent = line;
+      item.appendChild(body);
+    });
+    staffNoticeList.appendChild(item);
+
+    // Keep existing admin-managed announcements visible after check-in.
+    if (isCheckIn) {
+      try {
+        const { data, error } = await db.rpc("staff_qr_active_announcements");
+        if (error) throw error;
+        (Array.isArray(data) ? data : []).forEach(notice => {
+          const extra = document.createElement("article");
+          extra.className = "notice-item";
+          const extraHeading = document.createElement("h3");
+          extraHeading.textContent = notice.title || "Staff notice";
+          const extraBody = document.createElement("p");
+          extraBody.textContent = notice.message || "";
+          extra.append(extraHeading, extraBody);
+          staffNoticeList.appendChild(extra);
+        });
+      } catch (error) {
+        console.error("Staff announcements could not be loaded:", error);
+      }
     }
+
+    staffNoticeModal.classList.remove("hidden");
+    if (staffNoticeClose) staffNoticeClose.focus();
   }
 
   function closeStaffNotices() {
@@ -409,9 +450,12 @@
         }
         successCard.hidden = false;
         showMessage(actionMessage, "");
-        await showActiveStaffNotices();
+        await showStaffNoticeMessages("check_in");
       } else {
         showMessage(actionMessage, "আপনার " + eventName + " সফলভাবে সংরক্ষণ হয়েছে। ধন্যবাদ।");
+        if (data.event === "check_out") {
+          await showStaffNoticeMessages("check_out");
+        }
       }
 
     } catch (error) {
