@@ -248,3 +248,71 @@ body{overflow-x:hidden}
   .attendance-live-card b{font-size:11px}
   .attendance-live-card small{font-size:9px}
 }
+
+
+/* Compact attendance detail report: normal text and tighter rows */
+.attendance-person-report{
+  padding:12px;
+}
+.attendance-person-report .attendance-section-head{
+  gap:10px;
+  align-items:center;
+}
+.attendance-person-report .attendance-section-head h2{
+  font:600 18px 'DM Sans',Arial,sans-serif;
+  margin:0 0 4px;
+}
+.attendance-person-report .attendance-section-head .help{
+  font-size:12px;
+  line-height:1.4;
+}
+.attendance-person-report .attendance-stats{
+  gap:8px;
+  margin:10px 0;
+}
+.attendance-person-report .attendance-stats .stat{
+  min-height:0;
+  padding:9px 10px;
+  border-radius:9px;
+}
+.attendance-person-report .attendance-stats .stat strong{
+  margin-top:3px;
+  font-size:18px;
+  line-height:1.25;
+}
+.attendance-person-report .attendance-stats .stat small{
+  font-size:11px;
+}
+.attendance-person-report .data-table{
+  min-width:0;
+  font-size:12px;
+  line-height:1.35;
+}
+.attendance-person-report .data-table th,
+.attendance-person-report .data-table td{
+  padding:7px 8px;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.attendance-person-report .attendance-punch{
+  min-width:0;
+  padding:3px 6px;
+  border-radius:6px;
+  font-size:11px;
+  font-weight:600;
+}
+.attendance-person-report .attendance-status{
+  padding:3px 7px;
+  font-size:10px;
+}
+@media(max-width:560px){
+  .attendance-person-report{padding:10px}
+  .attendance-person-report .attendance-section-head h2{font-size:16px}
+  .attendance-person-report .attendance-stats{gap:6px}
+  .attendance-person-report .attendance-stats .stat{padding:8px}
+  .attendance-person-report .attendance-stats .stat strong{font-size:16px}
+  .attendance-person-report .data-table{font-size:11px}
+  .attendance-person-report .data-table th,
+  .attendance-person-report .data-table td{padding:6px 7px}
+  .attendance-person-report .attendance-punch{font-size:10px;padding:2px 5px}
+}
