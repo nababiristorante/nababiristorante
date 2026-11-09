@@ -135,6 +135,12 @@ nav a:hover{transform:translateY(-1px)}
  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
 
+
+/* Admin-managed single homepage hero background */
+.hero{grid-template-columns:1fr;background-image:linear-gradient(90deg,rgba(0,28,9,.88) 0%,rgba(0,38,12,.66) 48%,rgba(0,25,8,.32) 100%),var(--homepage-background-image,none),radial-gradient(ellipse at 75% 42%,#37631e 0%,transparent 43%),linear-gradient(110deg,#01270c,#07501b 55%,#032b10);background-size:cover,cover,cover,cover;background-position:center,center,center,center;background-repeat:no-repeat}
+.hero-copy{max-width:760px}
+@media(max-width:700px){.hero{grid-template-columns:1fr;min-height:440px;background-position:center,center,center,center}.hero-copy{max-width:100%}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
@@ -143,7 +149,7 @@ nav a:hover{transform:translateY(-1px)}
 <div class="topline"><div class="top-left"><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma"><span class="symbol">●</span>Via Vespasiano 73/75/77 · Roma, Italia</a><a href="tel:+393933805350"><span class="symbol">☎</span>+39 393 3805350</a></div><div class="top-right"><a href="mailto:nababiristorante@gmail.com"><span class="symbol">✉</span>nababiristorante@gmail.com</a><div class="languages"><button data-lang="it" class="active">🇮🇹 IT</button><button data-lang="en">🇬🇧 EN</button><button data-lang="bn">🇧🇩 BN</button></div></div></div>
 <header><a class="brand" href="#home"><span class="brand-mark">♛</span><span class="brand-name"><strong>NABABI</strong><small>RISTORANTE</small></span></a><nav><a href="#home" data-t="navHome">Home</a><a href="#menu" data-t="navMenu">Menu⌄</a><a href="#visit" data-t="navBook">Prenotazioni</a><a href="#menu" data-t="navGallery">Galleria</a><a href="#contact" data-t="navContact">Contatti</a><a class="nav-cta" href="#visit">♜ Prenota Ora</a></nav></header>
 <main>
-<section class="hero" id="home"><div class="hero-copy"><div class="hero-kicker">Benvenuti da</div><h1>NABABI<span>RISTORANTE</span></h1><p>Autentica Cucina Bangladese<br>con Passione e Tradizione</p><div class="hero-actions"><a class="btn btn-fill" href="#menu">♜ Scopri il Nostro Menu →</a><a class="btn btn-line" href="#visit">▦ Prenota un Tavolo</a></div></div><div class="hero-visual"><img src="https://images.unsplash.com/photo-1563379091339-03246963d51a?auto=format&fit=crop&w=1100&q=90" alt="Piatto di biryani"><img src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=700&q=85" alt="Pollo al curry"><img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=85" alt="Specialità della cucina"></div><div class="hero-note">Il vero sapore<br>del Bangladesh</div></section>
+<section class="hero" id="home"><div class="hero-copy"><div class="hero-kicker">Benvenuti da</div><h1>NABABI<span>RISTORANTE</span></h1><p>Autentica Cucina Bangladese<br>con Passione e Tradizione</p><div class="hero-actions"><a class="btn btn-fill" href="#menu">♜ Scopri il Nostro Menu →</a><a class="btn btn-line" href="#visit">▦ Prenota un Tavolo</a></div></div><div class="hero-note">Il vero sapore<br>del Bangladesh</div></section>
 <section class="features"><div class="feature"><span class="feature-icon">♧</span><div><strong>Ingredienti Freschi</strong><em>Sempre di Qualità</em></div></div><div class="feature"><span class="feature-icon">♨</span><div><strong>Cucina Autentica</strong><em>Bangladese</em></div></div><div class="feature"><span class="feature-icon">♡</span><div><strong>Atmosfera Accogliente</strong><em>per Tutta la Famiglia</em></div></div><div class="feature"><span class="feature-icon">♟</span><div><strong>Accoglienza Familiare</strong><em>Sempre con il Sorriso</em></div></div></section>
 <section class="section special" id="menu"><div class="section-head"><h2>I Nostri Piatti Speciali</h2><p>Un viaggio nei sapori del Bangladesh</p></div><div class="special-grid">
 <article class="dish-card"><img loading="lazy" src="https://images.unsplash.com/photo-1563379091339-03246963d51a?auto=format&fit=crop&w=700&q=85" alt="Biryani"><div class="dish-info"><h3>Biryani</h3><p>Riso speziato e aromatico</p><span class="dish-arrow">➜</span></div></article>
@@ -166,6 +172,22 @@ function setLanguage(lang){const d=copy[lang]||copy.en;document.documentElement.
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.lang)));
 document.getElementById("year").textContent=new Date().getFullYear();
 setLanguage("it");
+
+async function loadHomepageBackground(){
+ try{
+  const cfg=window.NABABI_CONFIG||{};
+  if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY)return;
+  const client=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+  const {data,error}=await client.from('site_settings').select('setting_value').eq('setting_key','homepage_background_url').maybeSingle();
+  if(error||!data?.setting_value)return;
+  const parsed=new URL(String(data.setting_value));
+  if(parsed.protocol!=='https:')return;
+  const hero=document.querySelector('.hero');
+  if(hero)hero.style.setProperty('--homepage-background-image','url("'+parsed.href.replace(/["\\\\]/g,'')+'")');
+ }catch(error){console.warn('Homepage background is unavailable.',error)}
+}
+
+loadHomepageBackground();
 </script>
 <script>
 (async()=>{
