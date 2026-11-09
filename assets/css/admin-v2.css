@@ -316,3 +316,39 @@ body{overflow-x:hidden}
   .attendance-person-report .data-table td{padding:6px 7px}
   .attendance-person-report .attendance-punch{font-size:10px;padding:2px 5px}
 }
+
+
+/* Keep the main attendance report readable on narrow screens.
+   The table scrolls horizontally instead of squeezing each column into
+   a few characters and stacking dates vertically. */
+.attendance-table{
+  min-width:860px;
+  table-layout:auto;
+}
+.attendance-table th,
+.attendance-table td{
+  white-space:nowrap;
+  word-break:normal;
+  overflow-wrap:normal;
+  vertical-align:middle;
+}
+.attendance-table th:first-child,
+.attendance-table td:first-child{min-width:150px}
+.attendance-table th:nth-child(2),
+.attendance-table td:nth-child(2){min-width:105px}
+.attendance-table th:nth-child(3),
+.attendance-table td:nth-child(3){min-width:66px}
+.attendance-table th:nth-child(4),
+.attendance-table td:nth-child(4),
+.attendance-table th:nth-child(5),
+.attendance-table td:nth-child(5){min-width:100px}
+.attendance-table th:nth-child(6),
+.attendance-table td:nth-child(6){min-width:90px}
+.attendance-table th:nth-child(7),
+.attendance-table td:nth-child(7){min-width:90px}
+@media(max-width:760px){
+  .attendance-table{min-width:860px}
+  .attendance-table th,
+  .attendance-table td{padding:9px 10px;font-size:12px}
+  .attendance-table .attendance-person{min-width:140px;white-space:nowrap}
+}
