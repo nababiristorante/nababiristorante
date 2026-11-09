@@ -198,3 +198,10 @@ body{overflow-x:hidden}
 
 /* Keep Logo Management preview compact like the staff brand logo. */
 .logo-setting-preview{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;max-width:100%}.logo-setting-preview img{display:block;width:auto!important;height:auto!important;max-width:76px!important;max-height:48px!important;object-fit:contain;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}.logo-setting-url{max-width:260px;overflow-wrap:anywhere;font-size:12px;line-height:1.4}
+
+
+/* Distinct attendance punch colors */
+.attendance-punch{display:inline-flex;align-items:center;justify-content:center;min-width:66px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:800;white-space:nowrap;border:1px solid transparent}
+.attendance-punch-in{background:#153f2b;color:#8be0a8;border-color:#2b8050}
+.attendance-punch-out{background:#142f50;color:#9acbff;border-color:#3977b5}
+@media print{.attendance-punch-in{background:#e2f5e8!important;color:#17623a!important;border-color:#73b88a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.attendance-punch-out{background:#e5f0ff!important;color:#174f88!important;border-color:#7da9d8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
