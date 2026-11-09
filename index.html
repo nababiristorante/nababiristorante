@@ -48,7 +48,8 @@ bn:{navHome:"হোম",navStory:"আমাদের গল্প",navMenu:"ম�
 };
 function setLanguage(lang){const d=copy[lang]||copy.en;document.documentElement.lang=lang;document.querySelectorAll("[data-t]").forEach(el=>{const value=d[el.dataset.t];if(value!==undefined)el.innerHTML=value});document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang))}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.lang)));
-document.getElementById("year").textContent=new Date().getFullYear();\nsetLanguage("it");
+document.getElementById("year").textContent=new Date().getFullYear();
+setLanguage("it");
 </script>
 <script>
 (async()=>{
