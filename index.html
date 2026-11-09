@@ -94,6 +94,47 @@ footer{background:#02240d;border-top:2px solid #d6ad36}
  .bottom-banner h2{font-size:25px}
 }
 
+
+/* Responsive public-homepage refinement */
+:root{--gold:#f5c84c;--green:#063b19;--cream:#fff0d0}
+html{scroll-padding-top:112px}
+header{backdrop-filter:saturate(1.1);-webkit-backdrop-filter:saturate(1.1)}
+.brand-mark{filter:drop-shadow(0 2px 5px #d9aa3a55)}
+nav a{transition:color .2s ease,background .2s ease,transform .2s ease}
+nav a:hover{transform:translateY(-1px)}
+.hero{isolation:isolate}
+.hero-copy{max-width:610px}
+.hero-visual{min-width:0}
+.hero-visual img{min-width:0;object-position:center}
+.features{position:relative}
+.feature{min-width:0}
+.special-grid{align-items:stretch}
+.dish-card{display:flex;flex-direction:column}
+.dish-card img{flex:1 0 auto;min-height:150px}
+.dish-info{min-height:67px}
+.dish-info h3{line-height:1.2}
+.bottom-banner{isolation:isolate}
+.visit,#contact{scroll-margin-top:105px}
+@media(min-width:1200px){
+ .hero{padding-left:max(6%,calc((100vw - 1380px)/2));padding-right:max(6%,calc((100vw - 1380px)/2))}
+ .section{padding-left:max(4.5%,calc((100vw - 1450px)/2));padding-right:max(4.5%,calc((100vw - 1450px)/2))}
+}
+@media(max-width:700px){
+ html{scroll-padding-top:145px}
+ nav{scrollbar-width:none}
+ nav::-webkit-scrollbar{display:none}
+ .hero-visual{width:100%;min-width:0}
+ .hero-visual img{min-width:0}
+ .features{row-gap:2px}
+ .feature{min-width:0}
+ .dish-card img{min-height:125px}
+ .visit{padding:28px 16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/config.js"></script>
