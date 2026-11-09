@@ -205,3 +205,46 @@ body{overflow-x:hidden}
 .attendance-punch-in{background:#153f2b;color:#8be0a8;border-color:#2b8050}
 .attendance-punch-out{background:#142f50;color:#9acbff;border-color:#3977b5}
 @media print{.attendance-punch-in{background:#e2f5e8!important;color:#17623a!important;border-color:#73b88a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.attendance-punch-out{background:#e5f0ff!important;color:#174f88!important;border-color:#7da9d8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+
+/* Compact staff cards in the Attendance QR status grid */
+.attendance-live-card{
+  min-height:64px;
+  height:64px;
+  padding:8px 10px;
+  gap:9px;
+  border-radius:10px;
+}
+.attendance-live-card>div{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:3px;
+  min-width:0;
+  overflow:hidden;
+}
+.attendance-live-card b,
+.attendance-live-card small{
+  display:block;
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow-wrap:normal;
+}
+.attendance-live-card b{font-size:12px;line-height:1.25}
+.attendance-live-card small{font-size:10px;line-height:1.25}
+.attendance-live-card .attendance-click-hint{display:none}
+@media(max-width:560px){
+  .attendance-live-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .attendance-live-card{min-height:60px;height:60px;padding:7px;gap:7px}
+  .attendance-live-card img,
+  .attendance-live-card .attendance-avatar{
+    width:30px;height:30px;flex-basis:30px;min-width:30px;max-width:30px;min-height:30px;max-height:30px
+  }
+  .attendance-live-card b{font-size:11px}
+  .attendance-live-card small{font-size:9px}
+}
