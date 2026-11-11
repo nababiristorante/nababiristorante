@@ -220,14 +220,7 @@ function setLanguage(lang){const selected=lang==="it"||lang==="bn"||lang==="en"?
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.lang)));
 document.getElementById("year").textContent=new Date().getFullYear();
 setLanguage("it");
-document.getElementById("quickBookingForm")?.addEventListener("submit",event=>{
- event.preventDefault();
- const fd=new FormData(event.currentTarget);
- const lines=["Nababi Ristorante — Table booking request","Phone: "+(fd.get("phone")||""),"Email: "+(fd.get("email")||""),"Date: "+(fd.get("date")||""),"Time: "+(fd.get("time")||""),"Persons: "+(fd.get("persons")||""),"Category: "+(fd.get("category")||""),"Request: "+(fd.get("request")||"")];
- const note=document.getElementById("bookingMessage");
- if(note)note.textContent="Opening WhatsApp to send your booking request…";
- window.open("https://wa.me/393933805350?text="+encodeURIComponent(lines.join(String.fromCharCode(10))),"_blank","noopener");
-});
+
 
 
 async function loadHomepageBackground(){
@@ -259,4 +252,5 @@ loadHomepageBackground();
  }catch(e){console.warn('Maintenance check unavailable; public site remains visible.',e)}
 })();
 </script>
+<script src="assets/js/homepage-admin-sync.js" defer></script>
 </body></html>
