@@ -32,3 +32,13 @@ alter table public.breaking_news
 
 -- About Editor already stores arbitrary setting_key / setting_value pairs.
 -- Use about_title_it/en/bn and about_text_it/en/bn keys for localized About content.
+
+insert into public.site_settings (setting_key, setting_value)
+values
+  ('about_title_it', ''),
+  ('about_title_en', ''),
+  ('about_title_bn', ''),
+  ('about_text_it', ''),
+  ('about_text_en', ''),
+  ('about_text_bn', '')
+on conflict (setting_key) do nothing;
