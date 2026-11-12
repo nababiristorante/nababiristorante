@@ -135,21 +135,31 @@ async function attendancePage(){
  const staff=s.data||[],staffById=new Map(staff.map(x=>[String(x.id),x]));
  const romeDate=stamp=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(stamp));
  const romeTime=stamp=>new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(new Date(stamp));
- const eventGroups=new Map();
- (e.data||[]).forEach(ev=>{const day=romeDate(ev.occurred_at);if(day<start||day>end)return;const key=String(ev.staff_id)+'|'+day;if(!eventGroups.has(key))eventGroups.set(key,[]);eventGroups.get(key).push(ev)});
+ const eventsByStaff=new Map();
+ (e.data||[]).forEach(ev=>{const key=String(ev.staff_id);if(!eventsByStaff.has(key))eventsByStaff.set(key,[]);eventsByStaff.get(key).push(ev)});
  const eventRows=[],eventKeys=new Set();
- for(const [key,items] of eventGroups){
-  const [staffId,day]=key.split('|'),person=staffById.get(staffId);if(!person)continue;
-  let opened=null,shift=0;
+ for(const [staffId,items] of eventsByStaff){
+  const person=staffById.get(staffId);if(!person)continue;
+  let opened=null;
+  const shiftsByDay=new Map();
   for(const ev of items){
-   if(ev.event_type==='check_in'&&!opened){opened=ev;shift++}
-   else if(ev.event_type==='check_out'&&opened){
-    eventRows.push({staff_name:person.full_name||'Unknown staff',attendance_date:day,check_in:romeTime(opened.occurred_at),check_out:romeTime(ev.occurred_at),status:'সম্পূর্ণ',shift_number:shift});
+   if(ev.event_type==='check_in'&&!opened){
+    const day=romeDate(ev.occurred_at),shift=(shiftsByDay.get(day)||0)+1;
+    shiftsByDay.set(day,shift);
+    opened={event:ev,day,shift};
+    if(day>=start&&day<=end)eventKeys.add(staffId+'|'+day);
+   }else if(ev.event_type==='check_out'&&opened){
+    if(opened.day>=start&&opened.day<=end){
+     eventRows.push({staff_name:person.full_name||'Unknown staff',attendance_date:opened.day,check_in:romeTime(opened.event.occurred_at),check_out:romeTime(ev.occurred_at),status:'সম্পূর্ণ',shift_number:opened.shift});
+     eventKeys.add(staffId+'|'+opened.day);
+    }
     opened=null;
    }
   }
-  if(opened)eventRows.push({staff_name:person.full_name||'Unknown staff',attendance_date:day,check_in:romeTime(opened.occurred_at),check_out:null,status:'চলমান',shift_number:shift});
-  eventKeys.add(key);
+  if(opened&&opened.day>=start&&opened.day<=end){
+   eventRows.push({staff_name:person.full_name||'Unknown staff',attendance_date:opened.day,check_in:romeTime(opened.event.occurred_at),check_out:null,status:'চলমান',shift_number:opened.shift});
+   eventKeys.add(staffId+'|'+opened.day);
+  }
  }
  const legacy=(a.data||[]).filter(row=>{
   const person=staff.find(x=>String(x.full_name||'').trim().toLocaleLowerCase()===String(row.staff_name||'').trim().toLocaleLowerCase());
@@ -188,7 +198,7 @@ function exportIndividualAttendanceCsv(){
  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
  const lines=[head.join(',')].concat(rows.map(x=>[x.staff_name,x.attendance_date,x.shift_number||1,x.check_in,x.check_out,attendanceDuration(x.check_in,x.check_out),x.status].map(quote).join(',')));
  const safe=selectedAttendanceStaff.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-|-$/g,'')||'staff';
- const blob=new Blob(['\\uFEFF'+lines.join('\\r\\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='attendance-'+safe+'-'+(attendanceStart||'last-7-days')+'-'+(attendanceEnd||attendanceDateValue(new Date()))+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
