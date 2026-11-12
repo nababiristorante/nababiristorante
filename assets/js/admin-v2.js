@@ -19,7 +19,7 @@ attendance:{table:'staff_attendance',title:'Staff attendance',fields:[['staff_na
 tables:{table:'booking_floor_tables',title:'Restaurant floor tables',fields:[['table_code','Table code','text',true],['room_name','Room / area','text',true],['seats','Seats','number',true],['display_order','Display order','number'],['is_active','Active','boolean']]},
 delivery:{table:'food_delivery_links',title:'Food delivery links',fields:[['name','Provider name','text',true],['url','URL','url',true],['is_active','Active','boolean'],['sort_order','Display order','number']]},
 social:{table:'social_links',title:'Social links',fields:[['platform','Platform','text',true],['url','URL','url',true],['display_order','Display order','number'],['is_active','Active','boolean']]},
-news:{table:'breaking_news',title:'Breaking news',fields:[['title','Title','text',true],['title_it','Title · Italiano','text'],['title_en','Title · English','text'],['title_bn','Title · বাংলা','text'],['body','Body','textarea'],['body_it','Body · Italiano','textarea'],['body_en','Body · English','textarea'],['body_bn','Body · বাংলা','textarea'],['image_url','Image','image'],['youtube_url','YouTube URL','url'],['starts_at','Starts at','datetime'],['ends_at','Ends at','datetime'],['is_active','Active','boolean']]},
+news:{table:'breaking_news',title:'Breaking news',fields:[['title','Title','text',true],['starts_at','Start date & time','datetime'],['ends_at','End date & time','datetime'],['image_url','Upload image','image'],['youtube_url','Upload video','video'],['is_active','Active','boolean']]},
 reviews:{table:'reviews',title:'Reviews',fields:[['customer_name','Customer name','text'],['rating','Rating (1–5)','number',true],['review_text','Review','textarea'],['is_approved','Approved','boolean']]},
 hours:{table:'opening_hours',title:'Opening hours',fields:[['day_of_week','Day number (0–6)','number',true],['day_name','Day name','text',true],['is_closed','Closed','boolean'],['opens_at','Opens at','time'],['closes_at','Closes at','time']]},
 secret:{table:'secret_coupon_boxes',title:'Secret Coupon Box',fields:[['title','Title','text',true],['description','Description','textarea'],['image_url','Image URL','url'],['coupon_id','Coupon ID','number'],['is_active','Active','boolean'],['starts_at','Starts at','datetime'],['ends_at','Ends at','datetime']]},
@@ -59,6 +59,20 @@ function storageUploadError(err,bucket){
  }
  return raw;
 }
+async function uploadVideo(file,folder,maxBytes=80*1024*1024){
+ if(!file||!file.size)return null;
+ if(!['video/mp4','video/webm','video/ogg'].includes(file.type)||file.size>maxBytes)throw new Error('Use MP4, WebM or OGG video, maximum 80 MB.');
+ if(!db)throw new Error('Database connection is not ready. Reload the page and sign in again.');
+ const bucket=String(cfg.STORAGE_BUCKET||'nababi-media').trim();
+ if(!cfg.SUPABASE_URL||!/^https:\/\//i.test(cfg.SUPABASE_URL))throw new Error('Supabase project URL is missing or invalid.');
+ const ext=file.type==='video/webm'?'webm':file.type==='video/ogg'?'ogv':'mp4';
+ const path=folder+'/'+Date.now()+'-'+(crypto.randomUUID?.()||Math.random().toString(36).slice(2))+'.'+ext;
+ let up;try{up=await db.storage.from(bucket).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type})}catch(err){throw new Error(storageUploadError(err,bucket))}
+ if(up.error)throw new Error(storageUploadError(up.error,bucket));
+ const publicUrl=db.storage.from(bucket).getPublicUrl(up.data.path).data.publicUrl;
+ if(!publicUrl)throw new Error('Video uploaded, but no public URL was returned. Check Storage bucket visibility.');
+ return publicUrl;
+}
 async function uploadImage(file,folder,maxBytes=8*1024*1024){
  if(!file||!file.size)return null;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>maxBytes)throw new Error('Use JPG, PNG or WebP, maximum '+Math.round(maxBytes/1024/1024)+' MB.');
@@ -89,7 +103,7 @@ function inputFor(field,value=''){
  const required=requiredOrOptions===true;
  const options=Array.isArray(requiredOrOptions)?requiredOrOptions:null;
  const safe=esc(value??'');
- if(type==='image')return '<label class="field">'+label+'<input name="'+name+'" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="'+name+'_existing" value="'+safe+'">'+(value?'<img class="crud-image-preview" src="'+safe+'" alt="Current image">':'')+'</label>';
+ if(type==='image'||type==='video')return '<label class="field">'+label+'<input name="'+name+'" type="file" accept="'+(type==='video'?'video/mp4,video/webm,video/ogg':'image/jpeg,image/png,image/webp')+'"><input type="hidden" name="'+name+'_existing" value="'+safe+'">'+(value?(type==='video'?'<video class="crud-video-preview" src="'+safe+'" controls playsinline></video>':'<img class="crud-image-preview" src="'+safe+'" alt="Current image">'):'')+'</label>';
  if(type==='boolean')return '<label class="check-label"><input type="checkbox" name="'+name+'" '+(value===true?'checked':'')+'> '+label+'</label>';
  if(type==='textarea')return '<label class="field">'+label+'<textarea name="'+name+'" '+(required?'required':'')+'>'+safe+'</textarea></label>';
  if(type==='select')return '<label class="field">'+label+'<select name="'+name+'">'+(options||[]).map(v=>'<option value="'+esc(v)+'" '+(String(value)===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select></label>';
@@ -256,15 +270,15 @@ async function crudPage(id){
  const cfg=crudConfigs[id],r=await db.from(cfg.table).select('*').limit(150);if(r.error)throw r.error;
  const rows=r.data||[],key=cfg.key||'id',canEdit=cfg.mode!=='readonly',canCreate=cfg.mode!=='update'&&cfg.mode!=='singleton'&&!cfg.noCreate,canDelete=cfg.mode!=='update'&&cfg.mode!=='singleton'&&id!=='about';
  const showForm=canEdit&&(canCreate||!!editingRecord||(cfg.mode==='singleton'&&rows.length>0));const form=showForm?'<section class="panel"><h2 id="crudHeading">'+(editingRecord?'Edit record':cfg.mode==='singleton'?'Edit settings':'Add record')+'</h2><form id="crudForm" class="admin-form" data-module="'+id+'"><input type="hidden" name="_key" value="'+esc(editingRecord||'')+'">'+cfg.fields.map(f=>inputFor(f)).join('')+'<div class="form-actions"><button class="gold-button" type="submit">'+t('save')+'</button><button class="secondary-button" id="cancelCrud" type="button">'+t('cancel')+'</button></div><p id="crudStatus" class="message"></p></form></section>':'';
- const cols=rows.length?Object.keys(rows[0]).filter(k=>!['visitor_token_hash'].includes(k)).slice(0,7):[];
- const table=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr>'+cols.map(k=>'<th>'+esc(k)+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(k=>'<td>'+(id==='logo'&&k==='setting_value'&&row.setting_key==='restaurant_logo_url'&&row[k]?'<div class="logo-setting-preview"><div class="logo-setting-url">'+esc(row[k])+'</div><img src="'+esc(row[k])+'" alt="Saved restaurant logo preview" loading="lazy" onerror="this.hidden=true;this.insertAdjacentHTML(\'afterend\',\'<small>ছবিটি লোড করা যায়নি</small>\')"></div>':displayValue(row[k]))+'</td>').join('')+'<td>'+(canEdit?'<button class="small-button" data-edit-record="'+esc(row[key])+'" data-module="'+id+'">Edit</button> ':'')+(canDelete?'<button class="small-button danger-button" data-delete-record="'+esc(row[key])+'" data-module="'+id+'">Delete</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('empty')+'</div>';
+ const cols=rows.length?(id==='news'?['title','starts_at','ends_at','image_url','youtube_url','is_active']:Object.keys(rows[0]).filter(k=>!['visitor_token_hash'].includes(k)).slice(0,7)):[];
+ const table=rows.length?'<div class="table-wrap"><table class="data-table"><thead><tr>'+cols.map(k=>'<th>'+esc(k)+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(row=>'<tr>'+cols.map(k=>'<td>'+(id==='news'&&k==='image_url'&&row[k]?'<img class="crud-image-preview" src="'+esc(row[k])+'" alt="Breaking news image">':id==='news'&&k==='youtube_url'&&row[k]?'<video class="crud-video-preview" src="'+esc(row[k])+'" controls playsinline></video>':id==='logo'&&k==='setting_value'&&row.setting_key==='restaurant_logo_url'&&row[k]?'<div class="logo-setting-preview"><div class="logo-setting-url">'+esc(row[k])+'</div><img src="'+esc(row[k])+'" alt="Saved restaurant logo preview" loading="lazy" onerror="this.hidden=true;this.insertAdjacentHTML(\'afterend\',\'<small>ছবিটি লোড করা যায়নি</small>\')"></div>':displayValue(row[k]))+'</td>').join('')+'<td>'+(canEdit?'<button class="small-button" data-edit-record="'+esc(row[key])+'" data-module="'+id+'">Edit</button> ':'')+(canDelete?'<button class="small-button danger-button" data-delete-record="'+esc(row[key])+'" data-module="'+id+'">Delete</button>':'')+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">'+t('empty')+'</div>';
  const note=id==='about'?'Only edit keys already used by the website. Adding a new key does not automatically connect it to the public About section.':id==='discount'?'This is a single settings row; saving updates the existing row only.':id==='bookings'?'Booking records are preserved; this panel edits their status and staff notes without deleting reservations.':'Changes are subject to the existing Supabase Row Level Security policies.';
  return '<section class="panel"><p class="help">'+note+'</p></section>'+form+'<section class="panel"><h2>'+cfg.title+'</h2>'+table+'</section>';
 }
 let editingRecord=null,attendanceRows=[],attendanceStart='',attendanceEnd='',selectedAttendanceStaff='',attendanceLogoUrl='';
 async function saveCrud(e){
  e.preventDefault();const form=e.target,id=form.dataset.module,cfg=crudConfigs[id],fd=new FormData(form),payload={};
- for(const f of cfg.fields){const [name,,type]=f;let value;if(type==='boolean')value=form.elements[name].checked;else if(type==='image'){const file=form.elements[name].files?.[0];value=file?await uploadImage(file,id==='gallery'?'gallery':id==='qr_menu_images'?'qr-menu':id==='news'?'news':'secret-coupon'):(fd.get(name+'_existing')||null);if(f[3]===true&&!value)throw new Error(f[1]+' is required.')}else value=fd.get(name);if(type==='number')value=value===''?null:Number(value);if(type==='datetime')value=value?new Date(value).toISOString():null;if(typeof value==='string')value=value.trim();if(value===''&&!f[3])value=null;if(f[3]===true&&(value===null||value===''))throw new Error(f[1]+' is required.');payload[name]=value}
+ for(const f of cfg.fields){const [name,,type]=f;let value;if(type==='boolean')value=form.elements[name].checked;else if(type==='image'||type==='video'){const file=form.elements[name].files?.[0],folder=id==='news'?'news':id==='gallery'?'gallery':id==='qr_menu_images'?'qr-menu':'secret-coupon';value=file?(type==='video'?await uploadVideo(file,folder):await uploadImage(file,folder)):(fd.get(name+'_existing')||null);if(f[3]===true&&!value)throw new Error(f[1]+' is required.')}else value=fd.get(name);if(type==='number')value=value===''?null:Number(value);if(type==='datetime')value=value?new Date(value).toISOString():null;if(typeof value==='string')value=value.trim();if(value===''&&!f[3])value=null;if(f[3]===true&&(value===null||value===''))throw new Error(f[1]+' is required.');payload[name]=value}
  const key=cfg.key||(cfg.mode==='settings'?'setting_key':'id'),editing=String(fd.get('_key')||'');
  let q;
  if(cfg.mode==='singleton'){payload.id=true;q=db.from(cfg.table).update(payload).eq('id',true)}
@@ -278,7 +292,7 @@ async function editCrudRecord(id,key){
  editingRecord=String(key);await render(id);
  const form=$('#crudForm');if(!form)return;
  form.elements._key.value=String(key);
- for(const [name,,type] of cfg.fields){const el=form.elements[name];if(!el)continue;const value=r.data[name];if(type==='boolean')el.checked=value===true;else if(type==='image'){form.elements[name+'_existing'].value=value||'';const preview=el.parentElement.querySelector('img');if(value&&!preview)el.insertAdjacentHTML('afterend','<img class="crud-image-preview" src="'+esc(value)+'" alt="Current image">');else if(value&&preview)preview.src=value;}else if(type==='datetime'&&value){const d=new Date(value);el.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}else el.value=value??''}
+ for(const [name,,type] of cfg.fields){const el=form.elements[name];if(!el)continue;const value=r.data[name];if(type==='boolean')el.checked=value===true;else if(type==='image'||type==='video'){form.elements[name+'_existing'].value=value||'';if(value){const tag=type==='video'?'video':'img',preview=el.parentElement.querySelector(tag);if(!preview)el.insertAdjacentHTML('afterend',type==='video'?'<video class="crud-video-preview" src="'+esc(value)+'" controls playsinline></video>':'<img class="crud-image-preview" src="'+esc(value)+'" alt="Current image">');else preview.src=value;}}else if(type==='datetime'&&value){const d=new Date(value);el.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}else el.value=value??''}
  $('#crudHeading').textContent='Edit record';
 }
 
