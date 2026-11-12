@@ -55,8 +55,7 @@ begin
       execute format('create policy nababi_admin_read_%I on public.%I for select to authenticated using (exists (select 1 from public.admin_users au where au.user_id = auth.uid()))', t, t);
       execute format('drop policy if exists nababi_admin_update_%I on public.%I', t, t);
       execute format('create policy nababi_admin_update_%I on public.%I for update to authenticated using (exists (select 1 from public.admin_users au where au.user_id = auth.uid())) with check (exists (select 1 from public.admin_users au where au.user_id = auth.uid()))', t, t);
-      grant select, update on table public.contact_messages to authenticated;
-      grant select, update on table public.reviews to authenticated;
+      execute format('grant select, update on table public.%I to authenticated', t);
     end if;
   end loop;
 
