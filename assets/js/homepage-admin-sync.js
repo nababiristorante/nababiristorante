@@ -9,21 +9,38 @@ try{let a=(await get('gallery_items','title,image_url,is_active,sort_order','sor
 try{
 let a=await get('breaking_news','title,title_it,title_en,title_bn,body,body_it,body_en,body_bn,image_url,youtube_url,starts_at,ends_at,is_active','starts_at',false),now=Date.now(),x=a.find(y=>y.is_active&&(!y.starts_at||Date.parse(y.starts_at)<=now)&&(!y.ends_at||Date.parse(y.ends_at)>now)),h=$('.breaking-news');
 if(h){
-  h.hidden=!x;
-  h.style.display=x?'':'none';
+  h.hidden=!x;h.style.display=x?'':'none';
   if(x){
     put(h.querySelector('strong'),x['title_'+lang()]||x.title);
     const caption=h.querySelector('small');if(caption){caption.textContent='';caption.hidden=true;}
     const mediaLink=h.querySelector('a'),im=url(x.image_url),v=url(x.youtube_url);
     let media=h.querySelector('img,video');
-    if(v){if(media?.tagName!=='VIDEO'){const video=document.createElement('video');video.className='breaking-news-media';video.controls=true;video.playsInline=true;video.preload='metadata';if(media)media.replaceWith(video);else if(mediaLink)mediaLink.append(video);media=video;}media.src=v;media.hidden=false;if(mediaLink)mediaLink.href=v;}
-    else if(im){if(media?.tagName!=='IMG'){const image=document.createElement('img');image.alt=x.title||'Breaking news';if(media)media.replaceWith(image);else if(mediaLink)mediaLink.append(image);media=image;}media.src=im;media.hidden=false;if(mediaLink)mediaLink.href=im;}
-    else if(media){media.hidden=true;}
-    const expiry=Date.parse(x.ends_at);
-    if(Number.isFinite(expiry)){
-      const hideWhenExpired=()=>{const remaining=expiry-Date.now();if(remaining<=0){h.hidden=true;h.style.display='none';}else setTimeout(hideWhenExpired,Math.min(remaining,2147483647));};
-      setTimeout(hideWhenExpired,Math.min(Math.max(0,expiry-Date.now()),2147483647));
+    if(v){
+      if(media?.tagName!=='VIDEO'){const video=document.createElement('video');video.className='breaking-news-media';if(media)media.replaceWith(video);else if(mediaLink)mediaLink.append(video);media=video;}
+      media.src=v;media.hidden=false;media.controls=false;media.autoplay=true;media.muted=true;media.defaultMuted=true;media.loop=true;media.playsInline=true;media.setAttribute('muted','');media.setAttribute('autoplay','');media.setAttribute('playsinline','');media.preload='auto';if(mediaLink)mediaLink.href='#breaking-news-video';
+      media.play().catch(()=>{});
+    }else if(im){
+      if(media?.tagName!=='IMG'){const image=document.createElement('img');image.alt=x.title||'Breaking news';if(media)media.replaceWith(image);else if(mediaLink)mediaLink.append(image);media=image;}
+      media.src=im;media.hidden=false;if(mediaLink)mediaLink.href=im;
+    }else if(media){media.hidden=true;}
+    if(mediaLink){
+      mediaLink.onclick=e=>{e.preventDefault();const src=v||im;if(!src)return;
+        let modal=document.getElementById('breakingNewsViewer');
+        if(!modal){modal=document.createElement('div');modal.id='breakingNewsViewer';modal.className='breaking-news-viewer';modal.innerHTML='<div class="breaking-news-viewer-panel" role="dialog" aria-modal="true" aria-label="Breaking News media"><button type="button" class="breaking-news-close" aria-label="Close">×</button><button type="button" class="breaking-news-fullscreen">⛶ Full screen</button><div class="breaking-news-viewer-content"></div></div>';document.body.append(modal);
+          const close=()=>{const vid=modal.querySelector('video');if(vid){vid.pause();vid.removeAttribute('src');vid.load();}if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});modal.classList.remove('open');document.body.classList.remove('breaking-news-viewer-open');};
+          modal.querySelector('.breaking-news-close').onclick=close;
+          modal.addEventListener('click',ev=>{if(ev.target===modal)close();});
+          modal.querySelector('.breaking-news-fullscreen').onclick=()=>{const panel=modal.querySelector('.breaking-news-viewer-panel'),vid=modal.querySelector('video');if(vid?.webkitEnterFullscreen){vid.webkitEnterFullscreen();return;}if(!document.fullscreenElement)(panel.requestFullscreen?.()||vid?.requestFullscreen?.())?.catch?.(()=>{});else document.exitFullscreen?.().catch(()=>{});};
+          document.addEventListener('keydown',ev=>{if(ev.key==='Escape')close();});
+        }
+        const content=modal.querySelector('.breaking-news-viewer-content');content.innerHTML='';
+        if(v){const big=document.createElement('video');big.src=v;big.controls=true;big.autoplay=true;big.muted=true;big.playsInline=true;big.setAttribute('playsinline','');big.preload='auto';content.append(big);big.play().catch(()=>{});}
+        else{const big=document.createElement('img');big.src=src;big.alt=x.title||'Breaking News';content.append(big);}
+        modal.classList.add('open');document.body.classList.add('breaking-news-viewer-open');
+      };
     }
+    const expiry=Date.parse(x.ends_at);
+    if(Number.isFinite(expiry)){const hideWhenExpired=()=>{const remaining=expiry-Date.now();if(remaining<=0){h.hidden=true;h.style.display='none';}else setTimeout(hideWhenExpired,Math.min(remaining,2147483647));};setTimeout(hideWhenExpired,Math.min(Math.max(0,expiry-Date.now()),2147483647));}
   }
 }
 }catch(e){console.warn('Breaking News:',e.message)}
