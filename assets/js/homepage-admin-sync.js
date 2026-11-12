@@ -6,7 +6,24 @@ try{let [cats,dishes]=await Promise.all([get('categories','id,name,name_it,name_
 // Gallery Manager
 try{let a=(await get('gallery_items','title,image_url,is_active,sort_order','sort_order')).filter(x=>x.is_active&&url(x.image_url)),h=$('.booking-side .gallery-card');if(h){h.querySelector('.admin-home-gallery')?.remove();h.querySelector('img')?.remove();}if(h&&a.length){h.insertAdjacentHTML('beforeend','<div class="admin-home-gallery">'+a.slice(0,4).map(x=>'<a href="'+esc(url(x.image_url))+'" target="_blank" rel="noopener"><img src="'+esc(url(x.image_url))+'" alt="'+esc(x.title||'Gallery')+'"></a>').join('')+'</div>')}}catch(e){console.warn('Gallery:',e.message)}
 // Breaking News
-try{let a=await get('breaking_news','title,title_it,title_en,title_bn,body,body_it,body_en,body_bn,image_url,youtube_url,starts_at,ends_at,is_active','starts_at',false),now=Date.now(),x=a.find(y=>y.is_active&&(!y.starts_at||Date.parse(y.starts_at)<=now)&&(!y.ends_at||Date.parse(y.ends_at)>=now)),h=$('.breaking-news');if(x&&h){put(h.querySelector('strong'),x['title_'+lang()]||x.title);put(h.querySelector('small'),x['body_'+lang()]||x.body||'');let im=url(x.image_url);if(im&&h.querySelector('img'))h.querySelector('img').src=im;let v=url(x.youtube_url);if(v&&h.querySelector('a'))h.querySelector('a').href=v}}catch(e){console.warn('Breaking News:',e.message)}
+try{
+let a=await get('breaking_news','title,title_it,title_en,title_bn,body,body_it,body_en,body_bn,image_url,youtube_url,starts_at,ends_at,is_active','starts_at',false),now=Date.now(),x=a.find(y=>y.is_active&&(!y.starts_at||Date.parse(y.starts_at)<=now)&&(!y.ends_at||Date.parse(y.ends_at)>now)),h=$('.breaking-news');
+if(h){
+  h.hidden=!x;
+  h.style.display=x?'':'none';
+  if(x){
+    put(h.querySelector('strong'),x['title_'+lang()]||x.title);
+    put(h.querySelector('small'),x['body_'+lang()]||x.body||'');
+    let im=url(x.image_url);if(im&&h.querySelector('img'))h.querySelector('img').src=im;
+    let v=url(x.youtube_url);if(v&&h.querySelector('a'))h.querySelector('a').href=v;
+    const expiry=Date.parse(x.ends_at);
+    if(Number.isFinite(expiry)){
+      const hideWhenExpired=()=>{const remaining=expiry-Date.now();if(remaining<=0){h.hidden=true;h.style.display='none';}else setTimeout(hideWhenExpired,Math.min(remaining,2147483647));};
+      setTimeout(hideWhenExpired,Math.min(Math.max(0,expiry-Date.now()),2147483647));
+    }
+  }
+}
+}catch(e){console.warn('Breaking News:',e.message)}
 // Approved Reviews
 try{let a=(await get('reviews','customer_name,rating,review_text,is_approved','created_at',false)).filter(x=>x.is_approved&&x.review_text),h=$('.reviews-strip');if(h){put(h.querySelector('h2'),t('reviews'));put(h.querySelector('p'),a.length?a.slice(0,3).map(x=>'★'.repeat(Math.max(1,Math.min(5,Number(x.rating)||5)))+' '+x.review_text+(x.customer_name?' — '+x.customer_name:'')).join(' | '):(lang()==='bn'?'এখনো কোনো অনুমোদিত রিভিউ নেই':'No approved reviews yet'))}}catch(e){console.warn('Reviews:',e.message)}
 // Public events managed from Admin
