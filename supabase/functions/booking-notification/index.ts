@@ -26,8 +26,9 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const notificationEmail = Deno.env.get("NOTIFICATION_EMAIL");
+    const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL");
 
-    if (!supabaseUrl || !serviceRoleKey || !resendApiKey || !notificationEmail) {
+    if (!supabaseUrl || !serviceRoleKey || !resendApiKey || !notificationEmail || !resendFromEmail) {
       console.error("Missing required function secrets.");
       return json({ error: "Notification is not configured" }, 500);
     }
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Nababi Ristorante <onboarding@resend.dev>",
+        from: resendFromEmail,
         to: [notificationEmail],
         subject: "Nababi Ristorante — nuova prenotazione",
         text: lines.join("\n"),
