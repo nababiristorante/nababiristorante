@@ -392,11 +392,11 @@ else if(b.id==='printIndividualAttendance'){document.body.classList.add('attenda
 else if(b.id==='closeIndividualAttendance'){selectedAttendanceStaff='';render('attendance')}
 else if(b.id==='printAttendance')window.print();
 else if(b.id==='resetAttendanceFilter'){attendanceStart='';attendanceEnd='';render('attendance')}
-else if(b.dataset.module)render(b.dataset.module);
 else if(b.id==='cancelCrud'){editingRecord=null;render(b.closest('form').dataset.module)}
 else if(b.dataset.galleryAction){await handleGalleryAction(b)}else if(b.dataset.qrAction){await handleQrMenuAction(b)}
 else if(b.dataset.editRecord){await editCrudRecord(b.dataset.module,b.dataset.editRecord)}
 else if(b.dataset.deleteRecord){const id=b.dataset.module,cfg=crudConfigs[id];if(!confirm('Delete this record permanently?'))return;const r=await db.from(cfg.table).delete().eq(cfg.key||'id',b.dataset.deleteRecord).select(cfg.key||'id');if(r.error)throw r.error;if(!r.data?.length)throw new Error('Delete হয়নি: Supabase RLS permission বা record access পরীক্ষা করুন।');await recordStaffActivity('Deleted','Module: '+(cfg.title||id)+' — record removed');await render(id)}
+else if(b.dataset.module)render(b.dataset.module);
 else if(b.id==='cancelDish'){editingDish=null;render('menu_manager')}
 else if(b.dataset.editDish){editingDish=b.dataset.editDish;render('menu_manager')}
 else if(b.dataset.deleteDish){if(confirm('Delete this menu item permanently?')){const r=await db.from('menu_items').delete().eq('id',b.dataset.deleteDish);if(r.error)throw r.error;await recordStaffActivity('Deleted','Module: Menu Manager — menu item removed');render('menu_manager')}}
