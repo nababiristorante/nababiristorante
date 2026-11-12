@@ -184,9 +184,9 @@ function exportAttendanceCsv(){
 function exportIndividualAttendanceCsv(){
  if(!selectedAttendanceStaff)return;
  const rows=attendanceRows.filter(x=>(x.staff_name||'Unknown staff')===selectedAttendanceStaff);
- const head=['staff_name','attendance_date','check_in','check_out','work_time_minutes','status'];
+ const head=['staff_name','attendance_date','shift_number','check_in','check_out','work_time_minutes','status'];
  const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
- const lines=[head.join(',')].concat(rows.map(x=>[x.staff_name,x.attendance_date,x.check_in,x.check_out,attendanceDuration(x.check_in,x.check_out),x.status].map(quote).join(',')));
+ const lines=[head.join(',')].concat(rows.map(x=>[x.staff_name,x.attendance_date,x.shift_number||1,x.check_in,x.check_out,attendanceDuration(x.check_in,x.check_out),x.status].map(quote).join(',')));
  const safe=selectedAttendanceStaff.toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-|-$/g,'')||'staff';
  const blob=new Blob(['\\uFEFF'+lines.join('\\r\\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download='attendance-'+safe+'-'+(attendanceStart||'last-7-days')+'-'+(attendanceEnd||attendanceDateValue(new Date()))+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
