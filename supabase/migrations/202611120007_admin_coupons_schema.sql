@@ -21,10 +21,6 @@ alter table public.coupons
   add column if not exists ends_at timestamptz,
   add column if not exists created_at timestamptz not null default now();
 
-create unique index if not exists coupons_code_uidx
-  on public.coupons (lower(code))
-  where code is not null;
-
 alter table public.coupons enable row level security;
 
 drop policy if exists "Admins manage coupons" on public.coupons;
