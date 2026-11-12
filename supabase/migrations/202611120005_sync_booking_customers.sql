@@ -13,6 +13,7 @@ create table if not exists public.customers (
 );
 
 alter table public.customers
+  add column if not exists id uuid default gen_random_uuid(),
   add column if not exists full_name text,
   add column if not exists phone text,
   add column if not exists email text,
@@ -42,7 +43,7 @@ security definer
 set search_path = public
 as $$
 declare
-  matched_customer_id uuid;
+  matched_customer_id text;
   customer_name text;
   customer_phone text;
   customer_email text;
@@ -56,7 +57,7 @@ begin
   end if;
 
   if customer_phone is not null then
-    select c.id into matched_customer_id
+    select c.id::text into matched_customer_id
     from public.customers c
     where regexp_replace(coalesce(c.phone, ''), '[^0-9]', '', 'g') =
           regexp_replace(customer_phone, '[^0-9]', '', 'g')
@@ -84,7 +85,7 @@ begin
         phone = coalesce(customer_phone, phone),
         email = coalesce(customer_email, email),
         updated_at = now()
-    where id = matched_customer_id;
+    where id::text = matched_customer_id;
   end if;
 
   return new;
