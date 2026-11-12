@@ -266,7 +266,7 @@ async function handleGalleryAction(button){
  }catch(err){alert(err.message||'Gallery action failed.')}finally{button.disabled=false}
 }
 
-function isImageSetting(key,value){const k=String(key||'').toLowerCase(),v=String(value||'').trim();if(!/^https?:\\/\\//i.test(v))return false;return /(image|logo|background|banner|photo|picture|thumbnail|cover)/i.test(k)||/\\.(?:avif|gif|jpe?g|png|webp|svg)(?:[?#]|$)/i.test(v)}\nasync function crudPage(id){
+function isImageSetting(key,value){const k=String(key||'').toLowerCase(),v=String(value||'').trim();if(!/^https?:\/\//i.test(v))return false;return /(image|logo|background|banner|photo|picture|thumbnail|cover)/i.test(k)||/\.(?:avif|gif|jpe?g|png|webp|svg)(?:[?#]|$)/i.test(v)}\nasync function crudPage(id){
  const cfg=crudConfigs[id],r=await db.from(cfg.table).select('*').limit(150);if(r.error)throw r.error;
  const rows=r.data||[],key=cfg.key||'id',canEdit=cfg.mode!=='readonly',canCreate=cfg.mode!=='update'&&cfg.mode!=='singleton'&&!cfg.noCreate,canDelete=cfg.mode!=='update'&&cfg.mode!=='singleton'&&id!=='about';
  const showForm=canEdit&&(canCreate||!!editingRecord||(cfg.mode==='singleton'&&rows.length>0));const form=showForm?'<section class="panel"><h2 id="crudHeading">'+(editingRecord?'Edit record':cfg.mode==='singleton'?'Edit settings':'Add record')+'</h2><form id="crudForm" class="admin-form" data-module="'+id+'"><input type="hidden" name="_key" value="'+esc(editingRecord||'')+'">'+cfg.fields.map(f=>inputFor(f)).join('')+'<div class="form-actions"><button class="gold-button" type="submit">'+t('save')+'</button><button class="secondary-button" id="cancelCrud" type="button">'+t('cancel')+'</button></div><p id="crudStatus" class="message"></p></form></section>':'';
