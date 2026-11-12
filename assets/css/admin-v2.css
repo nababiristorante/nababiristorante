@@ -352,3 +352,11 @@ body{overflow-x:hidden}
   .attendance-table td{padding:9px 10px;font-size:12px}
   .attendance-table .attendance-person{min-width:140px;white-space:nowrap}
 }
+
+
+/* Compact media previews in Admin CRUD forms and tables */
+.crud-image-preview{display:inline-block!important;width:48px!important;height:42px!important;max-width:48px!important;max-height:42px!important;object-fit:cover!important;vertical-align:middle;border:1px solid var(--line);border-radius:7px;background:#09150f}
+.crud-video-preview{display:inline-block!important;width:72px!important;height:42px!important;max-width:72px!important;max-height:42px!important;object-fit:cover!important;vertical-align:middle;border:1px solid var(--line);border-radius:7px;background:#09150f}
+.data-table td:has(>.crud-image-preview),.data-table td:has(>.crud-video-preview){white-space:nowrap;width:1%;max-width:100px;overflow:visible;overflow-wrap:normal}
+.data-table .crud-image-preview,.data-table .crud-video-preview{margin:0}
+@media(max-width:620px){.data-table td:has(>.crud-image-preview),.data-table td:has(>.crud-video-preview){max-width:88px}}
