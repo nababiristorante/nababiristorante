@@ -385,3 +385,26 @@ body{overflow-x:hidden}
 .camera-editor-heading .secondary-button{width:auto;margin:0;padding:9px 12px}
 .camera-simple-editor .camera-config-card{max-width:620px}
 @media(max-width:560px){.camera-simple-card{padding:11px;gap:9px}.camera-simple-card .camera-symbol{width:36px;height:36px;flex-basis:36px}.camera-simple-state{font-size:10px;padding:5px 7px}.camera-editor-heading{align-items:flex-start}}
+
+
+/* Simplified camera-first Recording Center */
+.recording-simple-form{display:grid;gap:18px;margin-top:22px}
+.recording-step-title{margin:0 0 10px;font-size:15px;color:var(--ink)}
+.recording-camera-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.recording-camera-card{position:relative;display:grid;justify-items:start;gap:6px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.recording-camera-card:hover,.recording-camera-card:focus-visible,.recording-camera-card[aria-pressed=true]{border-color:var(--gold2);outline:none;background:#172b20}
+.recording-camera-icon{font-size:24px}
+.recording-camera-name{font-weight:750;font-size:14px}
+.recording-camera-card small{font-size:11px;color:var(--muted)}
+.recording-camera-check{display:none;position:absolute;right:12px;top:12px;color:#9be2ad;font-weight:800}
+.recording-camera-card[aria-pressed=true] .recording-camera-check{display:block}
+.recording-camera-card.is-disabled{opacity:.5;cursor:not-allowed}
+.recording-date-block{max-width:420px}
+.recording-advanced{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel2)}
+.recording-advanced summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--gold2)}
+.recording-advanced-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.recording-advanced-fields .recording-zone-field{grid-column:1/-1}
+.recording-search-actions{margin-top:2px}
+.recording-search-actions .gold-button:disabled{opacity:.5;cursor:not-allowed}
+.recording-privacy-panel .readiness-list{grid-template-columns:1fr}
+@media(max-width:560px){.recording-camera-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recording-advanced-fields{grid-template-columns:1fr}.recording-advanced-fields .recording-zone-field{grid-column:auto}.recording-search-actions .gold-button{width:100%}}
