@@ -8,9 +8,8 @@
   <title>NABABI RISTORANTE — Admin</title>
   <link rel="stylesheet" href="assets/css/admin-v2.css?v=14">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="assets/js/config.js"></script>
-  <script defer src="assets/js/admin-v2.js?v=22"></script>
+  <script defer src="assets/js/admin-v2.js?v=23"></script>
 </head>
 <body>
   <section id="loginView" class="login-wrap">
@@ -27,8 +26,6 @@
       <button id="forgotButton" class="text-button" type="button" data-i18n="forgot">Password dimenticata?</button>
       <p id="loginMessage" class="message" role="status" aria-live="polite"></p>
     </form>
-    <section id="adminSecurityRecoveryView" class="login-card mfa-login-card" hidden><div class="crown">🔐</div><p class="brand">NABABI <span>RISTORANTE</span></p><h1>Admin security check</h1><p id="adminSecurityRecoveryMessage" class="message" role="status" aria-live="polite">Your password was accepted. Complete the Admin security check to continue.</p><button id="adminSecurityRetryButton" class="gold-button" type="button">Retry security check</button><button id="adminSecuritySignOutButton" class="text-button" type="button">Sign out</button></section>
-    <section id="mfaChallengeView" class="login-card mfa-login-card" hidden><div class="crown">🔐</div><p class="brand">NABABI <span>RISTORANTE</span></p><h1>Verify your identity</h1><p>Enter the 6-digit code from your authenticator app.</p><form id="mfaChallengeForm" class="admin-form"><label class="field">Authenticator code<input id="mfaCode" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button id="mfaVerifyButton" class="gold-button" type="submit">Verify and continue</button></form><p id="mfaMessage" class="message" role="status" aria-live="polite"></p><button id="mfaBackButton" class="text-button" type="button">Back to sign in</button></section>
   </section>
 
   <div id="appView" class="app-shell" hidden>
