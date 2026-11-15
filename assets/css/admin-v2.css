@@ -462,3 +462,6 @@ body{overflow-x:hidden}
 .ai-privacy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .ai-privacy-grid span{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0c1b14;color:var(--muted);font-size:12px;line-height:1.5}
 @media(max-width:680px){.ai-monitor-hero{padding:18px}.ai-monitor-stats{grid-template-columns:1fr 1fr}.ai-stat-card{padding:13px;gap:9px}.ai-stat-card:last-child{grid-column:1/-1}.ai-camera-grid,.ai-table-rooms,.ai-privacy-grid{grid-template-columns:1fr}.ai-camera-visual{min-height:105px}.ai-camera-card-heading{align-items:flex-start;flex-wrap:wrap}.ai-section-heading>.status-pill{white-space:normal}}
+
+/* AI announcement language selector */
+.ai-voice-language-field{max-width:420px;margin:14px 0}.ai-voice-language-field select{min-height:46px;border:1px solid var(--line);border-radius:10px;background:#09150f;color:var(--ink);padding:12px;font:inherit}
