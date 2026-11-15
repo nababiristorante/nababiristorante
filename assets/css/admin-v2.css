@@ -465,3 +465,57 @@ body{overflow-x:hidden}
 
 /* AI announcement language selector */
 .ai-voice-language-field{max-width:420px;margin:14px 0}.ai-voice-language-field select{min-height:46px;border:1px solid var(--line);border-radius:10px;background:#09150f;color:var(--ink);padding:12px;font:inherit}
+
+
+/* CCTV Operations — isolated, responsive professional interface */
+#cctvOperationsRoot{display:grid;gap:18px;max-width:1440px;margin:0 auto}
+#cctvOperationsRoot .panel{margin:0;padding:clamp(16px,2.2vw,24px);border:1px solid #365642;border-radius:18px;background:linear-gradient(145deg,rgba(22,48,35,.98),rgba(13,32,23,.98));box-shadow:0 12px 34px rgba(0,0,0,.16)}
+#cctvOperationsRoot .camera-page-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:clamp(20px,3vw,30px);border-color:#806b3e;background:radial-gradient(ellipse at 90% 0,rgba(217,182,107,.15),transparent 42%),linear-gradient(120deg,#1b3b2b,#10251a)}
+#cctvOperationsRoot .camera-page-head h2{margin:4px 0 9px;color:#f6e8c4;font:700 clamp(22px,3vw,29px) 'Playfair Display',serif}
+#cctvOperationsRoot .camera-page-head .help,#cctvOperationsRoot .help{max-width:760px;color:#b9c8bc;font-size:13px;line-height:1.65}
+#cctvOperationsRoot .status-pill{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid #806b3e;border-radius:999px;background:#30291a;color:#f1d99d;font-size:11px;font-weight:800;letter-spacing:.2px}
+#cctvOperationsRoot .status-pill:before{content:"";width:7px;height:7px;border-radius:50%;background:#e5b95d;box-shadow:0 0 0 4px rgba(229,185,93,.12)}
+#cctvOperationsRoot .ai-monitor-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+#cctvOperationsRoot .ai-stat-card{position:relative;overflow:hidden;display:flex;align-items:center;min-height:104px;padding:18px;border:1px solid #385944;border-radius:16px;background:linear-gradient(135deg,#183a29,#10271b)}
+#cctvOperationsRoot .ai-stat-card:after{content:"";position:absolute;right:-18px;top:-28px;width:94px;height:94px;border:1px solid rgba(217,182,107,.16);border-radius:50%;box-shadow:0 0 0 13px rgba(217,182,107,.035),0 0 0 27px rgba(217,182,107,.025)}
+#cctvOperationsRoot .ai-stat-card strong{display:block;color:#f2d99e;font-size:30px;line-height:1.1;font-weight:800}
+#cctvOperationsRoot .ai-stat-card small{display:block;margin-top:7px;color:#bdcbbf;font-size:12px}
+#cctvOperationsRoot .panel>h2,#cctvOperationsRoot .ai-section-heading h2{color:#f3e4bf;font:700 19px 'Playfair Display',serif;margin:0 0 15px}
+#cctvOperationsRoot .ai-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#cctvOperationsRoot .ai-section-heading h2{margin-bottom:5px}
+#cctvOperationsRoot .cctv-ops-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:14px}
+#cctvOperationsRoot .field{display:grid;gap:7px;color:#d9e1d9;font-size:12px;font-weight:700}
+#cctvOperationsRoot .field select,#cctvOperationsRoot .data-table select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #45664f;border-radius:10px;background:#0b1d14;color:#f4efdf;outline:none}
+#cctvOperationsRoot .field select:focus,#cctvOperationsRoot .data-table select:focus{border-color:#d9b66b;box-shadow:0 0 0 3px rgba(217,182,107,.13)}
+#cctvOperationsRoot .check-label{display:flex;align-items:center;gap:10px;min-height:44px;color:#e0e8df;font-size:13px}
+#cctvOperationsRoot .check-label input{width:18px;height:18px;accent-color:#d9b66b}
+#cctvOperationsRoot .cctv-ops-warning{grid-column:1/-1;margin:0;padding:12px 14px;border:1px solid #725c30;border-radius:11px;background:rgba(114,92,48,.15);color:#e8d49e;font-size:12px;line-height:1.55}
+#cctvOperationsRoot .gold-button,#cctvOperationsRoot .secondary-button{width:auto;min-height:42px;margin:0;padding:11px 17px;border-radius:10px;font-size:12px;font-weight:800}
+#cctvOperationsRoot .secondary-button{border:1px solid #55735b;background:#1b3b29;color:#e7d6a9}
+#cctvOperationsRoot .gold-button{border:0;background:linear-gradient(110deg,#b99148,#f0d99c);color:#172218}
+#cctvOperationsRoot button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+#cctvOperationsRoot button:focus-visible{outline:2px solid #f0d99c;outline-offset:3px}
+#cctvOperationsRoot .camera-save-status{grid-column:1/-1;min-height:18px;margin:0;color:#d9c48e;font-size:12px}
+#cctvOperationsRoot .table-wrap{border:1px solid #34513d;border-radius:12px;background:#0d2117}
+#cctvOperationsRoot .data-table{min-width:760px;font-size:12px}
+#cctvOperationsRoot .data-table th{background:#173426;color:#e8d39e;font-size:11px;white-space:nowrap}
+#cctvOperationsRoot .data-table td{color:#dce4dc;vertical-align:middle}
+#cctvOperationsRoot .data-table tr:last-child td{border-bottom:0}
+#cctvOperationsRoot .data-table td button{white-space:nowrap}
+#cctvOperationsRoot .data-table select{min-height:36px;padding:7px 9px;font-size:11px}
+#cctvOperationsRoot .panel>p{color:#c5d0c6;font-size:13px;line-height:1.6}
+@media(max-width:760px){
+ #cctvOperationsRoot{gap:13px}
+ #cctvOperationsRoot .ai-monitor-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ #cctvOperationsRoot .ai-stat-card{min-height:88px;padding:12px}
+ #cctvOperationsRoot .ai-stat-card strong{font-size:24px}
+ #cctvOperationsRoot .ai-stat-card small{font-size:10px;line-height:1.35}
+ #cctvOperationsRoot .cctv-ops-form{grid-template-columns:1fr}
+ #cctvOperationsRoot .cctv-ops-warning,#cctvOperationsRoot .camera-save-status{grid-column:auto}
+ #cctvOperationsRoot .camera-page-head{align-items:flex-start}
+}
+@media(max-width:420px){
+ #cctvOperationsRoot .ai-monitor-stats{grid-template-columns:1fr}
+ #cctvOperationsRoot .ai-stat-card{min-height:74px}
+ #cctvOperationsRoot .gold-button,#cctvOperationsRoot .secondary-button{width:100%}
+}
