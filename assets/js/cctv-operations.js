@@ -7,13 +7,20 @@ const client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_
 const $ = (s, root=document) => root.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let busy = false;
-function addNav() {
+async function addNav() {
   const nav = $('#navigation');
   if (!nav || $('#cctvOperationsNav')) return;
-  const btn = document.createElement('button');
-  btn.id = 'cctvOperationsNav'; btn.type = 'button'; btn.className = 'nav-link';
-  btn.dataset.cctvOperations = 'true'; btn.innerHTML = '<span>🧹</span>CCTV Operations';
-  nav.appendChild(btn);
+  try {
+    const {data} = await client.auth.getSession();
+    const uid = data.session?.user?.id;
+    if (!uid) return;
+    const admin = await client.from('admin_users').select('user_id').eq('user_id',uid).maybeSingle();
+    if (admin.error || !admin.data || !nav.isConnected || $('#cctvOperationsNav')) return;
+    const btn = document.createElement('button');
+    btn.id = 'cctvOperationsNav'; btn.type = 'button'; btn.className = 'nav-link';
+    btn.dataset.cctvOperations = 'true'; btn.innerHTML = '<span>🧹</span>CCTV Operations';
+    nav.appendChild(btn);
+  } catch (_) {}
 }
 const observer = new MutationObserver(addNav);
 function watchNav() {
@@ -44,6 +51,9 @@ async function requireSession() {
   const {data, error} = await client.auth.getSession();
   if (error) throw error;
   if (!data.session) throw new Error('Sessione admin non disponibile. Effettua nuovamente l’accesso.');
+  const admin = await client.from('admin_users').select('user_id').eq('user_id',data.session.user.id).maybeSingle();
+  if (admin.error) throw admin.error;
+  if (!admin.data) throw new Error('Accesso riservato agli amministratori.');
 }
 async function openPage() {
   if (busy) return; busy = true;
