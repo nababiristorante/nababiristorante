@@ -465,15 +465,3 @@ body{overflow-x:hidden}
 
 /* AI announcement language selector */
 .ai-voice-language-field{max-width:420px;margin:14px 0}.ai-voice-language-field select{min-height:46px;border:1px solid var(--line);border-radius:10px;background:#09150f;color:var(--ink);padding:12px;font:inherit}
-
-
-/* CCTV operations: responsive manual task management */
-.cctv-ops-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.cctv-ops-hero h2{margin:5px 0 8px;color:var(--gold2)}
-.cctv-ops-hero .help{max-width:760px;margin:0;color:var(--muted);line-height:1.6}
-.cctv-ops-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end}
-.cctv-ops-form .gold-button{width:auto;margin:0;padding:12px 18px}
-.cctv-ops-form .camera-save-status,.cctv-ops-warning{grid-column:1/-1}
-.cctv-ops-warning{margin:0;padding:11px 13px;border-left:3px solid #806b3e;background:#111f17;color:var(--muted);font-size:12px;line-height:1.5}
-.cctv-status-select{min-width:130px;max-width:160px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#09150f;color:var(--ink);font:inherit}
-@media(max-width:620px){.cctv-ops-form{grid-template-columns:1fr}.cctv-ops-form .camera-save-status,.cctv-ops-warning{grid-column:auto}.cctv-ops-form .gold-button{width:100%}.cctv-ops-hero{display:block}.cctv-ops-hero>.status-pill{display:inline-flex;margin-top:12px}}
