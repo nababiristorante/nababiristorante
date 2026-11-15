@@ -467,10 +467,20 @@ function getBengaliVoicePreference(){try{return localStorage.getItem('nababi_ben
 function setBengaliVoicePreference(enabled){try{localStorage.setItem('nababi_bengali_voice_enabled',String(enabled))}catch(e){console.warn('Voice preference could not be saved locally:',e)}}
 function speakBengaliAnnouncement(kind){
  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance!=='function')throw new Error('এই ব্রাউজারে ভয়েস চালানোর সুবিধা পাওয়া যাচ্ছে না।');
- const messages={waiter:'কাস্টমার টেবিলে বসেছেন। অনুগ্রহ করে ওয়েটার পাঠান।',cleaning:'টেবিল খালি হয়েছে। অনুগ্রহ করে টেবিলটি পরিষ্কার করুন।',test:'এটি নবাবি রেস্টুরেন্টের বাংলা ভয়েস পরীক্ষা।'};
- const utterance=new SpeechSynthesisUtterance(messages[kind]||messages.test);utterance.lang='bn-BD';utterance.rate=0.92;utterance.pitch=1;utterance.volume=1;
- const voices=window.speechSynthesis.getVoices();const voice=voices.find(v=>/^bn(-|_)?(BD|IN)?$/i.test(v.lang)||/^bn/i.test(v.lang));if(voice)utterance.voice=voice;
- window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance);return voice?.name||'ব্রাউজারের বাংলা ভয়েস';
+ const messages={
+  waiter:'অনুগ্রহ করে টেবিল নম্বর পাঁচে একজন ওয়েটার পাঠান।',
+  cleaning:'অনুগ্রহ করে টেবিল নম্বর পাঁচ পরিষ্কার করুন।',
+  water:'অনুগ্রহ করে টেবিল নম্বর পাঁচে এক বোতল পানি পৌঁছে দিন।',
+  test:'এটি নবাবি রেস্টুরেন্টের বাংলা ভয়েস পরীক্ষা।'
+ };
+ const utterance=new SpeechSynthesisUtterance(messages[kind]||messages.test);
+ utterance.lang='bn-BD';utterance.rate=0.82;utterance.pitch=1;utterance.volume=1;
+ const voices=window.speechSynthesis.getVoices();
+ const bengaliVoices=voices.filter(v=>/^bn([_-]|$)/i.test(v.lang));
+ const voice=bengaliVoices.find(v=>/^bn[-_]BD$/i.test(v.lang))||bengaliVoices.find(v=>/^bn[-_]IN$/i.test(v.lang))||bengaliVoices[0];
+ if(voice)utterance.voice=voice;
+ window.speechSynthesis.cancel();window.speechSynthesis.speak(utterance);
+ return voice?voice.name+' ('+voice.lang+')':'ডিভাইসের ডিফল্ট বাংলা উচ্চারণ';
 }
 async function aiMonitoringPage(){
  if(role!=='admin')throw new Error('Admin only.');
@@ -491,7 +501,7 @@ async function aiMonitoringPage(){
  '<section class="ai-monitor-stats"><article class="ai-stat-card"><span class="ai-stat-icon">◉</span><div><strong>'+cameras.length+'</strong><small>মোট ক্যামেরা</small></div></article><article class="ai-stat-card"><span class="ai-stat-icon">▦</span><div><strong>'+tableCount+'</strong><small>টেবিল ট্র্যাকিংয়ের জন্য</small></div></article><article class="ai-stat-card"><span class="ai-stat-icon">⌁</span><div><strong>'+events.length+'</strong><small>সাম্প্রতিক ইভেন্ট · সর্বোচ্চ ৩০টি</small></div></article></section>'+
  '<section class="panel ai-camera-section"><div class="ai-section-heading"><div><p class="eyebrow">CAMERA OVERVIEW</p><h2>ক্যামেরা মনিটরিং</h2><p class="help">ক্যামেরার কনফিগারেশন দেখা যাবে; NVR যুক্ত না হওয়া পর্যন্ত লাইভ ছবি দেখানো হবে না।</p></div><span class="status-pill status-pending">Live feed unavailable</span></div><div class="ai-camera-grid">'+(cameraCards||'<div class="empty">কোনো ক্যামেরা কনফিগার করা নেই।</div>')+'</div></section>'+
  '<section class="panel ai-table-summary"><div class="ai-section-heading"><div><p class="eyebrow">TABLE INTELLIGENCE</p><h2>টেবিল পর্যবেক্ষণ</h2><p class="help">AI সংযোগ হলে ব্যস্ত/খালি অবস্থা এখানে দেখানো হবে।</p></div></div><div class="ai-table-rooms"><article><span>🍽️</span><div><b>Dining Room 1</b><small>৩টি টেবিল</small></div><em>ডেটার অপেক্ষায়</em></article><article><span>🍽️</span><div><b>Dining Room 2</b><small>৭টি টেবিল</small></div><em>ডেটার অপেক্ষায়</em></article></div><p class="ai-honest-note">এখনো কোনো লাইভ AI ফলাফল নেই। অনুমান করে কোনো টেবিলকে ব্যস্ত বা খালি দেখানো হচ্ছে না।</p></section>'+
- '<section class="panel bengali-voice-panel"><div class="ai-section-heading"><div><p class="eyebrow">NABABI · VOICE</p><h2>বাংলা ভয়েস ঘোষণা</h2><p class="help">এখান থেকে বাংলা ভয়েস পরীক্ষা করুন। ক্যামেরা AI সংযোগ না হওয়া পর্যন্ত স্বয়ংক্রিয় ঘোষণা চালু হবে না।</p></div><span class="status-pill status-pending">স্বয়ংক্রিয় ঘোষণা বন্ধ</span></div><label class="bengali-voice-toggle"><input id="bengaliVoiceEnabled" type="checkbox" '+(voiceEnabled?'checked':'')+'> <span><b>বাংলা ভয়েস চালু রাখুন</b><small>এই সেটিংটি এই ব্রাউজারে সংরক্ষিত থাকবে।</small></span></label><div class="bengali-voice-tests"><button type="button" class="secondary-button" data-voice-test="waiter">ওয়েটার ঘোষণার শব্দ পরীক্ষা</button><button type="button" class="secondary-button" data-voice-test="cleaning">টেবিল পরিষ্কারের শব্দ পরীক্ষা</button></div><p id="bengaliVoiceStatus" class="camera-save-status" role="status" aria-live="polite">ভয়েস পরীক্ষা করতে একটি বাটনে চাপ দিন।</p></section>'+
+ '<section class="panel bengali-voice-panel"><div class="ai-section-heading"><div><p class="eyebrow">NABABI · VOICE</p><h2>বাংলা ভয়েস ঘোষণা</h2><p class="help">ধীরে ও স্পষ্ট বাংলায় ওয়েটার ডাকা, টেবিল পরিষ্কার এবং পানি পৌঁছে দেওয়ার ঘোষণা পরীক্ষা করুন। ক্যামেরা AI সংযোগ না হওয়া পর্যন্ত স্বয়ংক্রিয় ঘোষণা চালু হবে না।</p></div><span class="status-pill status-pending">স্বয়ংক্রিয় ঘোষণা বন্ধ</span></div><label class="bengali-voice-toggle"><input id="bengaliVoiceEnabled" type="checkbox" '+(voiceEnabled?'checked':'')+'> <span><b>বাংলা ভয়েস চালু রাখুন</b><small>এই সেটিংটি এই ব্রাউজারে সংরক্ষিত থাকবে।</small></span></label><div class="bengali-voice-tests"><button type="button" class="secondary-button" data-voice-test="waiter">ওয়েটার ডাকার বাংলা পরীক্ষা</button><button type="button" class="secondary-button" data-voice-test="cleaning">টেবিল পরিষ্কারের বাংলা পরীক্ষা</button><button type="button" class="secondary-button" data-voice-test="water">পানি দেওয়ার বাংলা পরীক্ষা</button></div><p id="bengaliVoiceStatus" class="camera-save-status" role="status" aria-live="polite">ভয়েস পরীক্ষা করতে একটি বাটনে চাপ দিন।</p></section>'+
  '<section class="panel ai-events-panel"><div class="ai-section-heading"><div><p class="eyebrow">ACTIVITY LOG</p><h2>'+t('lastEvents')+'</h2><p class="help">Supabase-এ থাকা সর্বশেষ ইভেন্ট রেকর্ড।</p></div></div>'+(events.length?'<div class="table-wrap"><table class="data-table"><thead><tr><th>'+t('camera')+'</th><th>'+t('status')+'</th><th>সময়</th><th>স্টাফ</th></tr></thead><tbody>'+eventRows+'</tbody></table></div>':'<div class="ai-empty-events"><span>⌁</span><b>এখনো কোনো ইভেন্ট রেকর্ড নেই</b><small>ক্যামেরা ও AI সংযোগ হলে নতুন ইভেন্ট এখানে দেখা যাবে।</small></div>')+'</section>'+
  '<section class="panel ai-privacy-panel"><h2>ভিডিও ও Snapshot সংরক্ষণ</h2><div class="ai-privacy-grid"><span>✓ ভিডিও ও Snapshot থাকবে Hikvision NVR হার্ডড্রাইভে</span><span>✓ ওয়েবসাইট/Supabase-এ ছবি ফাইল রাখা হবে না</span><span>✓ Supabase-এ শুধু প্রয়োজনীয় Event ও সময়ের তথ্য</span></div></section>';
 }
