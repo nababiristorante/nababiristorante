@@ -537,7 +537,7 @@ async function saveStaffSchedule(e){
  const form=e.target,fd=new FormData(form),staffId=String(fd.get('staff_id')||''),day=String(fd.get('work_date')||''),status=String(fd.get('day_status')||'work');
  const staffName=form.elements.staff_id.selectedOptions[0]?.textContent||'';
  const start=String(fd.get('start_time')||'')||null,end=String(fd.get('end_time')||'')||null;
- if(!staffId||!/^\\d{4}-\\d{2}-\\d{2}$/.test(day))throw new Error('স্টাফ ও তারিখ নির্বাচন করুন।');\n if(!day.startsWith(scheduleMonthValue()+'-'))throw new Error('তারিখটি নির্বাচিত মাসের মধ্যে হতে হবে।');
+ if(!staffId||!/^\d{4}-\d{2}-\d{2}$/.test(day))throw new Error('স্টাফ ও তারিখ নির্বাচন করুন।');\n if(!day.startsWith(scheduleMonthValue()+'-'))throw new Error('তারিখটি নির্বাচিত মাসের মধ্যে হতে হবে।');
  if(status==='work'&&(!start||!end||start>=end))throw new Error('ডিউটির শুরু ও শেষের সঠিক সময় দিন।');\n const breakStart=String(fd.get('break_start')||'')||null,breakEnd=String(fd.get('break_end')||'')||null;\n if(status==='work'&&((breakStart&&!breakEnd)||(!breakStart&&breakEnd)||(breakStart&&breakEnd&&breakStart>=breakEnd)))throw new Error('বিরতির শুরু ও শেষের সঠিক সময় দুটোই দিন।');
  const payload={staff_id:staffId,staff_name:staffName,work_date:day,start_time:status==='work'?start:null,end_time:status==='work'?end:null,break_start:status==='work'?breakStart:null,break_end:status==='work'?breakEnd:null,day_status:status,leave_reason:String(fd.get('leave_reason')||'').trim()||null,notes:String(fd.get('notes')||'').trim()||null,created_by:user?.id||null,updated_at:new Date().toISOString()};
  const statusEl=$('#staffScheduleStatus');statusEl.textContent='সংরক্ষণ হচ্ছে…';
