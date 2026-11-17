@@ -519,3 +519,17 @@ body{overflow-x:hidden}
  #cctvOperationsRoot .ai-stat-card{min-height:74px}
  #cctvOperationsRoot .gold-button,#cctvOperationsRoot .secondary-button{width:100%}
 }
+
+/* Monthly staff schedule */
+.staff-schedule-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.staff-schedule-head h2,.staff-schedule-toolbar h2{margin:0 0 8px;font:700 21px 'Playfair Display',serif;color:var(--gold2)}
+.staff-schedule-head .field{min-width:190px}
+.staff-schedule-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:end}
+.staff-schedule-form .field{display:grid;gap:7px;color:#cbd5cc;font-size:12px;font-weight:700}
+.staff-schedule-form input,.staff-schedule-form select,.staff-schedule-form textarea{width:100%;min-height:43px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#091810;color:var(--ink)}
+.staff-schedule-form textarea{resize:vertical}
+.staff-schedule-form .form-actions{grid-column:1/-1}
+.staff-schedule-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.staff-schedule-toolbar .form-actions{display:flex;gap:8px;flex-wrap:wrap}
+.staff-schedule-toolbar .secondary-button{width:auto;margin:0}
+@media(max-width:650px){.staff-schedule-form{grid-template-columns:1fr}.staff-schedule-form .form-actions{grid-column:auto}.staff-schedule-toolbar .form-actions{width:100%;display:grid;grid-template-columns:1fr}.staff-schedule-toolbar .secondary-button{width:100%}}
