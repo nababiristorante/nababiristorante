@@ -502,72 +502,80 @@ async function aiMonitoringPage(){
 }
 
 
-let staffScheduleRows=[],staffScheduleMonth=null;
-function scheduleMonthValue(){if(staffScheduleMonth)return staffScheduleMonth;const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+let staffScheduleRows=[],staffScheduleMonth=null,staffScheduleWeekStart=null,staffScheduleStaff=[];
+function scheduleWeekStartValue(){
+ if(staffScheduleWeekStart)return staffScheduleWeekStart;
+ const d=new Date(),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function scheduleDateAdd(value,days){const d=new Date(value+'T12:00:00');d.setDate(d.getDate()+days);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function scheduleBnDate(value){return new Intl.DateTimeFormat('bn-BD',{day:'2-digit',month:'2-digit'}).format(new Date(value+'T12:00:00'))}
+function scheduleWeekDates(start){return Array.from({length:7},(_,i)=>scheduleDateAdd(start,i))}
+function scheduleStatusLabel(value){return value==='full_leave'?'পূর্ণ ছুটি':value==='half_leave'?'অর্ধদিবস':'ডিউটি'}
 async function staffSchedulePage(){
  if(role!=='admin')throw new Error('Admin only.');
- const month=scheduleMonthValue();
- const [yearPart,monthPart]=month.split('-').map(Number),nextMonth=new Date(yearPart,monthPart,1),nextMonthStart=nextMonth.getFullYear()+'-'+String(nextMonth.getMonth()+1).padStart(2,'0')+'-01';
- const [staffResult,rowsResult]=await Promise.all([
+ const start=scheduleWeekStartValue(),dates=scheduleWeekDates(start),end=scheduleDateAdd(start,7);
+ const [staffResult,rowsResult,logoResult]=await Promise.all([
   db.from('staff').select('id,full_name,is_active').eq('is_active',true).order('full_name'),
-  db.from('staff_monthly_schedules').select('id,staff_id,staff_name,work_date,start_time,end_time,break_start,break_end,day_status,leave_reason,notes').gte('work_date',month+'-01').lt('work_date',nextMonthStart).order('work_date').order('staff_name')
+  db.from('staff_monthly_schedules').select('id,staff_id,staff_name,work_date,start_time,end_time,day_status,leave_reason,notes').gte('work_date',start).lt('work_date',end).order('work_date').order('staff_name'),
+  db.from('site_settings').select('setting_value').eq('setting_key','restaurant_logo_url').maybeSingle()
  ]);
- if(staffResult.error)throw staffResult.error;
- if(rowsResult.error)throw rowsResult.error;
- staffScheduleRows=rowsResult.data||[];
- const staffOptions=(staffResult.data||[]).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.full_name)+'</option>').join('');
- const statusLabel=x=>x==='full_leave'?'Full day leave':x==='half_leave'?'Half day leave':'Working';
- const rows=staffScheduleRows.map(x=>'<tr><td>'+esc(x.work_date)+'</td><td>'+esc(x.staff_name)+'</td><td>'+statusLabel(x.day_status)+'</td><td>'+esc(x.start_time||'—')+' – '+esc(x.end_time||'—')+'</td><td>'+esc(x.break_start||'—')+' – '+esc(x.break_end||'—')+'</td><td>'+esc(x.leave_reason||'—')+'</td><td>'+esc(x.notes||'—')+'</td></tr>').join('');
- return '<section class="panel staff-schedule-head"><div><p class="eyebrow">NABABI RISTORANTE</p><h2>Monthly Staff Schedule & Leave</h2><p class="help">স্টাফ নির্বাচন করে প্রতিদিনের ডিউটি, কাজের সময় ও ছুটি সংরক্ষণ করুন। নতুন স্টাফ আগে Staff Management থেকে যোগ করুন।</p></div><label class="field">মাস নির্বাচন<input id="staffScheduleMonth" type="month" value="'+month+'"></label></section>'+
- '<section class="panel"><h2>ডিউটি / ছুটি যোগ করুন</h2><form id="staffScheduleForm" class="admin-form staff-schedule-form">'+
- '<label class="field">স্টাফ নির্বাচন<select name="staff_id" required><option value="">স্টাফ নির্বাচন করুন</option>'+staffOptions+'</select></label>'+
- '<label class="field">তারিখ<input name="work_date" type="date" required value="'+month+'-01"></label>'+
- '<label class="field">দিনের অবস্থা<select name="day_status"><option value="work">কাজ / ডিউটি</option><option value="full_leave">পূর্ণদিন ছুটি</option><option value="half_leave">অর্ধদিবস ছুটি</option></select></label>'+
- '<label class="field">ডিউটি শুরু<input name="start_time" type="time"></label><label class="field">ডিউটি শেষ<input name="end_time" type="time"></label>'+
- '<label class="field">বিরতি শুরু<input name="break_start" type="time"></label><label class="field">বিরতি শেষ<input name="break_end" type="time"></label>'+
- '<label class="field">ছুটির কারণ<input name="leave_reason" type="text" maxlength="250" placeholder="যেমন: ব্যক্তিগত / অসুস্থতা"></label>'+
- '<label class="field">নোট<textarea name="notes" maxlength="1000" rows="2" placeholder="অতিরিক্ত তথ্য (ঐচ্ছিক)"></textarea></label>'+
- '<div class="form-actions"><button class="gold-button" type="submit">Save Schedule</button></div><p id="staffScheduleStatus" class="message" role="status" aria-live="polite"></p></form>'+
- '<p class="help">একই স্টাফের একই তারিখে আবার Save করলে আগের রেকর্ড আপডেট হবে।</p></section>'+
- '<section class="panel"><div class="staff-schedule-toolbar"><div><h2>সংরক্ষিত মাসিক তালিকা</h2><p class="help">নির্বাচিত মাসের সব স্টাফের ডিউটি ও ছুটি।</p></div><div class="form-actions"><button type="button" class="secondary-button" id="exportStaffScheduleCsv">Download Excel (CSV)</button><button type="button" class="secondary-button" id="printStaffSchedule">Download / Print PDF</button></div></div>'+
- '<div class="table-wrap"><table class="data-table" id="staffScheduleTable"><thead><tr><th>তারিখ</th><th>স্টাফ</th><th>অবস্থা</th><th>ডিউটি সময়</th><th>বিরতি</th><th>ছুটির কারণ</th><th>নোট</th></tr></thead><tbody>'+ (rows||'<tr><td colspan="7">এই মাসে এখনো কোনো ডিউটি বা ছুটি সংরক্ষণ করা হয়নি।</td></tr>')+'</tbody></table></div></section>';
+ if(staffResult.error)throw staffResult.error;if(rowsResult.error)throw rowsResult.error;if(logoResult.error)throw logoResult.error;
+ staffScheduleStaff=staffResult.data||[];staffScheduleRows=rowsResult.data||[];
+ const byKey=new Map(staffScheduleRows.map(x=>[String(x.staff_id)+'|'+x.work_date,x]));
+ const dayNames=['সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার','রবিবার'];
+ const head='<th class="week-staff-name">স্টাফের নাম</th>'+dates.map((d,i)=>'<th>'+dayNames[i]+'<small>'+scheduleBnDate(d)+'</small></th>').join('');
+ const body=staffScheduleStaff.map(person=>'<tr><th class="week-staff-name">'+esc(person.full_name)+'</th>'+dates.map((date,i)=>{
+  const row=byKey.get(String(person.id)+'|'+date)||{},status=row.day_status||'work';
+  return '<td class="week-day-cell"><select aria-label="'+esc(person.full_name)+' '+dayNames[i]+' অবস্থা" data-week-status="'+esc(person.id)+'" data-date="'+date+'"><option value="work" '+(status==='work'?'selected':'')+'>ডিউটি</option><option value="full_leave" '+(status==='full_leave'?'selected':'')+'>পূর্ণ ছুটি</option><option value="half_leave" '+(status==='half_leave'?'selected':'')+'>অর্ধদিবস</option></select><div class="week-time-fields"><input type="time" aria-label="শুরুর সময়" data-week-start="'+esc(person.id)+'" data-date="'+date+'" value="'+esc(row.start_time||'')+'"><span>থেকে</span><input type="time" aria-label="শেষের সময়" data-week-end="'+esc(person.id)+'" data-date="'+date+'" value="'+esc(row.end_time||'')+'"></div></td>';
+ }).join('')+'</tr>').join('');
+ const logo=String(logoResult.data?.setting_value||'');
+ return '<section class="panel staff-schedule-head"><div><p class="eyebrow">NABABI RISTORANTE</p><h2>সাপ্তাহিক স্টাফ ডিউটি তালিকা</h2><p class="help">সব সক্রিয় স্টাফের নাম একসঙ্গে দেখুন এবং পুরো সপ্তাহের ডিউটি একবারে সংরক্ষণ করুন।</p></div><label class="field">সপ্তাহের প্রথম দিন (সোমবার)<input id="staffScheduleWeek" type="date" value="'+start+'"></label></section>'+
+ '<section class="panel"><div class="staff-schedule-toolbar"><div><h2>সাপ্তাহিক ডিউটি</h2><p class="help">ডিউটির শুরুর ও শেষের সময় ঐচ্ছিক। সময় না দিলেও সংরক্ষণ হবে।</p></div><div class="form-actions"><button type="button" class="gold-button" id="saveStaffWeek">পুরো সপ্তাহ সংরক্ষণ</button><button type="button" class="secondary-button" id="exportStaffScheduleCsv">Excel ডাউনলোড</button><button type="button" class="secondary-button" id="printStaffSchedule">PDF / প্রিন্ট</button></div></div>'+
+ '<p id="staffScheduleStatus" class="message" role="status" aria-live="polite"></p><div class="table-wrap staff-week-table-wrap"><table class="data-table staff-week-table" id="staffScheduleTable"><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="8">কোনো সক্রিয় স্টাফ পাওয়া যায়নি। আগে স্টাফ যোগ করুন।</td></tr>')+'</tbody></table></div><p class="help">ছুটি দিতে দিনের ঘর থেকে “পূর্ণ ছুটি” বা “অর্ধদিবস” নির্বাচন করুন। পদবি বা স্টাফের ছবি দেখানো হবে না।</p></section>';
 }
-async function saveStaffSchedule(e){
+async function saveStaffWeek(){
  if(role!=='admin')throw new Error('Admin only.');
- const form=e.target,fd=new FormData(form),staffId=String(fd.get('staff_id')||''),day=String(fd.get('work_date')||''),status=String(fd.get('day_status')||'work');
- const staffName=form.elements.staff_id.selectedOptions[0]?.textContent||'';
- const start=String(fd.get('start_time')||'')||null,end=String(fd.get('end_time')||'')||null;
- if(!staffId||!/^\d{4}-\d{2}-\d{2}$/.test(day))throw new Error('স্টাফ ও তারিখ নির্বাচন করুন।');
- if(!day.startsWith(scheduleMonthValue()+'-'))throw new Error('তারিখটি নির্বাচিত মাসের মধ্যে হতে হবে।');
- if(status==='work'&&(!start||!end||start>=end))throw new Error('ডিউটির শুরু ও শেষের সঠিক সময় দিন।');
- const breakStart=String(fd.get('break_start')||'')||null,breakEnd=String(fd.get('break_end')||'')||null;
- if(status==='work'&&((breakStart&&!breakEnd)||(!breakStart&&breakEnd)||(breakStart&&breakEnd&&breakStart>=breakEnd)))throw new Error('বিরতির শুরু ও শেষের সঠিক সময় দুটোই দিন।');
- const payload={staff_id:staffId,staff_name:staffName,work_date:day,start_time:status==='work'?start:null,end_time:status==='work'?end:null,break_start:status==='work'?breakStart:null,break_end:status==='work'?breakEnd:null,day_status:status,leave_reason:String(fd.get('leave_reason')||'').trim()||null,notes:String(fd.get('notes')||'').trim()||null,created_by:user?.id||null,updated_at:new Date().toISOString()};
- const statusEl=$('#staffScheduleStatus');statusEl.textContent='সংরক্ষণ হচ্ছে…';
- const saved=await db.from('staff_monthly_schedules').upsert(payload,{onConflict:'staff_id,work_date'}).select('id').maybeSingle();
- if(saved.error)throw saved.error;
- if(!saved.data)throw new Error('তথ্য সংরক্ষণ হয়নি। Admin database permission পরীক্ষা করুন।');
- await recordStaffActivity('Updated','Monthly staff schedule: '+staffName+' · '+day+' · '+status);
- statusEl.textContent='সফলভাবে সংরক্ষণ হয়েছে।';
- const month=$('#staffScheduleMonth')?.value;
- staffScheduleMonth=month||scheduleMonthValue();
+ const start=$('#staffScheduleWeek')?.value||scheduleWeekStartValue(),dates=scheduleWeekDates(start),statusEl=$('#staffScheduleStatus');
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(start))throw new Error('সপ্তাহের তারিখ সঠিকভাবে নির্বাচন করুন।');
+ const payload=[];
+ for(const person of staffScheduleStaff){
+  for(const date of dates){
+   const statusElCell=document.querySelector('[data-week-status="'+CSS.escape(String(person.id))+'"][data-date="'+date+'"]');
+   const startEl=document.querySelector('[data-week-start="'+CSS.escape(String(person.id))+'"][data-date="'+date+'"]');
+   const endEl=document.querySelector('[data-week-end="'+CSS.escape(String(person.id))+'"][data-date="'+date+'"]');
+   const status=statusElCell?.value||'work',startTime=startEl?.value||null,endTime=endEl?.value||null;
+   if((startTime&&!endTime)||(!startTime&&endTime))throw new Error(person.full_name+' — '+date+': শুরুর ও শেষের সময় দুটোই দিন, অথবা দুটোই ফাঁকা রাখুন।');
+   if(startTime&&endTime&&startTime>=endTime)throw new Error(person.full_name+' — '+date+': সময়ের ক্রম সঠিক নয়।');
+   payload.push({staff_id:person.id,staff_name:person.full_name,work_date:date,start_time:startTime,end_time:endTime,break_start:null,break_end:null,day_status:status,leave_reason:null,notes:null,created_by:user?.id||null,updated_at:new Date().toISOString()});
+  }
+ }
+ if(!payload.length)throw new Error('সংরক্ষণের জন্য কোনো স্টাফ নেই।');
+ statusEl.textContent='পুরো সপ্তাহ সংরক্ষণ হচ্ছে…';
+ const result=await db.from('staff_monthly_schedules').upsert(payload,{onConflict:'staff_id,work_date'}).select('id');
+ if(result.error)throw result.error;
+ if(!result.data||result.data.length!==payload.length)throw new Error('সব ডিউটি সংরক্ষণ নিশ্চিত করা যায়নি। Supabase-এর ফলাফল পরীক্ষা করুন।');
+ staffScheduleWeekStart=start;
+ statusEl.textContent='সফলভাবে পুরো সপ্তাহের '+payload.length+'টি ডিউটি/ছুটির তথ্য সংরক্ষণ হয়েছে।';
  await render('staff_schedule');
 }
 function scheduleCsvCell(value){const s=String(value??'');return '"'+s.replace(/"/g,'""')+'"'}
 function exportStaffScheduleCsv(){
- const month=$('#staffScheduleMonth')?.value||scheduleMonthValue();
- if(!staffScheduleRows.length){alert('এই মাসে ডাউনলোড করার মতো কোনো তথ্য নেই।');return}
- const headers=['Date','Staff','Status','Start time','End time','Break start','Break end','Leave reason','Notes'];
- const lines=[headers,...staffScheduleRows.map(x=>[x.work_date,x.staff_name,x.day_status,x.start_time,x.end_time,x.break_start,x.break_end,x.leave_reason,x.notes])].map(row=>row.map(scheduleCsvCell).join(','));
- const blob=new Blob(['\\uFEFF'+lines.join('\\r\\n')],{type:'text/csv;charset=utf-8;'});
- const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nababi-staff-schedule-'+month+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+ const start=$('#staffScheduleWeek')?.value||scheduleWeekStartValue(),dates=scheduleWeekDates(start);
+ const headers=['স্টাফের নাম','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার','রবিবার'];
+ const byKey=new Map(staffScheduleRows.map(x=>[String(x.staff_id)+'|'+x.work_date,x]));
+ const lines=[headers,...staffScheduleStaff.map(person=>[person.full_name,...dates.map(date=>{const x=byKey.get(String(person.id)+'|'+date);return x?(scheduleStatusLabel(x.day_status)+(x.start_time||x.end_time?' '+(x.start_time||'—')+'–'+(x.end_time||'—') :'')):'ডিউটি'})])].map(row=>row.map(scheduleCsvCell).join(','));
+ const blob=new Blob(['\\uFEFF'+lines.join('\\r\\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='nababi-weekly-staff-schedule-'+start+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 function printStaffSchedule(){
- const month=$('#staffScheduleMonth')?.value||scheduleMonthValue();
- if(!staffScheduleRows.length){alert('এই মাসে প্রিন্ট করার মতো কোনো তথ্য নেই।');return}
- const w=window.open('','_blank');if(!w){alert('PDF তৈরি করতে browser pop-up অনুমতি দিন।');return}
- const rows=staffScheduleRows.map(x=>'<tr><td>'+esc(x.work_date)+'</td><td>'+esc(x.staff_name)+'</td><td>'+esc(x.day_status==='work'?'Working':x.day_status==='half_leave'?'Half day leave':'Full day leave')+'</td><td>'+esc(x.start_time||'—')+' – '+esc(x.end_time||'—')+'</td><td>'+esc(x.break_start||'—')+' – '+esc(x.break_end||'—')+'</td><td>'+esc(x.leave_reason||'—')+'</td><td>'+esc(x.notes||'—')+'</td></tr>').join('');
- w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Nababi Staff Schedule '+month+'</title><style>body{font:12px Arial;padding:24px;color:#222}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:7px;text-align:left}th{background:#eee}@media print{button{display:none}}</style></head><body><h1>NABABI RISTORANTE — Staff Schedule '+month+'</h1><table><thead><tr><th>Date</th><th>Staff</th><th>Status</th><th>Work time</th><th>Break</th><th>Leave reason</th><th>Notes</th></tr></thead><tbody>'+rows+'</tbody></table><script>window.onload=()=>window.print()<\\/script></body></html>');
+ const start=$('#staffScheduleWeek')?.value||scheduleWeekStartValue(),dates=scheduleWeekDates(start);
+ const logo=String(window.staffScheduleLogoUrl||'');
+ const dayNames=['সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার','রবিবার'];
+ const byKey=new Map(staffScheduleRows.map(x=>[String(x.staff_id)+'|'+x.work_date,x]));
+ const rows=staffScheduleStaff.map(person=>'<tr><th>'+esc(person.full_name)+'</th>'+dates.map(date=>{const x=byKey.get(String(person.id)+'|'+date);return '<td>'+(!x?'—':x.day_status==='full_leave'?'পূর্ণ ছুটি':x.day_status==='half_leave'?'অর্ধদিবস':(x.start_time||x.end_time?esc(x.start_time||'—')+'–'+esc(x.end_time||'—'):'ডিউটি'))+'</td>'}).join('')+'</tr>').join('');
+ const w=window.open('','_blank');if(!w){alert('PDF তৈরি করতে ব্রাউজারের Pop-up অনুমতি দিন।');return}
+ w.document.write('<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nababi Weekly Staff Schedule</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet"><style>@page{size:A4 landscape;margin:10mm}*{box-sizing:border-box}body{font:12px "Noto Sans Bengali",Arial,sans-serif;color:#21152a;margin:0}.top{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #c49a39;padding:0 0 10px;margin-bottom:14px}.logo{max-width:150px;max-height:92px;object-fit:contain}.brand{text-align:center;flex:1}.brand h1{font-size:25px;margin:0;color:#54106d}.brand p{margin:5px 0 0}.range{font-size:12px;color:#65416c}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #704181;padding:10px 5px;text-align:center;vertical-align:middle}thead th{background:#53106c;color:white;font-size:12px}tbody th{background:#f3e9f5;text-align:left;width:18%;font-size:12px}tbody td{font-size:11px;min-height:40px}.foot{margin-top:15px;border-top:2px solid #c49a39;padding-top:8px;text-align:center;font-size:10px;color:#5b2865}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><header class="top">'+(logo?'<img class="logo" src="'+esc(logo)+'" alt="Nababi logo">':'<strong class="logo">NABABI RISTORANTE</strong>')+'<div class="brand"><h1>সাপ্তাহিক স্টাফ ডিউটি তালিকা</h1><p class="range">'+esc(start)+' — '+esc(dates[6])+'</p></div></header><table><thead><tr><th>স্টাফের নাম</th>'+dates.map((d,i)=>'<th>'+dayNames[i]+'<br>'+scheduleBnDate(d)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table><footer class="foot">Nababi Ristorante · সাপ্তাহিক ডিউটি তালিকা</footer><script>window.onload=()=>window.print()<\\/script></body></html>');
  w.document.close();
 }
 async function finishAuthenticatedLogin(u){await authorize(u);showApp();return true;}
