@@ -15,7 +15,23 @@
 </head>
 <body>
   <section id="loginView" class="login-wrap">
-    <form id="loginForm" class="login-card">
+    <div class="lamp-login-shell">
+      <input id="lampLightToggle" class="lamp-light-toggle" type="checkbox" aria-label="Turn lamp light on or off">
+      <div class="lamp-showcase" aria-hidden="true">
+        <div class="lamp-glow"></div>
+        <div class="desk-lamp">
+          <div class="lamp-shade"><span></span></div>
+          <div class="lamp-neck"></div>
+          <div class="lamp-joint"></div>
+          <div class="lamp-arm"></div>
+          <div class="lamp-base-stem"></div>
+          <div class="lamp-base"></div>
+          <div class="lamp-pull"><i></i></div>
+        </div>
+        <p class="lamp-caption">NABABI · PRIVATE ADMIN</p>
+      </div>
+      <label class="lamp-pull-control" for="lampLightToggle"><span class="lamp-pull-dot"></span><span>Pull to turn the light on / off</span></label>
+      <form id="loginForm" class="login-card">
       <div class="crown">♛</div><p class="brand">NABABI <span>RISTORANTE</span></p>
       <p class="eyebrow" data-i18n="reserved">AREA RISERVATA</p>
       <h1 data-i18n="welcome">Admin access</h1>
@@ -27,7 +43,8 @@
       <button id="magicLinkButton" class="text-button" type="button">Accedi con link sicuro via email</button>
       <button id="forgotButton" class="text-button" type="button" data-i18n="forgot">Password dimenticata?</button>
       <p id="loginMessage" class="message" role="status" aria-live="polite"></p>
-    </form>
+      </form>
+    </div>
   </section>
 
   <div id="appView" class="app-shell" hidden>
