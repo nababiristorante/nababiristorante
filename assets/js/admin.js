@@ -39,6 +39,7 @@ const menu = [
   ['qr_menu','▣','QR Menu Images'],
   ['categories','▦','Categories'],
   ['bookings','▣','Bookings'],
+  ['celebrations','✦','Certificati e celebrazioni'],
   ['customers','♙','Customers'],
   ['coupons','◇','Coupons'],
   ['staff','♟','Staff Management'],
@@ -91,6 +92,7 @@ const descriptions = {
   qr_menu:'Carica le pagine immagine del menu da mostrare solo tramite QR Code.',
   categories:'Organizza le categorie del menu.',
   bookings:'Consulta le prenotazioni dei tavoli.',
+  celebrations:'Crea certificati di compleanno e attestati per l’organizzazione degli eventi.',
   customers:'Archivio clienti.',
   coupons:'Crea e gestisci codici sconto.',
   staff:'Gestisci profili e ruoli del personale.',
@@ -3994,6 +3996,82 @@ async function setBookingStatus(id,status) {
   await render('bookings');
 }
 
+
+const CELEBRATION_SETTINGS_KEY = 'nababi_celebration_settings_v1';
+const CELEBRATION_RECORDS_KEY = 'nababi_celebration_records_v1';
+function getCelebrationSettings(){try{return JSON.parse(localStorage.getItem(CELEBRATION_SETTINGS_KEY)||'{}')}catch(_){return {}}}
+function getCelebrationRecords(){try{return JSON.parse(localStorage.getItem(CELEBRATION_RECORDS_KEY)||'[]')}catch(_){return []}}
+function celebrationRecordsMarkup(rows){
+ if(!rows.length)return '<p class="help">Nessun certificato salvato su questo dispositivo.</p>';
+ return '<div class="table-scroll"><table class="data-table"><thead><tr><th>Documento</th><th>Nome</th><th>Data</th><th>Codice</th></tr></thead><tbody>'+rows.slice().reverse().map(r=>'<tr><td>'+esc(r.label)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.id)+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function celebrationsPage(){
+ const s=getCelebrationSettings(), rows=getCelebrationRecords();
+ const sig=s.signature?'<img src="'+s.signature+'" alt="Firma salvata" style="max-width:210px;max-height:75px;background:#fff;padding:6px;border-radius:6px">':'<span class="help">Nessuna firma salvata</span>';
+ return '<style>'+
+ '.celebration-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}'+
+ '.celebration-panel{padding:18px;border:1px solid rgba(216,183,106,.35);border-radius:14px;background:linear-gradient(145deg,#10251c,#0b1511);color:#f8f0df}'+
+ '.celebration-panel h3{color:#e7c777;margin-top:0}'+
+ '.celebration-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}'+
+ '.celebration-fields label{display:grid;gap:6px;font-size:13px;color:#e8dfc9}'+
+ '.celebration-fields input,.celebration-fields select,.celebration-fields textarea,.celebration-panel input[type=text]{width:100%;padding:10px;border:1px solid rgba(216,183,106,.35);border-radius:8px;background:#08120e;color:#fff;font:inherit}'+
+ '.celebration-fields textarea{min-height:70px}.celebration-full{grid-column:1/-1}'+
+ '.celebration-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}'+
+ '.celebration-actions button{border:1px solid #d8b76a;border-radius:8px;padding:10px 14px;background:#d8b76a;color:#17251c;font-weight:700;cursor:pointer}'+
+ '.celebration-actions button.alt{background:transparent;color:#f4dfaa}'+
+ '.celebration-paper{background:#fffaf0;color:#241b12;border:8px double #bd9140;padding:28px;text-align:center;min-height:360px;position:relative}'+
+ '.celebration-paper:before{content:"";position:absolute;inset:8px;border:1px solid #d7b66a;pointer-events:none}'+
+ '.celebration-paper h2{font-family:Georgia,serif;color:#55236d;letter-spacing:2px;font-size:25px;margin:14px 0}'+
+ '.celebration-person{font:italic 30px Georgia,serif;color:#4c1e62;border-bottom:1px solid #c9a75d;display:inline-block;padding:7px 18px;min-width:60%}'+
+ '.celebration-foot{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-top:25px;text-align:left;font-size:12px}'+
+ '.celebration-sign{max-width:150px;max-height:60px;object-fit:contain;display:block;margin:0 auto 4px}'+
+ '@media(max-width:760px){.celebration-layout,.celebration-fields{grid-template-columns:1fr}.celebration-full{grid-column:auto}.celebration-paper{padding:18px 12px}.celebration-paper h2{font-size:20px}.celebration-person{font-size:24px}}'+
+ '@media print{body *{visibility:hidden!important}#celebrationPrintArea,#celebrationPrintArea *{visibility:visible!important}#celebrationPrintArea{position:absolute;left:0;top:0;width:100%;padding:10mm!important;background:#fff!important}#celebrationPrintArea .celebration-paper{min-height:180mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}}'+
+ '</style>'+
+ '<section class="section-card"><div class="section-title"><h2>Certificati e celebrazioni</h2></div><p class="help">I testi standard sono già scritti in italiano. Inserisci i dati richiesti, controlla l’anteprima e stampa o salva in PDF.</p>'+
+ '<div class="celebration-layout">'+
+ '<article class="celebration-panel"><h3>Firma e impostazioni</h3><p class="help">La firma viene memorizzata in questo browser e riutilizzata su questo dispositivo.</p><label>Carica immagine della firma<input id="celebrationSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:8px"></label><div id="celebrationSignaturePreview" style="margin:12px 0">'+sig+'</div><label>Nome e ruolo del firmatario<input id="celebrationSigner" type="text" maxlength="100" value="'+esc(s.signer||'Direzione — Nababi Ristorante')+'" style="display:block;margin-top:7px"></label><div class="celebration-actions"><button class="alt" id="celebrationSaveSettings" type="button">Salva firma e impostazioni</button><button class="alt" id="celebrationRemoveSignature" type="button">Rimuovi firma</button></div><p id="celebrationSettingsStatus" class="help" aria-live="polite"></p></article>'+
+ '<article class="celebration-panel"><h3>Nuovo documento</h3><div class="celebration-fields">'+
+ '<label class="celebration-full">Tipo di documento<select id="celebrationType"><option value="birthday">Certificato di Compleanno</option><option value="event">Attestato di Riconoscimento — Organizzazione Evento</option></select></label>'+
+ '<label>Nome<input id="celebrationFirstName" maxlength="70" required placeholder="Nome"></label><label>Cognome<input id="celebrationLastName" maxlength="70" placeholder="Cognome"></label>'+
+ '<label>Data della celebrazione<input id="celebrationDate" type="date" required></label><label id="celebrationEventField" hidden>Nome dell’evento<input id="celebrationEventName" maxlength="100" placeholder="Nome dell’evento"></label>'+
+ '<label class="celebration-full">Dedica personalizzata (facoltativa)<textarea id="celebrationMessage" maxlength="240" placeholder="Scrivi una dedica..."></textarea></label></div>'+
+ '<div class="celebration-actions"><button id="celebrationUpdatePreview" type="button">Aggiorna anteprima</button><button class="alt" id="celebrationPrint" type="button">Stampa / Salva PDF</button><button class="alt" id="celebrationSaveRecord" type="button">Salva nell’elenco</button></div><p id="celebrationFormStatus" class="help" aria-live="polite"></p></article></div></section>'+
+ '<section class="section-card"><div class="section-title"><h2>Anteprima di stampa</h2><span class="help">Formato A4 orizzontale</span></div><div id="celebrationPrintArea"><div class="celebration-paper" id="celebrationPaper"><div style="color:#b28a35;letter-spacing:3px">♛ NABABI RISTORANTE ♛</div><h2 id="celebrationHeading">CERTIFICATO DI COMPLEANNO</h2><p style="font-style:italic">Conferito a</p><div class="celebration-person" id="celebrationPerson">Nome Cognome</div><p id="celebrationBody">Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.</p><p id="celebrationDedication" style="font-style:italic"></p><div class="celebration-foot"><div><strong>Data:</strong> <span id="celebrationDatePreview">—</span><br><strong>Codice:</strong> <span id="celebrationCodePreview">NAB-—</span></div><div style="text-align:center;min-width:150px"><img id="celebrationSignPreview" class="celebration-sign" alt="Firma autorizzata" hidden><div id="celebrationSignerPreview" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:10px">FIRMA AUTORIZZATA</strong></div></div><div style="margin-top:18px;color:#a47c2d;font-size:11px;letter-spacing:2px">UN RICORDO SPECIALE FIRMATO NABABI</div></div></div></section>'+
+ '<section class="section-card"><div class="section-title"><h2>Documenti creati su questo dispositivo</h2></div><p class="help">L’elenco viene salvato solo in questo browser e non è sincronizzato con Supabase o altri dispositivi.</p><div id="celebrationRecords">'+celebrationRecordsMarkup(rows)+'</div></section>';
+}
+function setupCelebrations(){
+ const el=id=>document.getElementById(id), settings=getCelebrationSettings();
+ let signature=settings.signature||'', active=null;
+ const update=()=>{
+  const event=el('celebrationType').value==='event', first=el('celebrationFirstName').value.trim(), last=el('celebrationLastName').value.trim();
+  const dateVal=el('celebrationDate').value, date=dateVal?new Date(dateVal+'T12:00:00').toLocaleDateString('it-IT'):'—';
+  const eventName=el('celebrationEventName').value.trim(), code=active?.id||('NAB-'+new Date().getFullYear()+'-'+Math.random().toString(36).slice(2,8).toUpperCase());
+  el('celebrationEventField').hidden=!event;
+  el('celebrationHeading').textContent=event?'ATTESTATO DI RICONOSCIMENTO':'CERTIFICATO DI COMPLEANNO';
+  el('celebrationPerson').textContent=[first,last].filter(Boolean).join(' ')||'Nome Cognome';
+  el('celebrationDatePreview').textContent=date;el('celebrationCodePreview').textContent=code;
+  el('celebrationBody').textContent=event?'In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.':'Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.';
+  el('celebrationDedication').textContent=el('celebrationMessage').value.trim();
+  el('celebrationSignerPreview').textContent=el('celebrationSigner').value.trim()||'Direzione — Nababi Ristorante';
+  el('celebrationSignPreview').src=signature;el('celebrationSignPreview').hidden=!signature;
+  active={id:code,type:event?'event':'birthday',label:event?'Attestato di Riconoscimento':'Certificato di Compleanno',name:[first,last].filter(Boolean).join(' '),date,eventName,message:el('celebrationMessage').value.trim()};
+  return active;
+ };
+ ['celebrationType','celebrationFirstName','celebrationLastName','celebrationDate','celebrationEventName','celebrationMessage','celebrationSigner'].forEach(id=>el(id).addEventListener('input',update));
+ el('celebrationSignatureFile').addEventListener('change',e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){el('celebrationSettingsStatus').textContent='Scegli un file PNG, JPG o WebP fino a 1 MB.';e.target.value='';return;}
+  const reader=new FileReader();reader.onload=()=>{signature=String(reader.result||'');el('celebrationSignaturePreview').innerHTML='<img src="'+signature+'" alt="Anteprima firma" style="max-width:210px;max-height:75px;background:#fff;padding:6px;border-radius:6px">';update();};reader.readAsDataURL(file);
+ });
+ el('celebrationSaveSettings').onclick=()=>{try{localStorage.setItem(CELEBRATION_SETTINGS_KEY,JSON.stringify({signature,signer:el('celebrationSigner').value.trim()}));el('celebrationSettingsStatus').textContent='Impostazioni salvate in questo browser.';}catch(_){el('celebrationSettingsStatus').textContent='Impossibile salvare. Riduci la dimensione dell’immagine.';}};
+ el('celebrationRemoveSignature').onclick=()=>{signature='';localStorage.setItem(CELEBRATION_SETTINGS_KEY,JSON.stringify({signature:'',signer:el('celebrationSigner').value.trim()}));el('celebrationSignaturePreview').textContent='Nessuna firma salvata';update();};
+ el('celebrationUpdatePreview').onclick=()=>{update();el('celebrationFormStatus').textContent='Anteprima aggiornata.';};
+ el('celebrationPrint').onclick=()=>{const r=update();if(!r.name||!el('celebrationDate').value||(r.type==='event'&&!r.eventName)){el('celebrationFormStatus').textContent='Compila nome, data e, per gli eventi, il nome dell’evento.';return;}document.title='Nababi-'+r.id;window.print();};
+ el('celebrationSaveRecord').onclick=()=>{const r=update();if(!r.name||!el('celebrationDate').value||(r.type==='event'&&!r.eventName)){el('celebrationFormStatus').textContent='Compila tutti i campi obbligatori.';return;}const rows=getCelebrationRecords();if(!rows.some(x=>x.id===r.id))rows.push(r);try{localStorage.setItem(CELEBRATION_RECORDS_KEY,JSON.stringify(rows));el('celebrationRecords').innerHTML=celebrationRecordsMarkup(rows);el('celebrationFormStatus').textContent='Documento salvato nell’elenco locale.';}catch(_){el('celebrationFormStatus').textContent='Spazio locale insufficiente.';}};
+ update();
+}
+
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -4012,6 +4090,13 @@ async function render(id) {
   host.innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   try {
+    if (id === 'celebrations') {
+      if (userRole !== 'admin') { host.innerHTML = '<p>Solo l’amministratore può creare certificati.</p>'; return; }
+      host.innerHTML = celebrationsPage();
+      setupCelebrations();
+      return;
+    }
+
     if (id === 'bookings') {
       if (userRole !== 'admin') {
         host.innerHTML = '<p>Solo l’amministratore può gestire le prenotazioni.</p>';
