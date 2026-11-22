@@ -199,6 +199,7 @@ body.breaking-news-viewer-open{overflow:hidden}
 .booking-occasion.is-active{border:2px solid #e7bd63;box-shadow:0 0 0 2px #e7bd6333;transform:translateY(-2px)}
 .booking-occasion:focus-visible{outline:2px solid #f4cf7b;outline-offset:2px}
 #bookingTableField.is-hidden{display:none}
+.booking-form-card form[hidden]{display:none!important}
 @media(max-width:620px){.booking-occasion-grid{gap:6px}.booking-occasion img{height:76px}.booking-occasion span{font-size:11px}.booking-occasion small{font-size:9px}}
 </style>
 <link rel="stylesheet" href="assets/css/homepage-premium-refresh.css">
@@ -225,12 +226,12 @@ body.breaking-news-viewer-open{overflow:hidden}
 <a class="category-card" href="#booking"><img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=450&q=85" alt="Dessert"><span data-t="catDessert">Dessert</span></a></div><div class="live-menu-items" id="liveMenuItems" aria-live="polite"></div></section>
 <section class="public-offers-section" id="customerCouponSection" hidden><div class="public-offer-card"><p class="offer-eyebrow" data-t="offerEyebrow">A little thank-you</p><h2 data-t="offerTitle">A special treat for you</h2><strong id="customerCouponDiscount" class="offer-discount"></strong><p id="customerCouponPeriod"></p><p id="customerCouponRemaining"></p><button id="claimCustomerCoupon" class="btn btn-fill" type="button" data-t="claimCoupon">Get my coupon</button><p id="customerCouponStatus" role="status" aria-live="polite"></p><div id="customerCouponCode" hidden><strong id="customerCouponCodeValue"></strong><p id="customerCouponExpiry"></p><button id="copyCustomerCoupon" type="button" class="btn btn-line" data-t="copyCoupon">Copy code</button></div></div></section>
 <section class="public-events-section" id="events"><div class="section-head"><p data-t="eventsEyebrow">What's happening</p><h2 data-t="eventsTitle">Events at Nababi</h2></div><div id="liveEvents" class="public-events-grid" aria-live="polite"></div></section>
-<section class="booking-section" id="booking"><div class="booking-card booking-form-card"><h3>▦ <span data-t="tableBooking">Table Booking</span></h3><small data-t="reserveTable">Reserve Your Table</small><form id="quickBookingForm">
-<div class="booking-occasion-grid" role="group" aria-label="Choose booking occasion">
+<section class="booking-section" id="booking"><div class="booking-card booking-form-card"><h3>▦ <span data-t="tableBooking">Table Booking</span></h3><small data-t="reserveTable">Reserve Your Table</small><div class="booking-occasion-grid" role="group" aria-label="Choose booking occasion">
 <button type="button" class="booking-occasion is-active" data-booking-type-choice="standard" aria-pressed="true"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=85" alt="Real restaurant dining room"><span data-t="bookingNormal">Normal Dining</span><small data-t="bookingNormalSub">Choose your table</small></button>
 <button type="button" class="booking-occasion" data-booking-type-choice="birthday" aria-pressed="false"><img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=600&q=85" alt="Birthday cake and celebration table"><span data-t="bookingBirthday">Birthday</span><small data-t="bookingBirthdaySub">Celebrate with us</small></button>
 <button type="button" class="booking-occasion" data-booking-type-choice="event" aria-pressed="false"><img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=600&q=85" alt="Special event dining setup"><span data-t="bookingEvent">Special Event</span><small data-t="bookingEventSub">Plan your occasion</small></button>
 </div>
+<form id="quickBookingForm" hidden>
 <input type="hidden" name="booking_type" value="standard">
 <div class="booking-fields">
 <label><span data-t="phoneNumber">Phone Number</span><input name="phone" type="tel" required placeholder="+39 ..."></label>
