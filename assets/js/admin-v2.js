@@ -57,7 +57,7 @@ async function fireSmokeMonitoringPage(){
  let schedule={start:'00:30',end:'06:00'};
  const config=await db.from('site_settings').select('setting_value').eq('setting_key','fire_smoke_detection_schedule').maybeSingle();
  if(config.error)throw config.error;
- if(config.data?.setting_value){try{const saved=JSON.parse(config.data.setting_value);if(/^([01]\\d|2[0-3]):[0-5]\\d$/.test(saved.start||''))schedule.start=saved.start;if(/^([01]\\d|2[0-3]):[0-5]\\d$/.test(saved.end||''))schedule.end=saved.end;}catch(e){console.warn('Saved fire/smoke schedule could not be parsed',e)}}
+ if(config.data?.setting_value){try{const saved=JSON.parse(config.data.setting_value);if(/^([01]\d|2[0-3]):[0-5]\d$/.test(saved.start||''))schedule.start=saved.start;if(/^([01]\d|2[0-3]):[0-5]\d$/.test(saved.end||''))schedule.end=saved.end;}catch(e){console.warn('Saved fire/smoke schedule could not be parsed',e)}}
  let rows=[],loadError='';
  try{
   const r=await db.from('cctv_alerts').select('*').order('occurred_at',{ascending:false}).limit(100);
@@ -72,7 +72,7 @@ async function saveFireSmokeSchedule(e){
  e.preventDefault();
  if(role!=='admin')throw new Error('Admin only.');
  const form=e.target,fd=new FormData(form),start=String(fd.get('start')||''),end=String(fd.get('end')||''),status=$('#fireSmokeScheduleStatus'),button=form.querySelector('[type="submit"]');
- if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(start)||!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(end)||start===end)throw new Error('চালু ও বন্ধের সময় সঠিকভাবে দিন। দুই সময় এক হতে পারবে না।');
+ if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(start)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(end)||start===end)throw new Error('চালু ও বন্ধের সময় সঠিকভাবে দিন। দুই সময় এক হতে পারবে না।');
  button.disabled=true;if(status)status.textContent='';
  try{
   const value=JSON.stringify({start,end,time_zone:'Europe/Rome',updated_at:new Date().toISOString()});
@@ -571,7 +571,7 @@ async function staffSchedulePage(){
 async function saveStaffWeek(){
  if(role!=='admin')throw new Error('Admin only.');
  const start=$('#staffScheduleWeek')?.value||scheduleWeekStartValue(),dates=scheduleWeekDates(start),statusEl=$('#staffScheduleStatus');
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(start))throw new Error('সপ্তাহের তারিখ সঠিকভাবে নির্বাচন করুন।');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(start))throw new Error('সপ্তাহের তারিখ সঠিকভাবে নির্বাচন করুন।');
  const payload=[];
  for(const person of staffScheduleStaff){
   for(const date of dates){
