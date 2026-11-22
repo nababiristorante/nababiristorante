@@ -109,3 +109,61 @@
   .site-main-header nav a{font-size:8px!important}
   .site-main-header nav a:nth-child(10){padding:6px 7px!important}
 }
+
+
+/* Compact top controls: a small language switch and a lighter navigation row. */
+.topline{
+  padding:8px clamp(12px,3vw,34px)!important;
+  min-height:0!important;
+}
+.topline .languages{
+  display:inline-flex!important;align-items:center!important;gap:3px!important;
+  padding:3px 5px!important;border:1px solid rgba(245,210,139,.55)!important;
+  border-radius:22px!important;background:rgba(5,12,8,.62)!important;
+  backdrop-filter:blur(8px)!important;
+}
+.topline .languages:before{
+  content:"\1F310";display:inline-block!important;margin:0 4px 0 2px!important;
+  font:13px/1 sans-serif!important;opacity:.95!important;
+}
+.topline .languages button{
+  min-width:0!important;padding:4px 7px!important;margin:0!important;
+  border:0!important;border-radius:15px!important;background:transparent!important;
+  font:600 9px/1.2 "DM Sans",Arial,sans-serif!important;letter-spacing:.02em!important;
+}
+.topline .languages button.active{background:#e9c477!important;color:#20170c!important}
+.site-main-header{
+  inset:43px 0 auto!important;padding:8px clamp(12px,3vw,34px)!important;
+  gap:12px!important;background:rgba(4,12,8,.34)!important;
+}
+.site-main-header nav{gap:clamp(9px,1.45vw,19px)!important}
+.site-main-header nav a{
+  font-size:10px!important;letter-spacing:.035em!important;font-weight:500!important;
+}
+.site-main-header nav a:nth-child(10){
+  padding:7px 11px!important;font-size:9px!important;
+}
+.site-main-header .brand-mark{font-size:25px!important}
+.site-main-header .brand-name strong{font-size:19px!important}
+.site-main-header .brand-name small{font-size:8px!important;letter-spacing:.12em!important}
+.reference-hero{padding-top:128px!important}
+@media(max-width:700px){
+  .topline{padding:7px 10px!important}
+  .topline .languages{padding:2px 4px!important}
+  .topline .languages:before{font-size:12px!important;margin-right:3px!important}
+  .topline .languages button{padding:4px 6px!important;font-size:8px!important}
+  .site-main-header{inset:42px 0 auto!important;padding:7px 10px!important;gap:6px!important}
+  .site-main-header .brand{gap:4px!important}
+  .site-main-header .brand-mark{font-size:21px!important}
+  .site-main-header .brand-name strong{font-size:15px!important}
+  .site-main-header .brand-name small{font-size:6px!important}
+  .site-main-header nav{gap:clamp(5px,1.5vw,9px)!important}
+  .site-main-header nav a{font-size:8px!important;letter-spacing:0!important}
+  .site-main-header nav a:nth-child(10){padding:6px 7px!important;font-size:7px!important}
+  .reference-hero{padding-top:118px!important}
+}
+@media(max-width:360px){
+  .site-main-header nav{gap:4px!important}
+  .site-main-header nav a{font-size:7px!important}
+  .site-main-header nav a:nth-child(10){padding:5px 6px!important;font-size:7px!important}
+}
