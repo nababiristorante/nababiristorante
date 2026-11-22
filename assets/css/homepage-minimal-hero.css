@@ -363,3 +363,79 @@
   display:block!important;
   visibility:visible!important;
 }
+
+
+/* Mobile food showcase: show the complete dish photo and give each slide time to read. */
+@media(max-width:700px){
+  .reference-hero.hero-food-showcase{
+    min-height:0!important;
+    height:auto!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto auto!important;
+    align-items:stretch!important;
+    gap:16px!important;
+    padding:34px 14px 24px!important;
+  }
+  .reference-hero.hero-food-showcase .hero-copy{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    text-align:center!important;
+  }
+  .reference-hero.hero-food-showcase .hero-food.hero-food-showcase{
+    position:relative!important;
+    inset:auto!important;
+    grid-column:1!important;
+    grid-row:2!important;
+    width:100%!important;
+    height:clamp(260px,42svh,390px)!important;
+    min-height:260px!important;
+    max-height:390px!important;
+    margin:0!important;
+    border:2px solid #d8b66d!important;
+    border-radius:16px!important;
+    background:#062f22!important;
+    overflow:hidden!important;
+  }
+  .reference-hero.hero-food-showcase .hero-food-showcase .hero-food-slide{
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    padding:8px!important;
+    background:#062f22!important;
+    border:0!important;
+    border-radius:12px!important;
+    transform:none!important;
+  }
+  .reference-hero.hero-food-showcase .breaking-news{
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:3!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+  }
+  .reference-hero.hero-food-showcase .hero-contact{
+    position:relative!important;
+    grid-column:1!important;
+    grid-row:4!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    justify-content:center!important;
+    gap:8px!important;
+  }
+  .reference-hero.hero-food-showcase .hero-contact a{
+    font-size:10px!important;
+    overflow-wrap:anywhere!important;
+  }
+}
