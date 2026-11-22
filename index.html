@@ -226,6 +226,41 @@ body.breaking-news-viewer-open{overflow:hidden}
  .hero-food-showcase .hero-food-slide{transition:none;transform:none}
  .hero-food-showcase .hero-food-progress i{animation:none;width:100%}
 }
+
+/* Fix: make the rotating food showcase the full homepage hero background */
+.reference-hero.hero-food-showcase{
+ position:relative;isolation:isolate;display:grid;grid-template-columns:1fr;
+ min-height:calc(100svh - 92px);padding:48px 5% 58px;overflow:hidden;
+ background:#030506;
+}
+.reference-hero.hero-food-showcase::before{
+ display:block;content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.55) 48%,rgba(0,0,0,.2) 100%);
+}
+.reference-hero.hero-food-showcase .hero-food.hero-food-showcase{
+ position:absolute;inset:0;z-index:0;grid-column:auto;grid-row:auto;
+ width:100%;height:100%;min-height:0;max-height:none;border:0;border-radius:0;
+ background:#030506;box-shadow:none;overflow:hidden;
+}
+.reference-hero.hero-food-showcase .hero-copy{
+ position:relative;z-index:3;grid-column:1;grid-row:1;
+ margin:0;max-width:650px;text-align:left;align-self:center;
+}
+.reference-hero.hero-food-showcase .hero-contact{position:relative;z-index:4}
+.reference-hero.hero-food-showcase .breaking-news{z-index:5}
+@media(max-width:700px){
+ .reference-hero.hero-food-showcase{
+  min-height:calc(100svh - 125px);grid-template-columns:1fr;
+  padding:94px 18px 48px;gap:18px;
+ }
+ .reference-hero.hero-food-showcase .hero-copy{
+  grid-column:1;grid-row:1;text-align:center;max-width:100%;
+ }
+ .reference-hero.hero-food-showcase .hero-food.hero-food-showcase{
+  position:absolute;inset:0;width:100%;height:100%;min-height:0;max-height:none;
+ }
+}
+
 </style>
 <link rel="stylesheet" href="assets/css/homepage-premium-refresh.css">
 <link rel="stylesheet" href="assets/css/nababi-tri-culture-premium.css">
@@ -237,7 +272,7 @@ body.breaking-news-viewer-open{overflow:hidden}
 <div class="topline"><div class="top-left"><a href="https://maps.google.com/?q=Via+Vespasiano+73+Roma">⌖ Via Vespasiano 73/75/77, Roma</a><a href="tel:+393933805350">☎ +39 393 3805350</a></div><div class="top-right"><a href="mailto:info@nababi.it">✉ info@nababi.it</a></div></div>
 <header class="site-main-header"><a class="brand" href="#home"><span class="brand-mark">♛</span><span class="brand-name"><strong>NABABI</strong><small>RISTORANTE</small></span></a><nav><a href="#home" data-t="navHome">Home</a><a href="#about" data-t="navStory">About</a><a href="#menu" data-t="navMenu">Menu</a><a href="#gallery" data-t="navGallery">Gallery</a><a href="#booking" data-t="navBook">Booking</a><a href="#reviews" data-t="reviewsNav">Reviews</a><a href="#contact" data-t="navContact">Contact</a><a class="nav-login" href="#booking" data-t="navBook">Book a table</a><a href="verifica-certificato.html">Verifica certificato</a><a class="nav-admin" href="admin-v2.html" data-t="adminPanel">⚙ Admin</a></nav><div class="languages" id="homepageLanguageMenu"><button class="language-toggle" type="button" aria-label="Choose language" aria-expanded="false" aria-controls="homepageLanguageOptions">🌐</button><div class="language-options" id="homepageLanguageOptions"><button data-lang="it" class="active">🇮🇹 Italiano</button><button data-lang="en">🇬🇧 English</button><button data-lang="bn">🇧🇩 বাংলা</button></div></div></header>
 <main>
-<section class="hero reference-hero" id="home"><div class="breaking-news"><b data-t="breakingNews">Breaking News</b><a href="#gallery"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=650&q=85" alt="Restaurant"></a><strong data-t="breakingCaption">Special moments at Nababi</strong><small data-t="videoComing">Discover our restaurant</small></div><div class="hero-copy"><div class="hero-kicker" data-t="heroKicker">Welcome to</div><h1>NABABI RISTORANTE</h1><p class="hero-script" data-t="heroText">Authentic Flavors of India &amp; Bangladesh</p><div class="hero-ornament">✧ ━━━━━ ❀ ━━━━━ ✧</div><p class="hero-description" data-t="heroDescription">Experience royal taste with traditional spices, fresh ingredients and warm hospitality.</p><a class="btn btn-fill" href="#menu" data-t="heroMenu">Explore Menu ›</a></div><div class="hero-food hero-food-showcase" aria-label="Nababi food highlights">
+<section class="hero reference-hero hero-food-showcase" id="home"><div class="breaking-news"><b data-t="breakingNews">Breaking News</b><a href="#gallery"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=650&q=85" alt="Restaurant"></a><strong data-t="breakingCaption">Special moments at Nababi</strong><small data-t="videoComing">Discover our restaurant</small></div><div class="hero-copy"><div class="hero-kicker" data-t="heroKicker">Welcome to</div><h1>NABABI RISTORANTE</h1><p class="hero-script" data-t="heroText">Authentic Flavors of India &amp; Bangladesh</p><div class="hero-ornament">✧ ━━━━━ ❀ ━━━━━ ✧</div><p class="hero-description" data-t="heroDescription">Experience royal taste with traditional spices, fresh ingredients and warm hospitality.</p><a class="btn btn-fill" href="#menu" data-t="heroMenu">Explore Menu ›</a></div><div class="hero-food hero-food-showcase" aria-label="Nababi food highlights">
 <img class="hero-food-slide is-active" data-hero-slide src="https://images.unsplash.com/photo-1563379091339-03246963d51a?auto=format&fit=crop&w=1400&q=90" alt="Traditional biryani">
 <img class="hero-food-slide" data-hero-slide src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1400&q=90" alt="Grilled meat dish" loading="lazy">
 <img class="hero-food-slide" data-hero-slide src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=90" alt="Grilled food selection" loading="lazy">
