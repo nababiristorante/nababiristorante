@@ -4118,7 +4118,7 @@ function setupCelebrations() {
   $('#certificateRemoveSignature').onclick=async()=>{
     const status=$('#certificateSettingsStatus');
     try{
-      const settings={id:true,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:null,updated_at:new Date().toISOString()};
+      const settings={id:true,logo_url:certificateSettings.logo_url||null,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:null,updated_at:new Date().toISOString()};
       const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});if(error)throw error;
       certificateSettings=settings;$('#certificateSignaturePreview').textContent='Nessuna firma salvata';$('#certificateSignatureFile').value='';status.textContent='Firma rimossa.';updateCertificatePreview();
     }catch(err){status.textContent=err.message||'Impossibile rimuovere la firma.';}
