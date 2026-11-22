@@ -40,7 +40,7 @@
    $('certSigner').textContent=[row.signer_name,row.signer_role].filter(Boolean).join(' · ');
    if(row.photo_url&&row.show_photo_publicly){$('certPhoto').src=row.photo_url;$('certPhoto').hidden=false;}else{$('certPhoto').hidden=true;$('certPhoto').removeAttribute('src');}
    if(row.signature_url){$('certSignature').src=row.signature_url;$('certSignature').hidden=false;}else{$('certSignature').hidden=true;}
-   $('certificate').style.display='block';
+   $('certificate').style.display='block';$('printCertificate').style.display='block';
   }catch(error){showMessage('Errore durante la verifica. Riprova più tardi.',false);console.error(error);}
  }
  $('verifyForm').addEventListener('submit',event=>{event.preventDefault();verify($('certificateCode').value);});
