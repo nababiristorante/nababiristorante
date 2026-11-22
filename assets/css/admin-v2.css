@@ -647,3 +647,120 @@ body{overflow-x:hidden}
 .gold-button{background:linear-gradient(100deg,#bd8731,#f2d18a);color:#17120a}
 @media(max-width:760px){.lamp-login-shell{grid-template-columns:1fr;gap:14px;padding:18px}.lamp-showcase{min-height:300px}.desk-lamp{transform:scale(.82);margin:-20px 0}.lamp-pull-control{grid-column:1}.live-status-strip{grid-template-columns:1fr}.lamp-login-shell .login-card{max-width:100%}}
 @media(prefers-reduced-motion:reduce){.lamp-glow,.lamp-pull-dot:after{transition:none}}
+
+
+/* Login composition refinement: clean lamp, readable status, balanced card */
+#loginView.login-wrap{
+  min-height:100vh;min-height:100dvh;
+  display:grid;place-items:center;
+  padding:clamp(18px,4vw,42px);
+}
+#loginView .lamp-login-shell{
+  width:min(100%,560px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  justify-items:center;
+  align-items:start;
+  gap:12px;
+  margin:auto;
+  padding:0;
+}
+#loginView .lamp-showcase{
+  width:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:0;
+  overflow:visible;
+  padding:0 0 4px;
+}
+#loginView .desk-lamp{
+  flex:0 0 auto;
+  transform:scale(.78);
+  transform-origin:top center;
+  margin:0 0 -70px;
+}
+#loginView .lamp-glow{width:min(82vw,360px);top:0}
+#loginView .lamp-caption{
+  position:static;
+  inset:auto;
+  margin:0;
+  padding:0;
+  line-height:1.5;
+  font-size:10px;
+  letter-spacing:3px;
+  text-align:center;
+}
+#loginView .lamp-live-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  align-self:center;
+  width:max-content;
+  max-width:100%;
+  min-height:34px;
+  margin:10px 0 0;
+  padding:8px 15px;
+  white-space:nowrap;
+  line-height:1;
+  letter-spacing:1.5px;
+  font-size:10px;
+  position:relative;
+  z-index:1;
+}
+#loginView .lamp-live-badge b{display:block;line-height:1.2;font-weight:700}
+#loginView .lamp-pull-control{
+  position:static;
+  transform:none;
+  grid-column:auto;
+  justify-self:center;
+  margin:0 0 4px;
+  white-space:normal;
+  text-align:center;
+  font-size:11px;
+}
+#loginView .lamp-login-shell .login-card{
+  width:100%;
+  max-width:520px;
+  padding:clamp(25px,5vw,40px);
+  border-radius:24px;
+  background:linear-gradient(155deg,rgba(22,21,16,.98),rgba(7,9,8,.99));
+  box-shadow:0 24px 70px rgba(0,0,0,.52),inset 0 1px rgba(255,232,184,.06);
+}
+#loginView .login-card input{
+  min-height:52px;
+  background:#080d0a;
+  border-color:#4c493b;
+}
+#loginView .login-card input:focus{
+  border-color:#d9b66b;
+  box-shadow:0 0 0 3px rgba(217,182,107,.12);
+}
+#loginView .gold-button{
+  min-height:54px;
+  border-radius:13px;
+  box-shadow:0 8px 24px rgba(185,137,49,.16);
+}
+#loginView .text-button{line-height:1.5}
+@media(min-width:761px){
+  #loginView .lamp-login-shell{width:min(100%,560px);gap:12px}
+  #loginView .desk-lamp{transform:scale(.82);margin-bottom:-58px}
+}
+@media(max-width:760px){
+  #loginView.login-wrap{padding:16px 14px calc(20px + env(safe-area-inset-bottom))}
+  #loginView .lamp-login-shell{gap:9px}
+  #loginView .lamp-showcase{padding-bottom:2px}
+  #loginView .desk-lamp{transform:scale(.68);margin-bottom:-96px}
+  #loginView .lamp-live-badge{margin-top:8px;min-height:32px}
+  #loginView .lamp-pull-control{font-size:10px}
+  #loginView .lamp-login-shell .login-card{padding:25px 21px;border-radius:21px}
+  #loginView .brand{margin-bottom:22px}
+  #loginView .login-card h1{font-size:26px;margin-bottom:20px}
+}
+@media(max-width:380px){
+  #loginView .desk-lamp{transform:scale(.61);margin-bottom:-112px}
+  #loginView .lamp-live-badge{font-size:9px;letter-spacing:1px}
+  #loginView .lamp-login-shell .login-card{padding:22px 17px}
+}
