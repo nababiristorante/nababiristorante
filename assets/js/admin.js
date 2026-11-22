@@ -4095,12 +4095,8 @@ function setupCelebrations() {
       $('#certificatePreviewQr').hidden=false;
       $('#certificatePrint').disabled=false;
       status.textContent='Certificato creato e salvato. Codice: '+data.certificate_code;
-      await render('celebrations');
-      currentCertificate=data;
-      $('#certificatePreviewCode').textContent=data.certificate_code;
-      if(data.photo_url){$('#certificatePreviewPhoto').src=data.photo_url;$('#certificatePreviewPhoto').hidden=false;}
-      $('#certificatePreviewQr').src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(verifyUrl);
-      $('#certificatePreviewQr').hidden=false;$('#certificatePrint').disabled=false;
+      const rowMarkup='<tr><td>'+esc(data.certificate_code)+'</td><td>'+esc(type==='birthday'?'Compleanno':'Riconoscimento evento')+'</td><td>'+esc(data.recipient_name)+'</td><td>'+esc(data.issue_date)+'</td><td>Attivo</td><td><button class="outline-btn" type="button" data-revoke-certificate="'+esc(data.id)+'">Revoca</button></td></tr>';
+      $('#certificateRows').insertAdjacentHTML('afterbegin',rowMarkup);
       $('#certificateFormStatus').textContent='Certificato salvato: '+data.certificate_code;
     } catch(err) { status.textContent=err.message||'Errore durante il salvataggio.'; }
     finally { button.disabled=false; }
@@ -4159,7 +4155,7 @@ async function render(id) {
   try {
     if (id === 'celebrations') {
       if (userRole !== 'admin') { host.innerHTML = '<p>Solo l’amministratore può creare certificati.</p>'; return; }
-      host.innerHTML = celebrationsPage();
+      host.innerHTML = await celebrationsPage();
       setupCelebrations();
       return;
     }
