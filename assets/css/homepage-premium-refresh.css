@@ -600,3 +600,9 @@ main>.hero,main>.features,main>.menu-section,main>.booking-section{grid-column:1
  .booking-fields{grid-template-columns:1fr!important}
  .reference-footer .footer-grid{grid-template-columns:1fr!important}
 }
+
+
+/* PR182 placement correction: the final three editorial panels share the row below booking */
+main>.about-section{grid-row:auto!important}
+main>.reviews-strip{grid-row:auto!important}
+main>.reference-location-card{grid-row:auto!important}
