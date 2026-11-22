@@ -20,3 +20,33 @@ footer{text-align:center;color:#fff2dc;font:12px/1.8 "DM Sans",Arial,sans-serif;
 .close:focus-visible,.menu-page:focus-visible{outline:3px solid var(--q-saffron);outline-offset:3px}
 @media(max-width:600px){header{padding:24px 12px 20px}main{padding:18px 10px 36px}.pages{gap:14px}.menu-page{border-width:3px;border-radius:4px 13px 4px 13px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.menu-page{transition:none}}
+
+
+/* Bangladesh heritage QR menu: alpana, jamdani geometry, warm ivory and brass. */
+:root{--q-wine:#a32632;--q-wine-dark:#641b25;--q-green:#075b3a;--q-green-dark:#043c29;--q-gold:#d8b66d;--q-saffron:#dcae48;--q-ivory:#fff8ed;--q-ink:#29221d}
+body{
+ background:
+  radial-gradient(circle at 12% 8%,#efd5a4 0,transparent 27%),
+  radial-gradient(circle at 90% 25%,#e6c4b6 0,transparent 24%),
+  linear-gradient(145deg,#fff8ed,#f1e1c7)!important;
+}
+header,footer{background:linear-gradient(110deg,#043c29,#075b3a 58%,#641b25)!important;border-color:#d8b66d!important}
+header:before{inset:8px!important;border:2px solid #e7ca8b!important}
+header:after{
+ content:"✿  ❋  ✿";display:block;position:relative;margin:13px auto 0;color:#f5d991;font-size:16px;letter-spacing:.4em;
+}
+.brand{color:#fff0c9!important;text-shadow:0 3px 15px #0006!important}
+header p{color:#f4dcae!important}
+main{position:relative}
+main:before{
+ content:"";display:block;height:9px;margin:0 auto 22px;max-width:360px;
+ background:repeating-linear-gradient(90deg,#075b3a 0 9px,#d8b66d 9px 12px,#a32632 12px 18px,#fff8ed 18px 22px);
+ border-radius:20px;
+}
+.menu-page{
+ border:6px solid #fff8ed!important;outline:2px solid #d8b66d;outline-offset:2px;
+ border-radius:8px 24px 8px 24px!important;box-shadow:0 18px 40px #3d251c30!important;
+}
+#status{border-color:#d8b66d!important;border-radius:8px 22px 8px 22px!important}
+.close{background:#a32632!important;border-color:#e5ca8c!important}
+@media(max-width:600px){.menu-page{border-width:4px!important;border-radius:5px 15px 5px 15px!important}}
