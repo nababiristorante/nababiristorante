@@ -69,3 +69,43 @@
   .reference-hero .btn{padding:12px 24px!important;font-size:11px!important}
 }
 @media(prefers-reduced-motion:reduce){.reference-hero .btn{transition:none!important}}
+
+/* Restore the familiar brand and a short, useful navigation row. */
+.site-main-header{
+  display:flex!important;position:absolute!important;inset:54px 0 auto!important;z-index:90!important;
+  width:100%!important;max-width:none!important;margin:0!important;padding:12px clamp(16px,4vw,58px)!important;
+  align-items:center!important;justify-content:space-between!important;gap:20px!important;
+  background:rgba(4,12,8,.46)!important;border:0!important;border-block:1px solid rgba(236,202,137,.25)!important;
+  box-shadow:none!important;backdrop-filter:blur(8px)!important;
+}
+.site-main-header .brand{display:flex!important;align-items:center!important;gap:10px!important;flex:0 0 auto!important;text-decoration:none!important}
+.site-main-header .brand-mark{color:#f0ce8d!important}
+.site-main-header .brand-name strong,.site-main-header .brand-name small{color:#fff4dc!important}
+.site-main-header nav{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:clamp(12px,2.1vw,28px)!important;width:auto!important;flex:1 1 auto!important}
+.site-main-header nav a{display:inline-flex!important;color:#fff7e8!important;font:600 11px "DM Sans",Arial,sans-serif!important;letter-spacing:.06em!important;text-decoration:none!important;text-shadow:0 1px 8px #000!important}
+.site-main-header nav a:nth-child(2),.site-main-header nav a:nth-child(4),
+.site-main-header nav a:nth-child(5),.site-main-header nav a:nth-child(6),
+.site-main-header nav a:nth-child(8),.site-main-header nav a:nth-child(9){display:none!important}
+.site-main-header nav a:nth-child(10){
+  display:inline-flex!important;padding:9px 15px!important;border:1px solid #e9c477!important;
+  border-radius:24px!important;background:rgba(8,20,13,.72)!important;color:#ffe6b2!important;
+}
+.site-main-header nav a:hover{color:#f1cb80!important}
+.reference-hero{padding-top:155px!important}
+@media(max-width:700px){
+  .site-main-header{inset:52px 0 auto!important;padding:9px 12px!important;gap:8px!important;flex-wrap:nowrap!important}
+  .site-main-header .brand{gap:5px!important}
+  .site-main-header .brand-mark{font-size:25px!important}
+  .site-main-header .brand-name strong{font-size:17px!important}
+  .site-main-header .brand-name small{font-size:7px!important}
+  .site-main-header nav{width:auto!important;flex:1 1 auto!important;justify-content:flex-end!important;gap:clamp(7px,2vw,12px)!important;flex-wrap:nowrap!important}
+  .site-main-header nav a{font-size:9px!important;white-space:nowrap!important}
+  .site-main-header nav a:nth-child(10){padding:7px 9px!important;font-size:8px!important}
+  .reference-hero{padding-top:145px!important}
+}
+@media(max-width:360px){
+  .site-main-header .brand-name strong{font-size:15px!important}
+  .site-main-header nav{gap:6px!important}
+  .site-main-header nav a{font-size:8px!important}
+  .site-main-header nav a:nth-child(10){padding:6px 7px!important}
+}
