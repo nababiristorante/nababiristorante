@@ -764,3 +764,70 @@ body{overflow-x:hidden}
   #loginView .lamp-live-badge{font-size:9px;letter-spacing:1px}
   #loginView .lamp-login-shell .login-card{padding:22px 17px}
 }
+
+
+/* Lamp-first login reveal: credentials appear only after switching the lamp on */
+#loginView .lamp-login-shell .login-card{
+  max-height:0;
+  min-height:0;
+  overflow:hidden;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(18px);
+  padding-top:0;
+  padding-bottom:0;
+  margin:0;
+  border-width:0;
+  pointer-events:none;
+  transition:max-height .65s ease,opacity .35s ease,transform .45s ease,
+    padding .45s ease,margin .45s ease,border-width .3s ease,visibility .35s;
+}
+#loginView .lamp-light-toggle:checked~.login-card{
+  max-height:1000px;
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+  padding:clamp(25px,5vw,40px);
+  margin:5px 0 0;
+  border-width:1px;
+  pointer-events:auto;
+}
+#loginView .lamp-pull-control{
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  min-height:42px;
+  padding:8px 16px;
+  border:1px solid rgba(217,182,107,.38);
+  border-radius:999px;
+  background:rgba(22,19,12,.72);
+}
+#loginView .lamp-light-toggle:checked~.lamp-pull-control{
+  color:#a9efb6;
+  border-color:rgba(69,212,119,.55);
+  background:rgba(16,38,25,.82);
+}
+#loginView .lamp-light-toggle:checked~.lamp-pull-control .lamp-pull-dot{
+  background:#173b25;
+  border-color:#45d477;
+}
+#loginView .lamp-light-toggle:checked~.lamp-pull-control .lamp-pull-dot:after{
+  background:#45d477;
+  box-shadow:0 0 10px rgba(69,212,119,.7);
+}
+#loginView .lamp-pull-control span:last-child{font-size:0}
+#loginView .lamp-pull-control span:last-child:after{
+  content:"Touch to switch on and reveal login";
+  font-size:11px;
+}
+#loginView .lamp-light-toggle:checked~.lamp-pull-control span:last-child:after{
+  content:"Lamp on · Login unlocked";
+}
+@media(max-width:760px){
+  #loginView .lamp-light-toggle:checked~.login-card{
+    padding:25px 21px;
+    margin-top:4px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  #loginView .login-card{transition:none}
+}
