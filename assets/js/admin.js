@@ -3997,79 +3997,146 @@ async function setBookingStatus(id,status) {
 }
 
 
-const CELEBRATION_SETTINGS_KEY = 'nababi_celebration_settings_v1';
-const CELEBRATION_RECORDS_KEY = 'nababi_celebration_records_v1';
-function getCelebrationSettings(){try{return JSON.parse(localStorage.getItem(CELEBRATION_SETTINGS_KEY)||'{}')}catch(_){return {}}}
-function getCelebrationRecords(){try{return JSON.parse(localStorage.getItem(CELEBRATION_RECORDS_KEY)||'[]')}catch(_){return []}}
-function celebrationRecordsMarkup(rows){
- if(!rows.length)return '<p class="help">Nessun certificato salvato su questo dispositivo.</p>';
- return '<div class="table-scroll"><table class="data-table"><thead><tr><th>Documento</th><th>Nome</th><th>Data</th><th>Codice</th></tr></thead><tbody>'+rows.slice().reverse().map(r=>'<tr><td>'+esc(r.label)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.id)+'</td></tr>').join('')+'</tbody></table></div>';
+
+const CERTIFICATE_BUCKET = 'nababi-certificates';
+let certificateSettings = {};
+let currentCertificate = null;
+
+async function celebrationsPage() {
+  const [{data:settings,error:settingsError},{data:rows,error:rowsError}] = await Promise.all([
+    db.from('nababi_certificate_settings').select('*').eq('id',true).maybeSingle(),
+    db.from('nababi_certificates').select('id,certificate_code,certificate_type,recipient_name,event_name,issue_date,status,created_at').order('created_at',{ascending:false}).limit(100)
+  ]);
+  if (settingsError) throw settingsError;
+  if (rowsError) throw rowsError;
+  certificateSettings = settings || {};
+  const signature = certificateSettings.signature_url
+    ? '<img src="'+esc(certificateSettings.signature_url)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;object-fit:contain;background:#fff;padding:6px;border-radius:6px">'
+    : '<span class="help">Nessuna firma salvata</span>';
+  const recordRows = rows.length ? rows.map(r => '<tr><td>'+esc(r.certificate_code)+'</td><td>'+esc(r.certificate_type==='birthday'?'Compleanno':'Riconoscimento evento')+'</td><td>'+esc(r.recipient_name)+'</td><td>'+esc(r.issue_date)+'</td><td>'+esc(r.status==='active'?'Attivo':'Revocato')+'</td><td>'+(r.status==='active'?'<button class="outline-btn" type="button" data-revoke-certificate="'+esc(r.id)+'">Revoca</button>':'—')+'</td></tr>').join('') : '<tr><td colspan="6">Nessun certificato ancora creato.</td></tr>';
+  return '<style>'+
+    '.cert-grid{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(320px,1.2fr);gap:16px}'+
+    '.cert-panel{padding:18px;border:1px solid rgba(216,183,106,.35);border-radius:14px;background:linear-gradient(145deg,#10251c,#0b1511);color:#f8f0df}'+
+    '.cert-panel h3{margin:0 0 14px;color:#e7c777}.cert-form{display:grid;grid-template-columns:1fr 1fr;gap:11px}.cert-form label{display:grid;gap:6px;font-size:13px;color:#e8dfc9}.cert-form input,.cert-form select,.cert-form textarea{width:100%;min-height:42px;padding:10px;border:1px solid rgba(216,183,106,.35);border-radius:8px;background:#08120e;color:#fff;font:inherit}.cert-form textarea{min-height:76px}.cert-wide{grid-column:1/-1}.cert-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.cert-actions button{border:1px solid #d8b76a;border-radius:8px;padding:10px 14px;background:#d8b76a;color:#17251c;font-weight:700;cursor:pointer}.cert-actions .alt{background:transparent;color:#f4dfaa}.cert-paper{max-width:100%;min-height:390px;padding:30px 24px;background:#fffaf0;color:#241b12;border:9px double #bd9140;text-align:center;position:relative;overflow:hidden}.cert-paper:before{content:"";position:absolute;inset:8px;border:1px solid #d7b66a;pointer-events:none}.cert-paper h2{font:600 25px Georgia,serif;color:#55236d;letter-spacing:2px;margin:14px 0}.cert-person{font:italic 30px Georgia,serif;color:#4c1e62;border-bottom:1px solid #c9a75d;display:inline-block;padding:7px 18px;min-width:60%;overflow-wrap:anywhere}.cert-photo{width:104px;height:104px;object-fit:cover;border:3px solid #c49a45;border-radius:50%;margin:12px auto}.cert-bottom{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-top:24px;text-align:left;font-size:11px}.cert-sign{max-width:145px;max-height:58px;object-fit:contain;display:block;margin:0 auto 4px}.cert-qr{width:76px;height:76px;object-fit:contain}.cert-status{min-height:20px;margin-top:10px}.cert-table-wrap{overflow:auto}.cert-table{width:100%;border-collapse:collapse;min-width:680px}.cert-table th,.cert-table td{padding:10px;border-bottom:1px solid rgba(216,183,106,.2);text-align:left}.cert-table th{color:#e7c777}.cert-note{font-size:12px;color:#d4c8ad}.cert-print-only{display:none}@media(max-width:760px){.cert-grid{grid-template-columns:1fr}.cert-form{grid-template-columns:1fr}.cert-wide{grid-column:auto}.cert-paper{padding:22px 13px;min-height:340px}.cert-paper h2{font-size:20px}.cert-person{font-size:24px}.cert-bottom{flex-wrap:wrap}}@media print{body *{visibility:hidden!important}#certificatePreview,#certificatePreview *{visibility:visible!important}#certificatePreview{position:absolute;left:0;top:0;width:100%;padding:10mm!important;background:#fff!important}#certificatePreview .cert-paper{max-width:none;min-height:180mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}.cert-actions{display:none!important}}'+
+  '</style>'+
+  '<section class="section-card"><div class="section-title"><h2>Certificati e verifica online</h2></div><p class="help">Crea certificati in italiano, salvali nell’archivio centrale e rendili verificabili tramite codice univoco o QR Code.</p>'+
+  '<div class="cert-grid">'+
+  '<article class="cert-panel"><h3>Impostazioni e firma</h3><p class="cert-note">La firma e i dati del firmatario vengono salvati in modo centralizzato.</p><div id="certificateSignaturePreview">'+signature+'</div><label style="display:block;margin-top:12px">Immagine della firma<input id="certificateSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:7px"></label><label style="display:block;margin-top:12px">Nome del firmatario<input id="certificateSignerName" type="text" maxlength="100" value="'+esc(certificateSettings.signer_name||'Direzione — Nababi Ristorante')+'" style="display:block;width:100%;margin-top:6px"></label><label style="display:block;margin-top:12px">Ruolo del firmatario<input id="certificateSignerRole" type="text" maxlength="100" value="'+esc(certificateSettings.signer_role||'Direzione')+'" style="display:block;width:100%;margin-top:6px"></label><div class="cert-actions"><button type="button" id="certificateSaveSettings">Salva impostazioni</button><button type="button" class="alt" id="certificateRemoveSignature">Rimuovi firma</button></div><p id="certificateSettingsStatus" class="cert-status help" aria-live="polite"></p></article>'+
+  '<article class="cert-panel"><h3>Nuovo certificato</h3><form id="certificateForm" class="cert-form">'+
+  '<label class="cert-wide">Tipo di certificato<select id="certificateType"><option value="birthday">Certificato di Compleanno</option><option value="event">Attestato di Riconoscimento — Organizzazione Evento</option></select></label>'+
+  '<label>Nome e cognome<input id="certificateRecipient" maxlength="150" required placeholder="Nome e cognome"></label><label>Data della celebrazione<input id="certificateDate" type="date" required></label>'+
+  '<label id="certificateEventField" class="cert-wide" hidden>Nome dell’evento<input id="certificateEventName" maxlength="150" placeholder="Nome dell’evento"></label>'+
+  '<label class="cert-wide">Dedica personalizzata (facoltativa)<textarea id="certificateMessage" maxlength="300" placeholder="Scrivi una dedica..."></textarea></label>'+
+  '<label class="cert-wide">Foto (facoltativa)<input id="certificatePhoto" type="file" accept="image/png,image/jpeg,image/webp"><span class="cert-note">La foto è facoltativa. Formati JPG, PNG o WebP, massimo 4 MB.</span></label>'+
+  '<div class="cert-actions cert-wide"><button type="submit" id="certificateCreate">Crea e salva certificato</button><button type="button" class="alt" id="certificateReset">Nuovo</button></div></form><p id="certificateFormStatus" class="cert-status help" aria-live="polite"></p></article></div></section>'+
+  '<section class="section-card"><div class="section-title"><h2>Anteprima del certificato</h2><span class="help">Formato A4 orizzontale</span></div><div id="certificatePreview"><div class="cert-paper"><div style="color:#a47c2d;letter-spacing:3px">♛ NABABI RISTORANTE ♛</div><h2 id="certificatePreviewTitle">CERTIFICATO DI COMPLEANNO</h2><p style="font-style:italic">Conferito a</p><div class="cert-person" id="certificatePreviewName">Nome e cognome</div><img id="certificatePreviewPhoto" class="cert-photo" alt="Foto del destinatario" hidden><p id="certificatePreviewText">Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità e momenti indimenticabili.</p><p id="certificatePreviewMessage" style="font-style:italic"></p><div class="cert-bottom"><div><strong>Data:</strong> <span id="certificatePreviewDate">—</span><br><strong>Codice:</strong> <span id="certificatePreviewCode">Assegnato al salvataggio</span><br><span style="font-size:9px">Verifica: nababiristorante.vercel.app/verifica-certificato.html</span></div><div style="text-align:center;min-width:145px"><img id="certificatePreviewSignature" class="cert-sign" alt="Firma autorizzata" hidden><div id="certificatePreviewSigner" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:9px">FIRMA AUTORIZZATA</strong></div><img id="certificatePreviewQr" class="cert-qr" alt="QR Code" hidden></div><div style="margin-top:16px;color:#a47c2d;font-size:10px;letter-spacing:2px">UN RICORDO SPECIALE FIRMATO NABABI</div></div></div><div class="cert-actions"><button type="button" id="certificatePrint" class="alt" disabled>Stampa / Salva PDF</button></div></section>'+
+  '<section class="section-card"><div class="section-title"><h2>Archivio certificati</h2></div><p class="help">Archivio centrale condiviso tra i dispositivi autorizzati.</p><div class="cert-table-wrap"><table class="cert-table"><thead><tr><th>Codice</th><th>Tipo</th><th>Destinatario</th><th>Data</th><th>Stato</th><th>Azione</th></tr></thead><tbody id="certificateRows">'+recordRows+'</tbody></table></div></section>';
 }
-function celebrationsPage(){
- const s=getCelebrationSettings(), rows=getCelebrationRecords();
- const sig=s.signature?'<img src="'+s.signature+'" alt="Firma salvata" style="max-width:210px;max-height:75px;background:#fff;padding:6px;border-radius:6px">':'<span class="help">Nessuna firma salvata</span>';
- return '<style>'+
- '.celebration-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}'+
- '.celebration-panel{padding:18px;border:1px solid rgba(216,183,106,.35);border-radius:14px;background:linear-gradient(145deg,#10251c,#0b1511);color:#f8f0df}'+
- '.celebration-panel h3{color:#e7c777;margin-top:0}'+
- '.celebration-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}'+
- '.celebration-fields label{display:grid;gap:6px;font-size:13px;color:#e8dfc9}'+
- '.celebration-fields input,.celebration-fields select,.celebration-fields textarea,.celebration-panel input[type=text]{width:100%;padding:10px;border:1px solid rgba(216,183,106,.35);border-radius:8px;background:#08120e;color:#fff;font:inherit}'+
- '.celebration-fields textarea{min-height:70px}.celebration-full{grid-column:1/-1}'+
- '.celebration-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}'+
- '.celebration-actions button{border:1px solid #d8b76a;border-radius:8px;padding:10px 14px;background:#d8b76a;color:#17251c;font-weight:700;cursor:pointer}'+
- '.celebration-actions button.alt{background:transparent;color:#f4dfaa}'+
- '.celebration-paper{background:#fffaf0;color:#241b12;border:8px double #bd9140;padding:28px;text-align:center;min-height:360px;position:relative}'+
- '.celebration-paper:before{content:"";position:absolute;inset:8px;border:1px solid #d7b66a;pointer-events:none}'+
- '.celebration-paper h2{font-family:Georgia,serif;color:#55236d;letter-spacing:2px;font-size:25px;margin:14px 0}'+
- '.celebration-person{font:italic 30px Georgia,serif;color:#4c1e62;border-bottom:1px solid #c9a75d;display:inline-block;padding:7px 18px;min-width:60%}'+
- '.celebration-foot{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-top:25px;text-align:left;font-size:12px}'+
- '.celebration-sign{max-width:150px;max-height:60px;object-fit:contain;display:block;margin:0 auto 4px}'+
- '@media(max-width:760px){.celebration-layout,.celebration-fields{grid-template-columns:1fr}.celebration-full{grid-column:auto}.celebration-paper{padding:18px 12px}.celebration-paper h2{font-size:20px}.celebration-person{font-size:24px}}'+
- '@media print{body *{visibility:hidden!important}#celebrationPrintArea,#celebrationPrintArea *{visibility:visible!important}#celebrationPrintArea{position:absolute;left:0;top:0;width:100%;padding:10mm!important;background:#fff!important}#celebrationPrintArea .celebration-paper{min-height:180mm;print-color-adjust:exact;-webkit-print-color-adjust:exact}}'+
- '</style>'+
- '<section class="section-card"><div class="section-title"><h2>Certificati e celebrazioni</h2></div><p class="help">I testi standard sono già scritti in italiano. Inserisci i dati richiesti, controlla l’anteprima e stampa o salva in PDF.</p>'+
- '<div class="celebration-layout">'+
- '<article class="celebration-panel"><h3>Firma e impostazioni</h3><p class="help">La firma viene memorizzata in questo browser e riutilizzata su questo dispositivo.</p><label>Carica immagine della firma<input id="celebrationSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:8px"></label><div id="celebrationSignaturePreview" style="margin:12px 0">'+sig+'</div><label>Nome e ruolo del firmatario<input id="celebrationSigner" type="text" maxlength="100" value="'+esc(s.signer||'Direzione — Nababi Ristorante')+'" style="display:block;margin-top:7px"></label><div class="celebration-actions"><button class="alt" id="celebrationSaveSettings" type="button">Salva firma e impostazioni</button><button class="alt" id="celebrationRemoveSignature" type="button">Rimuovi firma</button></div><p id="celebrationSettingsStatus" class="help" aria-live="polite"></p></article>'+
- '<article class="celebration-panel"><h3>Nuovo documento</h3><div class="celebration-fields">'+
- '<label class="celebration-full">Tipo di documento<select id="celebrationType"><option value="birthday">Certificato di Compleanno</option><option value="event">Attestato di Riconoscimento — Organizzazione Evento</option></select></label>'+
- '<label>Nome<input id="celebrationFirstName" maxlength="70" required placeholder="Nome"></label><label>Cognome<input id="celebrationLastName" maxlength="70" placeholder="Cognome"></label>'+
- '<label>Data della celebrazione<input id="celebrationDate" type="date" required></label><label id="celebrationEventField" hidden>Nome dell’evento<input id="celebrationEventName" maxlength="100" placeholder="Nome dell’evento"></label>'+
- '<label class="celebration-full">Dedica personalizzata (facoltativa)<textarea id="celebrationMessage" maxlength="240" placeholder="Scrivi una dedica..."></textarea></label></div>'+
- '<div class="celebration-actions"><button id="celebrationUpdatePreview" type="button">Aggiorna anteprima</button><button class="alt" id="celebrationPrint" type="button">Stampa / Salva PDF</button><button class="alt" id="celebrationSaveRecord" type="button">Salva nell’elenco</button></div><p id="celebrationFormStatus" class="help" aria-live="polite"></p></article></div></section>'+
- '<section class="section-card"><div class="section-title"><h2>Anteprima di stampa</h2><span class="help">Formato A4 orizzontale</span></div><div id="celebrationPrintArea"><div class="celebration-paper" id="celebrationPaper"><div style="color:#b28a35;letter-spacing:3px">♛ NABABI RISTORANTE ♛</div><h2 id="celebrationHeading">CERTIFICATO DI COMPLEANNO</h2><p style="font-style:italic">Conferito a</p><div class="celebration-person" id="celebrationPerson">Nome Cognome</div><p id="celebrationBody">Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.</p><p id="celebrationDedication" style="font-style:italic"></p><div class="celebration-foot"><div><strong>Data:</strong> <span id="celebrationDatePreview">—</span><br><strong>Codice:</strong> <span id="celebrationCodePreview">NAB-—</span></div><div style="text-align:center;min-width:150px"><img id="celebrationSignPreview" class="celebration-sign" alt="Firma autorizzata" hidden><div id="celebrationSignerPreview" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:10px">FIRMA AUTORIZZATA</strong></div></div><div style="margin-top:18px;color:#a47c2d;font-size:11px;letter-spacing:2px">UN RICORDO SPECIALE FIRMATO NABABI</div></div></div></section>'+
- '<section class="section-card"><div class="section-title"><h2>Documenti creati su questo dispositivo</h2></div><p class="help">L’elenco viene salvato solo in questo browser e non è sincronizzato con Supabase o altri dispositivi.</p><div id="celebrationRecords">'+celebrationRecordsMarkup(rows)+'</div></section>';
+
+async function uploadCertificateAsset(file, folder) {
+  if (!file) return null;
+  if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 4*1024*1024) {
+    throw new Error('Scegli un file PNG, JPG o WebP fino a 4 MB.');
+  }
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const path = folder+'/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
+  const {error} = await db.storage.from(CERTIFICATE_BUCKET).upload(path,file,{upsert:false,contentType:file.type});
+  if (error) throw error;
+  return db.storage.from(CERTIFICATE_BUCKET).getPublicUrl(path).data.publicUrl;
 }
-function setupCelebrations(){
- const el=id=>document.getElementById(id), settings=getCelebrationSettings();
- let signature=settings.signature||'', active=null;
- const update=()=>{
-  const event=el('celebrationType').value==='event', first=el('celebrationFirstName').value.trim(), last=el('celebrationLastName').value.trim();
-  const dateVal=el('celebrationDate').value, date=dateVal?new Date(dateVal+'T12:00:00').toLocaleDateString('it-IT'):'—';
-  const eventName=el('celebrationEventName').value.trim(), code=active?.id||('NAB-'+new Date().getFullYear()+'-'+Math.random().toString(36).slice(2,8).toUpperCase());
-  el('celebrationEventField').hidden=!event;
-  el('celebrationHeading').textContent=event?'ATTESTATO DI RICONOSCIMENTO':'CERTIFICATO DI COMPLEANNO';
-  el('celebrationPerson').textContent=[first,last].filter(Boolean).join(' ')||'Nome Cognome';
-  el('celebrationDatePreview').textContent=date;el('celebrationCodePreview').textContent=code;
-  el('celebrationBody').textContent=event?'In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.':'Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.';
-  el('celebrationDedication').textContent=el('celebrationMessage').value.trim();
-  el('celebrationSignerPreview').textContent=el('celebrationSigner').value.trim()||'Direzione — Nababi Ristorante';
-  el('celebrationSignPreview').src=signature;el('celebrationSignPreview').hidden=!signature;
-  active={id:code,type:event?'event':'birthday',label:event?'Attestato di Riconoscimento':'Certificato di Compleanno',name:[first,last].filter(Boolean).join(' '),date,eventName,message:el('celebrationMessage').value.trim()};
-  return active;
- };
- ['celebrationType','celebrationFirstName','celebrationLastName','celebrationDate','celebrationEventName','celebrationMessage','celebrationSigner'].forEach(id=>el(id).addEventListener('input',update));
- el('celebrationSignatureFile').addEventListener('change',e=>{
-  const file=e.target.files?.[0];if(!file)return;
-  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){el('celebrationSettingsStatus').textContent='Scegli un file PNG, JPG o WebP fino a 1 MB.';e.target.value='';return;}
-  const reader=new FileReader();reader.onload=()=>{signature=String(reader.result||'');el('celebrationSignaturePreview').innerHTML='<img src="'+signature+'" alt="Anteprima firma" style="max-width:210px;max-height:75px;background:#fff;padding:6px;border-radius:6px">';update();};reader.readAsDataURL(file);
- });
- el('celebrationSaveSettings').onclick=()=>{try{localStorage.setItem(CELEBRATION_SETTINGS_KEY,JSON.stringify({signature,signer:el('celebrationSigner').value.trim()}));el('celebrationSettingsStatus').textContent='Impostazioni salvate in questo browser.';}catch(_){el('celebrationSettingsStatus').textContent='Impossibile salvare. Riduci la dimensione dell’immagine.';}};
- el('celebrationRemoveSignature').onclick=()=>{signature='';localStorage.setItem(CELEBRATION_SETTINGS_KEY,JSON.stringify({signature:'',signer:el('celebrationSigner').value.trim()}));el('celebrationSignaturePreview').textContent='Nessuna firma salvata';update();};
- el('celebrationUpdatePreview').onclick=()=>{update();el('celebrationFormStatus').textContent='Anteprima aggiornata.';};
- el('celebrationPrint').onclick=()=>{const r=update();if(!r.name||!el('celebrationDate').value||(r.type==='event'&&!r.eventName)){el('celebrationFormStatus').textContent='Compila nome, data e, per gli eventi, il nome dell’evento.';return;}document.title='Nababi-'+r.id;window.print();};
- el('celebrationSaveRecord').onclick=()=>{const r=update();if(!r.name||!el('celebrationDate').value||(r.type==='event'&&!r.eventName)){el('celebrationFormStatus').textContent='Compila tutti i campi obbligatori.';return;}const rows=getCelebrationRecords();if(!rows.some(x=>x.id===r.id))rows.push(r);try{localStorage.setItem(CELEBRATION_RECORDS_KEY,JSON.stringify(rows));el('celebrationRecords').innerHTML=celebrationRecordsMarkup(rows);el('celebrationFormStatus').textContent='Documento salvato nell’elenco locale.';}catch(_){el('celebrationFormStatus').textContent='Spazio locale insufficiente.';}};
- update();
+
+function updateCertificatePreview() {
+  const type = $('#certificateType').value;
+  const name = $('#certificateRecipient').value.trim() || 'Nome e cognome';
+  const dateValue = $('#certificateDate').value;
+  const date = dateValue ? new Date(dateValue+'T12:00:00').toLocaleDateString('it-IT') : '—';
+  const eventName = $('#certificateEventName').value.trim();
+  $('#certificateEventField').hidden = type !== 'event';
+  $('#certificatePreviewTitle').textContent = type === 'event' ? 'ATTESTATO DI RICONOSCIMENTO' : 'CERTIFICATO DI COMPLEANNO';
+  $('#certificatePreviewName').textContent = name;
+  $('#certificatePreviewDate').textContent = date;
+  $('#certificatePreviewText').textContent = type === 'event'
+    ? 'In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.'
+    : 'Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.';
+  $('#certificatePreviewMessage').textContent = $('#certificateMessage').value.trim();
+  $('#certificatePreviewSigner').textContent = [certificateSettings.signer_name||'Direzione — Nababi Ristorante',certificateSettings.signer_role||''].filter(Boolean).join(' · ');
+  $('#certificatePreviewSignature').src = certificateSettings.signature_url || '';
+  $('#certificatePreviewSignature').hidden = !certificateSettings.signature_url;
+}
+
+function setupCelebrations() {
+  const ids = ['certificateType','certificateRecipient','certificateDate','certificateEventName','certificateMessage'];
+  ids.forEach(id => $('#'+id).addEventListener('input',updateCertificatePreview));
+  $('#certificateType').addEventListener('change',updateCertificatePreview);
+  $('#certificateForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=$('#certificateCreate'), status=$('#certificateFormStatus');
+    button.disabled=true; status.textContent='Salvataggio in corso…';
+    try {
+      const type=$('#certificateType').value, recipient=$('#certificateRecipient').value.trim(), date=$('#certificateDate').value, eventName=$('#certificateEventName').value.trim();
+      if(!recipient||!date||(type==='event'&&!eventName)) throw new Error('Compila il nome, la data e il nome dell’evento quando richiesto.');
+      const photoFile=$('#certificatePhoto').files?.[0]||null;
+      const photoUrl=photoFile?await uploadCertificateAsset(photoFile,'photos'):null;
+      const row={
+        certificate_type:type,recipient_name:recipient,event_name:type==='event'?eventName:null,
+        issue_date:date,dedication:$('#certificateMessage').value.trim()||null,
+        photo_url:photoUrl,show_photo_publicly:!!photoUrl,
+        signer_name:certificateSettings.signer_name||'Direzione — Nababi Ristorante',
+        signer_role:certificateSettings.signer_role||'',
+        signature_url:certificateSettings.signature_url||null,status:'active'
+      };
+      const {data,error}=await db.from('nababi_certificates').insert(row).select('*').single();
+      if(error) throw error;
+      currentCertificate=data;
+      $('#certificatePreviewCode').textContent=data.certificate_code;
+      if(data.photo_url){$('#certificatePreviewPhoto').src=data.photo_url;$('#certificatePreviewPhoto').hidden=false;} else $('#certificatePreviewPhoto').hidden=true;
+      const verifyUrl=window.location.origin+'/verifica-certificato.html?code='+encodeURIComponent(data.certificate_code);
+      $('#certificatePreviewQr').src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(verifyUrl);
+      $('#certificatePreviewQr').hidden=false;
+      $('#certificatePrint').disabled=false;
+      status.textContent='Certificato creato e salvato. Codice: '+data.certificate_code;
+      await render('celebrations');
+      currentCertificate=data;
+      $('#certificatePreviewCode').textContent=data.certificate_code;
+      if(data.photo_url){$('#certificatePreviewPhoto').src=data.photo_url;$('#certificatePreviewPhoto').hidden=false;}
+      $('#certificatePreviewQr').src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(verifyUrl);
+      $('#certificatePreviewQr').hidden=false;$('#certificatePrint').disabled=false;
+      $('#certificateFormStatus').textContent='Certificato salvato: '+data.certificate_code;
+    } catch(err) { status.textContent=err.message||'Errore durante il salvataggio.'; }
+    finally { button.disabled=false; }
+  });
+  $('#certificateSaveSettings').onclick=async()=>{
+    const status=$('#certificateSettingsStatus'), button=$('#certificateSaveSettings');button.disabled=true;
+    try{
+      let signatureUrl=certificateSettings.signature_url||null;
+      const file=$('#certificateSignatureFile').files?.[0];
+      if(file) signatureUrl=await uploadCertificateAsset(file,'signatures');
+      const settings={id:true,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:signatureUrl,updated_at:new Date().toISOString()};
+      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});
+      if(error)throw error;certificateSettings=settings;status.textContent='Impostazioni salvate correttamente.';
+      $('#certificateSignaturePreview').innerHTML=signatureUrl?'<img src="'+esc(signatureUrl)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;background:#fff;padding:6px;border-radius:6px">':'Nessuna firma salvata';
+      updateCertificatePreview();
+    }catch(err){status.textContent=err.message||'Impossibile salvare le impostazioni.';}
+    finally{button.disabled=false;}
+  };
+  $('#certificateRemoveSignature').onclick=async()=>{
+    const status=$('#certificateSettingsStatus');
+    try{
+      const settings={id:true,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:null,updated_at:new Date().toISOString()};
+      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});if(error)throw error;
+      certificateSettings=settings;$('#certificateSignaturePreview').textContent='Nessuna firma salvata';$('#certificateSignatureFile').value='';status.textContent='Firma rimossa.';updateCertificatePreview();
+    }catch(err){status.textContent=err.message||'Impossibile rimuovere la firma.';}
+  };
+  $('#certificatePrint').onclick=()=>{if(currentCertificate)window.print();};
+  $('#certificateReset').onclick=()=>render('celebrations');
+  $('#certificateRows').onclick=async e=>{
+    const button=e.target.closest('[data-revoke-certificate]');if(!button)return;
+    if(!confirm('Vuoi revocare definitivamente questo certificato?'))return;
+    button.disabled=true;
+    try{const {error}=await db.from('nababi_certificates').update({status:'revoked'}).eq('id',button.dataset.revokeCertificate);if(error)throw error;await render('celebrations');}
+    catch(err){alert(err.message||'Impossibile revocare il certificato.');button.disabled=false;}
+  };
+  updateCertificatePreview();
 }
 
 /* MODULE RENDERING */
