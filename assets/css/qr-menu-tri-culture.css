@@ -1,0 +1,22 @@
+/* Nababi QR menu — matching Italian × Bengali × Indian premium identity */
+:root{color-scheme:light;--q-wine:#762432;--q-wine-dark:#40131f;--q-green:#123e32;--q-gold:#d9b76b;--q-saffron:#e5a52f;--q-ivory:#fff8eb;--q-ink:#29221d}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 12% 8%,#f2d8a6 0,transparent 28%),radial-gradient(circle at 90% 25%,#e8c4b2 0,transparent 25%),linear-gradient(145deg,#fffaf0,#f2e4ce);color:var(--q-ink);font-family:"DM Sans",Arial,sans-serif}
+header{position:relative;overflow:hidden;text-align:center;padding:30px 16px 25px;background:linear-gradient(110deg,var(--q-green-dark,#082b24),var(--q-green) 52%,var(--q-wine));border-bottom:4px solid var(--q-saffron);color:#fff8eb}
+header:before{content:"";position:absolute;inset:9px;border:1px solid #f1d28b77;pointer-events:none}
+.brand{position:relative;color:#ffdc92;font:700 clamp(27px,5vw,40px) "Playfair Display",Georgia,serif;letter-spacing:.04em;text-shadow:0 3px 15px #0005}
+header p{position:relative;margin:8px 0 0;color:#fff2dc;font:700 10px "DM Sans",Arial,sans-serif;letter-spacing:.28em}
+main{max-width:940px;margin:0 auto;padding:28px 16px 54px}
+#status{max-width:620px;margin:24px auto;padding:22px;text-align:center;color:#654b36;font:600 14px "DM Sans",Arial,sans-serif;background:#fffdf8;border:1px solid var(--q-gold);border-radius:14px;box-shadow:0 12px 30px #56391c18}
+.pages{display:grid;gap:22px}
+.menu-page{display:block;width:100%;height:auto;border:5px solid #fffdf8;border-radius:5px 20px 5px 20px;box-shadow:0 16px 38px #3d251c30;background:#fff;cursor:zoom-in;transition:transform .22s,box-shadow .22s}
+.menu-page:hover{transform:translateY(-3px);box-shadow:0 22px 42px #3d251c3d}
+footer{text-align:center;color:#fff2dc;font:12px/1.8 "DM Sans",Arial,sans-serif;padding:23px 14px;background:linear-gradient(110deg,var(--q-green-dark),var(--q-green) 55%,var(--q-wine));border-top:3px solid var(--q-saffron)}
+.viewer{position:fixed;inset:0;background:#140c0cf5;display:none;align-items:center;justify-content:center;padding:12px;z-index:50;backdrop-filter:blur(8px)}
+.viewer.open{display:flex}
+.viewer img{max-width:100%;max-height:94vh;object-fit:contain;border:2px solid var(--q-gold);border-radius:8px;box-shadow:0 18px 55px #0009}
+.close{position:fixed;top:14px;right:14px;border:1px solid var(--q-gold);background:var(--q-wine);color:#fff4dc;font-size:26px;border-radius:50%;width:46px;height:46px;cursor:pointer;box-shadow:0 5px 18px #0006}
+.close:focus-visible,.menu-page:focus-visible{outline:3px solid var(--q-saffron);outline-offset:3px}
+@media(max-width:600px){header{padding:24px 12px 20px}main{padding:18px 10px 36px}.pages{gap:14px}.menu-page{border-width:3px;border-radius:4px 13px 4px 13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.menu-page{transition:none}}
