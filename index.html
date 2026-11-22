@@ -206,14 +206,14 @@ body.breaking-news-viewer-open{overflow:hidden}
 .reference-hero.hero-food-showcase{min-height:calc(100svh - 92px);grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);padding:48px 5% 58px;overflow:hidden}
 .reference-hero.hero-food-showcase .hero-copy{margin:0;max-width:620px;text-align:left}
 .hero-food.hero-food-showcase{position:relative;grid-column:2;grid-row:1;min-height:clamp(300px,55vh,620px);height:100%;align-self:stretch;overflow:hidden;border:1px solid #b58a3c;border-radius:24px;background:#090b09;box-shadow:0 18px 55px #0009}
-.hero-food-showcase .hero-food-slide{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0;mix-blend-mode:normal;mask-image:none;filter:none;opacity:0;transform:scale(1.06);transition:opacity 1.1s ease,transform 6s ease}
+.hero-food-showcase .hero-food-slide{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;border-radius:0;mix-blend-mode:normal;mask-image:none;filter:none;opacity:0;transform:scale(1.06);transition:opacity 1.1s ease,transform 9s ease}
 .hero-food-showcase .hero-food-slide.is-active{opacity:1;transform:scale(1)}
 .hero-food-caption{position:absolute;z-index:3;left:0;right:0;bottom:0;padding:55px 24px 28px;display:flex;flex-direction:column;gap:5px;background:linear-gradient(transparent,#030506e8);color:#fff}
 .hero-food-caption span{font:11px Georgia,serif;letter-spacing:.25em;color:#e9bd62}
 .hero-food-caption strong{font:italic 700 clamp(23px,3vw,38px) Georgia,serif;text-shadow:0 2px 8px #000}
 .hero-food-progress{position:absolute;z-index:4;left:0;right:0;bottom:0;height:3px;background:#ffffff35}
 .hero-food-progress i{display:block;width:0;height:100%;background:#e9bd62}
-.hero-food-showcase .hero-food-progress i{animation:heroFoodProgress 6s linear infinite}
+.hero-food-showcase .hero-food-progress i{animation:heroFoodProgress 9s linear infinite}
 @keyframes heroFoodProgress{from{width:0}to{width:100%}}
 @media(max-width:700px){
  .reference-hero.hero-food-showcase{min-height:calc(100svh - 125px);grid-template-columns:1fr;padding:94px 15px 48px;gap:18px}
@@ -380,7 +380,7 @@ setLanguage("it");
   slides[current].classList.add('is-active');
   if(caption)caption.textContent=names[current]||'Nababi Specialities';
  };
- const start=()=>{if(!timer)timer=window.setInterval(showNext,6000)};
+ const start=()=>{if(!timer)timer=window.setInterval(showNext,9000)};
  const stop=()=>{if(timer){window.clearInterval(timer);timer=null}};
  document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
  start();
