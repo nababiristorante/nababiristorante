@@ -115,10 +115,8 @@ insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('nababi-certificates','nababi-certificates',true,4194304,array['image/png','image/jpeg','image/webp'])
 on conflict (id) do update set public=true,file_size_limit=4194304,allowed_mime_types=excluded.allowed_mime_types;
 
-drop policy if exists nababi_public_read_certificate_assets on storage.objects;
-create policy nababi_public_read_certificate_assets
-on storage.objects for select to anon, authenticated
-using (bucket_id = 'nababi-certificates');
+-- The bucket is public so a known public URL can render on a certificate.
+-- Do not grant object listing: non-consented photo URLs are not discoverable.
 
 drop policy if exists nababi_admin_upload_certificate_assets on storage.objects;
 create policy nababi_admin_upload_certificate_assets
