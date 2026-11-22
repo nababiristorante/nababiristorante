@@ -343,3 +343,23 @@
   .reference-hero h1{font-size:clamp(28px,8vw,42px)!important}
   .reference-hero .hero-script{font-size:14px!important;margin:9px 0 16px!important}
 }
+
+
+/* The minimal-hero stylesheet normally hides the legacy food image.
+   Keep the dedicated rotating showcase visible on the cinematic homepage hero. */
+.reference-hero.hero-food-showcase > .hero-food.hero-food-showcase{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.reference-hero.hero-food-showcase > .hero-food.hero-food-showcase .hero-food-slide{
+  display:block!important;
+  visibility:visible!important;
+}
