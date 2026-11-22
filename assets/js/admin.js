@@ -4013,6 +4013,14 @@ async function celebrationsPage() {
   const signature = certificateSettings.signature_url
     ? '<img src="'+esc(certificateSettings.signature_url)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;object-fit:contain;background:#fff;padding:6px;border-radius:6px">'
     : '<span class="help">Nessuna firma salvata</span>';
+  const defaultContent = {
+    birthday_texts:['Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.'],
+    birthday_quote:'Che ogni nuovo anno porti con sé nuove gioie, sogni e splendide opportunità.',
+    event_texts:['In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento, contribuendo a renderlo speciale e memorabile.'],
+    event_quote:'I grandi momenti nascono dalla passione, dalla collaborazione e dalla dedizione.'
+  };
+  const certificateContent = {...defaultContent,...(certificateSettings.certificate_content||{})};
+  const lines = value => Array.isArray(value) ? value.join('\\n') : '';
   const recordRows = rows.length ? rows.map(r => '<tr><td>'+esc(r.certificate_code)+'</td><td>'+esc(r.certificate_type==='birthday'?'Compleanno':'Riconoscimento evento')+'</td><td>'+esc(r.recipient_name)+'</td><td>'+esc(r.issue_date)+'</td><td>'+esc(r.status==='active'?'Attivo':'Revocato')+'</td><td>'+(r.status==='active'?'<button class="outline-btn" type="button" data-revoke-certificate="'+esc(r.id)+'">Revoca</button>':'—')+'</td></tr>').join('') : '<tr><td colspan="6">Nessun certificato ancora creato.</td></tr>';
   return '<style>'+
     '.cert-grid{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(320px,1.2fr);gap:16px}'+
@@ -4021,6 +4029,7 @@ async function celebrationsPage() {
   '</style>'+
   '<section class="section-card"><div class="section-title"><h2>Certificati e verifica online</h2></div><p class="help">Crea certificati in italiano, salvali nell’archivio centrale e rendili verificabili tramite codice univoco o QR Code.</p>'+
   '<div class="cert-grid">'+
+  '<article class="cert-panel"><h3>Testi e frasi modificabili</h3><p class="cert-note">Ogni riga è una frase separata. Puoi aggiungere, modificare o rimuovere tutte le frasi: saranno usate nell’anteprima, nel PDF e nella verifica online.</p><label style="display:block;margin:12px 0">Frasi Compleanno<textarea id="certificateBirthdayTexts" rows="5" maxlength="3000" style="display:block;width:100%;margin-top:6px">'+esc(lines(certificateContent.birthday_texts))+'</textarea></label><label style="display:block;margin:12px 0">Quote Compleanno<input id="certificateBirthdayQuote" maxlength="300" value="'+esc(certificateContent.birthday_quote||'')+'" style="display:block;width:100%;margin-top:6px"></label><label style="display:block;margin:12px 0">Frasi Evento<textarea id="certificateEventTexts" rows="5" maxlength="3000" style="display:block;width:100%;margin-top:6px">'+esc(lines(certificateContent.event_texts))+'</textarea></label><label style="display:block;margin:12px 0">Quote Evento<input id="certificateEventQuote" maxlength="300" value="'+esc(certificateContent.event_quote||'')+'" style="display:block;width:100%;margin-top:6px"></label><div class="cert-actions"><button type="button" id="certificateSaveContent">Salva testi e frasi</button></div><p id="certificateContentStatus" class="cert-status help" aria-live="polite"></p></article>'+
   '<article class="cert-panel"><h3>Logo e firma Nababi</h3><p class="cert-note">Il logo ufficiale viene mostrato su entrambi i modelli. In assenza di immagine, viene usato il marchio ♛ NABABI RISTORANTE.</p><div id="certificateLogoPreview">'+(certificateSettings.logo_url?'<img class="cert-brand-logo" src="'+esc(certificateSettings.logo_url)+'" alt="Logo Nababi">':'<span class="cert-note">Marchio testuale Nababi</span>')+'</div><label style="display:block;margin-top:12px">Carica il logo Nababi<input id="certificateLogoFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:7px"></label><div id="certificateSignaturePreview">'+signature+'</div><label style="display:block;margin-top:12px">Immagine della firma<input id="certificateSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:7px"></label><label style="display:block;margin-top:12px">Nome del firmatario<input id="certificateSignerName" type="text" maxlength="100" value="'+esc(certificateSettings.signer_name||'Direzione — Nababi Ristorante')+'" style="display:block;width:100%;margin-top:6px"></label><label style="display:block;margin-top:12px">Ruolo del firmatario<input id="certificateSignerRole" type="text" maxlength="100" value="'+esc(certificateSettings.signer_role||'Direzione')+'" style="display:block;width:100%;margin-top:6px"></label><div class="cert-actions"><button type="button" id="certificateSaveSettings">Salva impostazioni</button><button type="button" class="alt" id="certificateRemoveSignature">Rimuovi firma</button></div><p id="certificateSettingsStatus" class="cert-status help" aria-live="polite"></p></article>'+
   '<article class="cert-panel"><h3>Nuovo certificato</h3><form id="certificateForm" class="cert-form">'+
   '<label class="cert-wide">Tipo di certificato<select id="certificateType"><option value="birthday">Certificato di Compleanno</option><option value="event">Attestato di Riconoscimento — Organizzazione Evento</option></select></label>'+
@@ -4029,7 +4038,7 @@ async function celebrationsPage() {
   '<label class="cert-wide">Dedica personalizzata (facoltativa)<textarea id="certificateMessage" maxlength="300" placeholder="Scrivi una dedica..."></textarea></label>'+
   '<label class="cert-wide">Foto (facoltativa)<input id="certificatePhoto" type="file" accept="image/png,image/jpeg,image/webp"><span class="cert-note">La foto è facoltativa. Formati JPG, PNG o WebP, massimo 4 MB.</span></label><label class="cert-wide" style="display:flex;align-items:center;gap:8px"><input id="certificatePhotoPublic" type="checkbox" style="width:auto;min-height:0"> Autorizzo la visualizzazione pubblica della foto sul certificato</label>'+
   '<div class="cert-actions cert-wide"><button type="submit" id="certificateCreate">Crea e salva certificato</button><button type="button" class="alt" id="certificateReset">Nuovo</button></div></form><p id="certificateFormStatus" class="cert-status help" aria-live="polite"></p></article></div></section>'+
-  '<section class="section-card"><div class="section-title"><h2>Anteprima del certificato</h2><span class="help">PDF completo · A4 orizzontale</span></div><div id="certificatePreview"><div class="cert-paper cert-birthday"><div><img id="certificatePreviewLogo" class="cert-brand-logo" src="'+esc(certificateSettings.logo_url||'')+'" alt="Logo Nababi" style="display:'+(certificateSettings.logo_url?'block':'none')+'"><div id="certificatePreviewBrand" class="cert-brand-wordmark" style="display:'+(certificateSettings.logo_url?'none':'block')+'">♛ NABABI RISTORANTE ♛</div></div><h2 id="certificatePreviewTitle">CERTIFICATO DI COMPLEANNO</h2><p style="font-style:italic">Conferito a</p><div class="cert-person" id="certificatePreviewName">Nome e cognome</div><img id="certificatePreviewPhoto" class="cert-photo" alt="Foto del destinatario" hidden><p id="certificatePreviewText">Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità e momenti indimenticabili.</p><p id="certificatePreviewMessage" style="font-style:italic"></p><div class="cert-bottom"><div><strong>Data:</strong> <span id="certificatePreviewDate">—</span><br><strong>Codice:</strong> <span id="certificatePreviewCode">Assegnato al salvataggio</span><br><span style="font-size:9px">Verifica: nababiristorante.vercel.app/verifica-certificato.html</span></div><div style="text-align:center;min-width:145px"><img id="certificatePreviewSignature" class="cert-sign" alt="Firma autorizzata" hidden><div id="certificatePreviewSigner" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:9px">FIRMA AUTORIZZATA</strong></div><img id="certificatePreviewQr" class="cert-qr" alt="QR Code" hidden></div><div style="margin-top:16px;color:#a47c2d;font-size:10px;letter-spacing:2px">UN RICORDO SPECIALE FIRMATO NABABI</div></div></div><div class="cert-actions"><button type="button" id="certificatePrint" class="alt" disabled>Stampa / Salva PDF</button></div></section>'+
+  '<section class="section-card"><div class="section-title"><h2>Anteprima del certificato</h2><span class="help">PDF completo · A4 orizzontale</span></div><div id="certificatePreview"><div class="cert-paper cert-birthday"><div><img id="certificatePreviewLogo" class="cert-brand-logo" src="'+esc(certificateSettings.logo_url||'')+'" alt="Logo Nababi" style="display:'+(certificateSettings.logo_url?'block':'none')+'"><div id="certificatePreviewBrand" class="cert-brand-wordmark" style="display:'+(certificateSettings.logo_url?'none':'block')+'">♛ NABABI RISTORANTE ♛</div></div><h2 id="certificatePreviewTitle">CERTIFICATO DI COMPLEANNO</h2><p style="font-style:italic">Conferito a</p><div class="cert-person" id="certificatePreviewName">Nome e cognome</div><img id="certificatePreviewPhoto" class="cert-photo" alt="Foto del destinatario" hidden><div id="certificatePreviewText"></div><p id="certificatePreviewMessage" style="font-style:italic"></p><p id="certificatePreviewQuote" style="font-style:italic;color:#a47c2d;font-size:14px"></p><div class="cert-bottom"><div><strong>Data:</strong> <span id="certificatePreviewDate">—</span><br><strong>Codice:</strong> <span id="certificatePreviewCode">Assegnato al salvataggio</span><br><span style="font-size:9px">Verifica: nababiristorante.vercel.app/verifica-certificato.html</span></div><div style="text-align:center;min-width:145px"><img id="certificatePreviewSignature" class="cert-sign" alt="Firma autorizzata" hidden><div id="certificatePreviewSigner" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:9px">FIRMA AUTORIZZATA</strong></div><img id="certificatePreviewQr" class="cert-qr" alt="QR Code" hidden></div><div style="margin-top:16px;color:#a47c2d;font-size:10px;letter-spacing:2px">UN RICORDO SPECIALE FIRMATO NABABI</div></div></div><div class="cert-actions"><button type="button" id="certificatePrint" class="alt" disabled>Stampa / Salva PDF</button></div></section>'+
   '<section class="section-card"><div class="section-title"><h2>Archivio certificati</h2></div><p class="help">Archivio centrale condiviso tra i dispositivi autorizzati.</p><div class="cert-table-wrap"><table class="cert-table"><thead><tr><th>Codice</th><th>Tipo</th><th>Destinatario</th><th>Data</th><th>Stato</th><th>Azione</th></tr></thead><tbody id="certificateRows">'+recordRows+'</tbody></table></div></section>';
 }
 
@@ -4059,9 +4068,14 @@ function updateCertificatePreview() {
   $('#certificatePreviewTitle').textContent = type === 'event' ? 'ATTESTATO DI RICONOSCIMENTO' : 'CERTIFICATO DI COMPLEANNO';
   $('#certificatePreviewName').textContent = name;
   $('#certificatePreviewDate').textContent = date;
-  $('#certificatePreviewText').textContent = type === 'event'
-    ? 'In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.'
-    : 'Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.';
+  const content = certificateSettings.certificate_content || {};
+  const defaults = type === 'event'
+    ? ['In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.']
+    : ['Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.'];
+  const messages = (type === 'event' ? content.event_texts : content.birthday_texts);
+  const chosenMessages = Array.isArray(messages) && messages.length ? messages : defaults;
+  $('#certificatePreviewText').innerHTML = chosenMessages.map(line => '<p>'+esc(line)+'</p>').join('');
+  $('#certificatePreviewQuote').textContent = type === 'event' ? (content.event_quote || '') : (content.birthday_quote || '');
   $('#certificatePreviewMessage').textContent = $('#certificateMessage').value.trim();
   $('#certificatePreviewSigner').textContent = [certificateSettings.signer_name||'Direzione — Nababi Ristorante',certificateSettings.signer_role||''].filter(Boolean).join(' · ');
   $('#certificatePreviewLogo').src=certificateSettings.logo_url||'';
@@ -4124,6 +4138,26 @@ function setupCelebrations() {
       $('#certificateSignaturePreview').innerHTML=signatureUrl?'<img src="'+esc(signatureUrl)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;background:#fff;padding:6px;border-radius:6px">':'Nessuna firma salvata';
       updateCertificatePreview();
     }catch(err){status.textContent=err.message||'Impossibile salvare le impostazioni.';}
+    finally{button.disabled=false;}
+  };
+  $('#certificateSaveContent').onclick=async()=>{
+    const status=$('#certificateContentStatus'), button=$('#certificateSaveContent');button.disabled=true;
+    try{
+      const cleanLines=id=>$('#'+id).value.split('\\n').map(x=>x.trim()).filter(Boolean);
+      const content={
+        birthday_texts:cleanLines('certificateBirthdayTexts'),
+        birthday_quote:$('#certificateBirthdayQuote').value.trim(),
+        event_texts:cleanLines('certificateEventTexts'),
+        event_quote:$('#certificateEventQuote').value.trim()
+      };
+      if(!content.birthday_texts.length || !content.event_texts.length) throw new Error('Inserisci almeno una frase per ogni tipo di certificato.');
+      const settings={id:true,logo_url:certificateSettings.logo_url||null,signer_name:certificateSettings.signer_name||'Direzione — Nababi Ristorante',signer_role:certificateSettings.signer_role||'',signature_url:certificateSettings.signature_url||null,certificate_content:content,updated_at:new Date().toISOString()};
+      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});
+      if(error)throw error;
+      certificateSettings={...certificateSettings,...settings};
+      status.textContent='Testi e quote salvati. Saranno usati nei nuovi certificati e nella verifica online.';
+      updateCertificatePreview();
+    }catch(err){status.textContent=err.message||'Impossibile salvare i testi.';}
     finally{button.disabled=false;}
   };
   $('#certificateRemoveSignature').onclick=async()=>{
