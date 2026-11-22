@@ -244,6 +244,22 @@ pageCopy.bn={...pageCopy.bn,chooseTable:"উপলভ্য টেবিল (ঐ
 pageCopy.bn={...pageCopy.bn,reviewsNav:"রিভিউ",loginRegister:"লগইন / রেজিস্টার",breakingNews:"ব্রেকিং নিউজ",breakingCaption:"Nababi-তে বিশেষ মুহূর্ত",videoComing:"আমাদের রেস্টুরেন্ট দেখুন",heroDescription:"ঐতিহ্যবাহী মসলা, তাজা উপকরণ ও আন্তরিক আতিথেয়তায় রাজকীয় স্বাদ উপভোগ করুন।",aboutPoint1:"তাজা ও স্বাস্থ্যকর খাবার",aboutPoint2:"খাঁটি রেসিপি",aboutPoint3:"রাজকীয় ডাইনিং অভিজ্ঞতা",aboutPoint4:"পরিবারবান্ধব পরিবেশ",viewMenu:"সম্পূর্ণ মেনু দেখুন ›",catBiryani:"বিরিয়ানি",catPizza:"পিজ্জা",catBurger:"বার্গার",catNaan:"নান",catChicken:"চিকেন",catMutton:"খাসি",catDrinks:"পানীয়",catDessert:"ডেজার্ট",tableBooking:"টেবিল বুকিং",reserveTable:"আপনার টেবিল সংরক্ষণ করুন",phoneNumber:"ফোন নম্বর",emailAddress:"ইমেইল",bookingDate:"তারিখ",bookingTime:"সময়",numberPersons:"কতজন",bookingCategory:"ক্যাটাগরি",specialRequest:"বিশেষ অনুরোধ",confirmBooking:"বুকিং অনুরোধ পাঠান",trackBooking:"বুকিং সম্পর্কে জানুন",trackBookingSub:"বুকিংয়ের বিষয়ে যোগাযোগ করুন",trackBookingText:"বুকিংয়ের আপডেট বা পরিবর্তনের জন্য আমাদের সাথে যোগাযোগ করুন।",phoneLogin:"☎ ফোন করুন",emailLogin:"✉ ইমেইল",bookingDetails:"বুকিংয়ের বিস্তারিত",bookingDetailsSub:"পরিবর্তন বা বাতিল করতে যোগাযোগ করুন",bookingHelpTitle:"বুকিংয়ে সাহায্য লাগবে?",bookingHelpText:"আমাদের টিম বুকিং নিশ্চিত বা পরিবর্তন করতে সাহায্য করবে।",contactBooking:"রেস্টুরেন্টে যোগাযোগ",gallerySub:"আমাদের ছবির গ্যালারি",viewGallery:"গ্যালারি দেখুন ›",sendReport:"আমাদের মতামত জানান",reportSub:"আপনার কথা শুনতে চাই",sendReportBtn:"মতামত পাঠান ›",reviewsTitle:"রিভিউ",reviewsText:"আপনার অভিজ্ঞতা আমাদের কাছে গুরুত্বপূর্ণ।",reviewUs:"আপনার মতামত দিন",openMap:"ম্যাপ খুলুন",followUs:"আমাদের অনুসরণ করুন",quickLinks:"দ্রুত লিংক",footerTagline:"ভালো খাবার · ভালো মুহূর্ত"};
 function setLanguage(lang){const selected=lang==="it"||lang==="bn"||lang==="en"?lang:"en";const d={...(copy[selected]||copy.en),...(pageCopy[selected]||pageCopy.en)};document.documentElement.lang=selected;document.querySelectorAll("[data-t]").forEach(el=>{const value=d[el.dataset.t];if(value!==undefined)el.innerHTML=value});document.querySelectorAll("[data-t-alt]").forEach(el=>{const value=d[el.dataset.tAlt];if(value!==undefined)el.setAttribute("alt",value)});document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===selected))}
 document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>setLanguage(b.dataset.lang)));
+const languageMenu=document.getElementById("homepageLanguageMenu");
+const languageToggle=languageMenu?.querySelector(".language-toggle");
+languageToggle?.addEventListener("click",()=>{
+ const isOpen=languageMenu.classList.toggle("is-open");
+ languageToggle.setAttribute("aria-expanded",String(isOpen));
+});
+languageMenu?.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>{
+ languageMenu.classList.remove("is-open");
+ languageToggle?.setAttribute("aria-expanded","false");
+}));
+document.addEventListener("click",event=>{
+ if(languageMenu&&!languageMenu.contains(event.target)){
+  languageMenu.classList.remove("is-open");
+  languageToggle?.setAttribute("aria-expanded","false");
+ }
+});
 document.getElementById("year").textContent=new Date().getFullYear();
 setLanguage("it");
 
