@@ -621,7 +621,7 @@ function updateCertPreviewV2(){
 }
 function setupCertManagerV2(){
  $('#cert2SaveContent').onclick=async()=>{const button=$('#cert2SaveContent'),status=$('#cert2ContentStatus');button.disabled=true;status.textContent='Salvataggio in corso…';try{
-  const content={birthday_texts:$('#cert2BirthdayTexts').value.split(/\\r?\\n/).map(v=>v.trim()).filter(Boolean),birthday_quote:$('#cert2BirthdayQuote').value.trim(),event_texts:$('#cert2EventTexts').value.split(/\\r?\\n/).map(v=>v.trim()).filter(Boolean),event_quote:$('#cert2EventQuote').value.trim()};
+  const content={birthday_texts:$('#cert2BirthdayTexts').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean),birthday_quote:$('#cert2BirthdayQuote').value.trim(),event_texts:$('#cert2EventTexts').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean),event_quote:$('#cert2EventQuote').value.trim()};
   const row={...certificateSettingsV2,id:true,certificate_content:content,updated_at:new Date().toISOString()};
   const result=await db.from('nababi_certificate_settings').upsert(row,{onConflict:'id'});if(result.error)throw result.error;
   certificateSettingsV2=row;updateCertPreviewV2();status.textContent='Testi e frasi salvati nell’archivio centrale.';
