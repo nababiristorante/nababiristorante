@@ -304,3 +304,42 @@
   .site-main-header nav a.nav-admin{font-size:6px!important;padding:3px 4px!important}
   .site-main-header .language-toggle{width:24px!important;height:24px!important}
 }
+
+
+/* Keep the homepage welcome copy compact and aligned to the left. */
+.reference-hero{
+  place-items:center start!important;
+  padding-left:clamp(24px,8vw,120px)!important;
+}
+.reference-hero .hero-copy{
+  width:min(100%,520px)!important;
+  max-width:520px!important;
+  margin:0!important;
+  text-align:left!important;
+}
+.reference-hero .hero-kicker{
+  margin:0 0 8px!important;
+  font-size:clamp(14px,1.5vw,19px)!important;
+  text-align:left!important;
+}
+.reference-hero h1{
+  font-size:clamp(30px,5vw,58px)!important;
+  line-height:1.08!important;
+  text-align:left!important;
+}
+.reference-hero .hero-script{
+  margin:10px 0 18px!important;
+  font-size:clamp(14px,1.8vw,21px)!important;
+  text-align:left!important;
+}
+.reference-hero .btn{margin-left:0!important}
+@media(max-width:700px){
+  .reference-hero{
+    place-items:center start!important;
+    padding:112px 22px 42px!important;
+  }
+  .reference-hero .hero-copy{width:min(100%,420px)!important}
+  .reference-hero .hero-kicker{font-size:14px!important;margin-bottom:7px!important}
+  .reference-hero h1{font-size:clamp(28px,8vw,42px)!important}
+  .reference-hero .hero-script{font-size:14px!important;margin:9px 0 16px!important}
+}
