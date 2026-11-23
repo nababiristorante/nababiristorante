@@ -301,15 +301,26 @@ async function loadHomepageBackground(){
   const cfg=window.NABABI_CONFIG||{};
   if(!window.supabase||!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY)return;
   const client=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
-  const {data,error}=await client.from('site_settings').select('setting_value').eq('setting_key','homepage_background_url').maybeSingle();
-  if(error||!data?.setting_value)return;
-  const parsed=new URL(String(data.setting_value));
-  if(parsed.protocol!=='https:')return;
-  const hero=document.querySelector('.hero');
-  if(hero)hero.style.setProperty('--homepage-background-image','url("'+parsed.href.replace(/["\\\\]/g,'')+'")');
- }catch(error){console.warn('Homepage background is unavailable.',error)}
+  const {data,error}=await client.from('site_settings').select('setting_key,setting_value').in('setting_key',['homepage_background_url','homepage_intro_video_url']);
+  if(error)throw error;
+  const settings=new Map((data||[]).map(x=>[x.setting_key,x.setting_value]));
+  const hero=document.querySelector('.reference-hero');
+  if(!hero)return;
+  const background=settings.get('homepage_background_url');
+  if(background){const parsed=new URL(String(background));if(parsed.protocol==='https:')hero.style.setProperty('--homepage-background-image','url("'+parsed.href.replace(/["\\]/g,'')+'")');}
+  const videoUrl=settings.get('homepage_intro_video_url');
+  if(videoUrl){
+   const parsedVideo=new URL(String(videoUrl));
+   if(parsedVideo.protocol==='https:'){
+    const video=document.createElement('video');
+    video.className='homepage-hero-video';video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload='metadata';video.setAttribute('aria-hidden','true');video.tabIndex=-1;
+    const source=document.createElement('source');source.src=parsedVideo.href;source.type=parsedVideo.pathname.toLowerCase().endsWith('.webm')?'video/webm':'video/mp4';video.appendChild(source);
+    hero.prepend(video);
+    const play=video.play();if(play&&typeof play.catch==='function')play.catch(()=>{});
+   }
+  }
+ }catch(error){console.warn('Homepage media is unavailable.',error)}
 }
-
 loadHomepageBackground();
 </script>
 <script>
