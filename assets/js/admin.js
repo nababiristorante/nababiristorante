@@ -57,7 +57,6 @@ const menu = [
   ['reports','▤','Reports'],
   ['contact','✉','Contact'],
   ['settings','⚙','Settings'],
-  ['certificate','🏅','Certificate Creator']
 ];
 
 const tableMap = {
@@ -110,7 +109,6 @@ const descriptions = {
   reports:'Statistiche e report del ristorante.',
   contact:'Leggi e gestisci i messaggi inviati dal modulo Contatti.',
   settings:'Impostazioni generali del sito.',
-  certificate:'Apri il modulo per creare certificati Birthday ed Event.'
 };
 
 const MODULES = menu.filter(([id]) =>
@@ -4007,26 +4005,6 @@ async function render(id) {
     return;
   }
 
-  if (id === 'certificate') {
-    try {
-      const {data:{session},error} = await db.auth.getSession();
-      if (error) throw error;
-      if (!session?.access_token || !session?.refresh_token) {
-        alert('Sessione amministratore non disponibile. Accedi di nuovo al pannello.');
-        return;
-      }
-      // Same-tab, short-lived handoff for the standalone certificate page.
-      sessionStorage.setItem('nababi_certificate_session_handoff', JSON.stringify({
-        access_token: session.access_token,
-        refresh_token: session.refresh_token
-      }));
-      window.location.href = 'crea-certificato.html';
-    } catch (error) {
-      console.error('Certificate session handoff failed:', error);
-      alert('Impossibile verificare la sessione amministratore. Riprova.');
-    }
-    return;
-  }
   current = id;
   nav();
 
