@@ -315,7 +315,8 @@ async function handleGalleryAction(button){
 
 const logoContentSlots=[
  {key:'restaurant_logo_url',label:'Website logo',type:'image'},
- {key:'homepage_background_url',label:'Homepage background',type:'image'},
+ {key:'homepage_background_url',label:'Homepage background image',type:'image'},
+ {key:'homepage_intro_video_url',label:'Full-screen homepage intro video (autoplay + loop)',type:'video'},
  {key:'about_image_url',label:'About section image',type:'image'},
  {key:'about_video_url',label:'About section video',type:'video'},
  {key:'about_title',label:'About section title',type:'text'},
