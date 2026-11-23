@@ -842,3 +842,6 @@ body{overflow-x:hidden}
 .certificate-selected-preview{margin:14px 0;padding:16px;border:1px solid rgba(177,138,67,.45);border-radius:14px;background:rgba(177,138,67,.06)}
 #certificateSearch{max-width:520px}
 [data-certificate-row][hidden]{display:none}
+
+/* Original certificate artwork upload */
+.certificate-template-manager{max-width:720px;margin:0 0 20px;padding:14px;border:1px solid rgba(177,138,67,.45);border-radius:12px;background:rgba(177,138,67,.06)}.certificate-template-manager input{display:block;width:100%;margin-top:8px;color:var(--ink)}.certificate-template-manager .small-button{margin-top:10px}.certificate-template-thumb{display:block;width:min(100%,520px);height:auto;margin-top:12px;border:1px solid #b18a43;border-radius:8px}
