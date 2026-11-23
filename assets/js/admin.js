@@ -56,7 +56,8 @@ const menu = [
   ['logo','♛','Logo Management'],
   ['reports','▤','Reports'],
   ['contact','✉','Contact'],
-  ['settings','⚙','Settings']
+  ['settings','⚙','Settings'],
+  ['certificate','🏅','Certificate Creator']
 ];
 
 const tableMap = {
@@ -108,7 +109,8 @@ const descriptions = {
   logo:'Carica il logo del ristorante dal tuo telefono.',
   reports:'Statistiche e report del ristorante.',
   contact:'Leggi e gestisci i messaggi inviati dal modulo Contatti.',
-  settings:'Impostazioni generali del sito.'
+  settings:'Impostazioni generali del sito.',
+  certificate:'Apri il modulo per creare certificati Birthday ed Event.'
 };
 
 const MODULES = menu.filter(([id]) =>
@@ -4005,6 +4007,7 @@ async function render(id) {
     return;
   }
 
+  if (id === 'certificate') { window.location.href = 'crea-certificato.html'; return; }
   current = id;
   nav();
 
