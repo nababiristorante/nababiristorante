@@ -836,10 +836,3 @@ body{overflow-x:hidden}
 .cash-drawer-form,.cash-drawer-filter{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.cash-drawer-form label,.cash-drawer-filter label{display:grid;gap:7px;min-width:130px;flex:1;color:var(--muted);font-size:13px}.cash-drawer-form input,.cash-drawer-form select,.cash-drawer-filter input{width:100%;min-height:44px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#09150f;color:var(--ink)}.cash-drawer-form .gold-button{width:auto;min-height:44px;margin:0;padding:11px 18px}.cash-drawer-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}.cash-drawer-filter{margin-bottom:18px}.cash-drawer-filter .small-button{min-height:42px}@media(max-width:650px){.cash-drawer-stats{grid-template-columns:1fr}.cash-drawer-form{align-items:stretch;flex-direction:column}.cash-drawer-form .gold-button{width:100%}}
 
 
-/* Optional certificate studio */
-.certificate-form{max-width:720px}.certificate-form select,.certificate-form input{width:100%;min-height:44px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#09150f;color:var(--ink)}.certificate-photo-preview{margin:4px 0 12px}.certificate-photo-preview img{display:block;width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid #b18a43}.certificate-admin-panel{border-color:rgba(177,138,67,.38)}
-
-.certificate-selected-preview{margin:14px 0;padding:16px;border:1px solid rgba(177,138,67,.45);border-radius:14px;background:rgba(177,138,67,.06)}
-#certificateSearch{max-width:520px}
-[data-certificate-row][hidden]{display:none}
-
