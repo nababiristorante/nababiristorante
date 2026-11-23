@@ -663,7 +663,7 @@ async function printCertificate(id){
  const title=birthday?'CERTIFICATO DI COMPLEANNO':'CERTIFICATO DI PARTECIPAZIONE';
  const message=birthday?'Per aver festeggiato il tuo giorno speciale insieme a noi.':'Per aver condiviso con noi un’occasione speciale.';
  const date=new Date(x.event_date+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
- const win=window.open('','_blank','noopener,noreferrer');if(!win)throw new Error('Allow pop-ups to print the certificate.');
+ const win=window.open('','_blank');if(!win)throw new Error('Allow pop-ups to print the certificate.');
  const safeLogo=logo?'<img class="brand-logo" src="'+esc(logo)+'" alt="Nababi Ristorante">':'<div class="brand-wordmark">♛ NABABI RISTORANTE</div>';
  const safePhoto=x.photo_url?'<img class="recipient-photo" src="'+esc(x.photo_url)+'" alt="Recipient">':'';
  win.document.write('<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title><style>'+
