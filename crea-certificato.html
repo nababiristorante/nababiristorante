@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="bn">
+<html lang="it">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nababi Ristorante — Certificate Creator</title>
+<title>Nababi Ristorante — Crea certificato</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="assets/js/config.js"></script>
 <style>
 :root{--bg:#0b1712;--panel:#12271e;--panel2:#183528;--gold:#d9b66b;--gold2:#f0d99c;--ink:#f5f0e5;--muted:#a9b5ab;--line:#31503f;--wine:#762d43}
@@ -27,40 +27,44 @@ input,select,textarea{width:100%;min-width:0;padding:13px;border:1px solid var(-
 @media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.certificate{min-height:0;padding:25px 14px 24px;border-width:9px}.certificate h2{letter-spacing:1px}.photo-pair img{width:76px;height:76px}.cert-footer{grid-template-columns:1fr 1fr;gap:10px}.cert-footer .qrbox{grid-column:1/-1}.cert-footer #certQr{margin:5px 0 0}.cert-footer .sign{text-align:right}}
 @media print{@page{size:A4 landscape;margin:7mm}body{background:#fff;padding:0}.head,.panel,.actions{display:none!important}.wrap{width:100%;max-width:none}.certificate{display:flex!important;width:100%;height:190mm;min-height:190mm;margin:0;padding:22px 42px 20px;box-shadow:none;break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}.certificate h2{font-size:32px}.person{font-size:36px}.cert-body{font-size:16px}.cert-footer{margin-top:auto}}
 </style></head>
-<body><main class="wrap"><div class="head">♛ NABABI RISTORANTE ♛<small>CELEBRATION CERTIFICATE</small></div><section class="panel">
-<h1>সার্টিফিকেট তৈরি করুন</h1><p class="hint">একই ফর্মে সার্টিফিকেটের তথ্য দিন, তারপর সম্পূর্ণ ডিজাইন ও QR Code দেখুন</p>
+<body><main class="wrap"><div class="head">♛ NABABI RISTORANTE ♛<small>CERTIFICATO DI CELEBRAZIONE</small></div><section class="panel">
+<h1>Crea un certificato</h1><p class="hint">Inserisci i dati e visualizza il certificato completo con codice QR</p>
 <form id="form"><div class="grid">
-<div class="field"><label for="type">সার্টিফিকেটের ধরন</label><select id="type"><option value="birthday">Birthday / জন্মদিন</option><option value="event">Event / অনুষ্ঠান</option></select></div>
-<div class="field"><label for="date">তারিখ</label><input id="date" type="date" required></div>
-<div class="field"><label for="name">যার জন্য সার্টিফিকেট</label><input id="name" maxlength="140" required placeholder="সম্পূর্ণ নাম"></div>
+<div class="field"><label for="type">Tipo di certificato</label><select id="type"><option value="birthday">Compleanno</option><option value="event">Evento</option></select></div>
+<div class="field"><label>Data</label><div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><select id="day" aria-label="Giorno" required><option value="">Giorno</option></select><select id="month" aria-label="Mese" required><option value="">Mese</option></select><select id="year" aria-label="Anno" required><option value="">Anno</option></select></div></div>
+<div class="field"><label for="name">Nome del destinatario</label><input id="name" maxlength="140" required placeholder="Nome e cognome"></div>
+<div class="field full"><label for="greeting">Messaggio di auguri</label><textarea id="greeting"></textarea></div>
+<div class="field" id="photoTypeWrap" hidden><label for="photoType">Seleziona la persona</label><select id="photoType"><option value="groom">Sposo</option><option value="bride">Sposa</option></select></div>
+<div class="field"><label for="photo">Carica una foto</label><input class="upload" id="photo" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<div class="field"><label for="logo">Logo del certificato (facoltativo)</label><input class="upload" id="logo" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<div class="field"><label for="signature">Firma del titolare (facoltativa)</label><input class="upload" id="signature" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<div class="field"><label for="signer">Nome del firmatario</label><input id="signer" value="Nababi Ristorante"></div>
 
-<div class="field full"><label for="greeting">শুভেচ্ছাবার্তা (ধরন অনুযায়ী স্বয়ংক্রিয়; চাইলে সম্পাদনা করুন)</label><textarea id="greeting"></textarea></div>
-<div class="field" id="singlePhotoWrap"><label for="photo">ব্যক্তির ছবি</label><input class="upload" id="photo" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="field" id="leftPhotoWrap" hidden><label for="photoLeft">বরের ছবি</label><input class="upload" id="photoLeft" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="field" id="rightPhotoWrap" hidden><label for="photoRight">কনের ছবি</label><input class="upload" id="photoRight" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="field"><label for="logo">এই সার্টিফিকেটের লোগো</label><input class="upload" id="logo" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="field"><label for="signature">মালিকের সিগনেচার</label><input class="upload" id="signature" type="file" accept="image/png,image/jpeg,image/webp"></div>
-<div class="field"><label for="signer">স্বাক্ষরকারীর নাম</label><input id="signer" value="Nababi Ristorante"></div>
-
-</div><div id="status" class="status" role="status">প্রথমে অ্যাডমিন হিসেবে লগইন করুন।</div><button class="btn" id="submit" type="submit">সার্টিফিকেট তৈরি করুন</button></form></section>
+</div><div id="status" class="status" role="status">Accedi prima con il tuo account amministratore.</div><button class="btn" id="submit" type="submit">Crea certificato</button></form></section>
 <article class="certificate" id="cert">
 <div class="brandhead"><img id="outLogo" hidden alt="Nababi logo"><div id="brandFallback" style="font:700 23px Georgia,serif;letter-spacing:4px;color:#762d43">♛ NABABI RISTORANTE ♛</div></div>
-<div class="kicker">NABABI RISTORANTE · CELEBRATION</div><div class="rule"></div>
-<h2 id="outTitle"></h2><p class="intro">সশ্রদ্ধ শুভেচ্ছা ও অভিনন্দন জানানো হচ্ছে</p>
+<div class="kicker">NABABI RISTORANTE · CELEBRAZIONE</div><div class="rule"></div>
+<h2 id="outTitle"></h2><p class="intro" id="outIntro">Con i nostri più sinceri auguri</p>
 <div class="person" id="outName"></div><div class="photo-pair" id="outPhotos"></div>
 <div class="cert-body" id="outCopy"></div>
 <div class="cert-footer">
-<div class="meta"><b>তারিখ</b><br><span id="outDate"></span><br><b>সার্টিফিকেট নম্বর</b><br><span class="cert-number" id="outCode"></span></div>
-<div class="sign"><img class="signature" id="outSignature" hidden><br><b id="outSigner"></b><br>মালিকের স্বাক্ষর</div>
-<div class="qrbox">SCAN TO VERIFY<div id="certQr"></div><span>নম্বর যাচাই করুন</span></div>
-</div><div class="footerline">A SPECIAL MEMORY FROM NABABI RISTORANTE</div>
-</article><div class="actions" id="actions"><button type="button" onclick="window.print()">Print / Save PDF</button> <a id="verifyLink" target="_blank">QR / Verify certificate</a></div>
+<div class="meta"><b>Data</b><br><span id="outDate"></span><br><b>Numero del certificato</b><br><span class="cert-number" id="outCode"></span></div>
+<div class="sign"><img class="signature" id="outSignature" hidden><br><b id="outSigner"></b><br>Firma del titolare</div>
+<div class="qrbox">SCANSIONA PER VERIFICARE<div id="certQr"></div><span>Verifica il certificato</span></div>
+</div><div class="footerline">UN RICORDO SPECIALE DA NABABI RISTORANTE</div>
+</article><div class="actions" id="actions"><button type="button" onclick="window.print()">Stampa / Salva PDF</button> <a id="verifyLink" target="_blank">Verifica certificato</a></div>
 </main><script>
 (()=>{const cfg=window.NABABI_CONFIG||{},db=window.supabase&&cfg.SUPABASE_URL?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null,$=id=>document.getElementById(id);
-const defaults={birthday:'Nababi Ristorante-এর পক্ষ থেকে আপনাকে জন্মদিনের আন্তরিক শুভেচ্ছা। আপনার জীবন আনন্দ, ভালোবাসা ও সাফল্যে ভরে উঠুক। ইতালিতে বসবাসকারী সকলের জন্য রইল আমাদের শুভকামনা।',event:'Nababi Ristorante-এর পক্ষ থেকে এই বিশেষ অনুষ্ঠানে আপনাকে ও আপনার পরিবারকে আন্তরিক অভিনন্দন ও শুভেচ্ছা।'};
-function sync(){const event=$('type').value==='event';$('singlePhotoWrap').hidden=event;$('leftPhotoWrap').hidden=!event;$('rightPhotoWrap').hidden=!event;$('greeting').value=defaults[$('type').value];}
+const defaults={birthday:'Nababi Ristorante ti augura un felice compleanno. Che questa giornata sia piena di gioia, serenità e momenti indimenticabili.',event:'Nababi Ristorante porge i più sinceri auguri per questa occasione speciale.'};
+const months=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+months.forEach((m,i)=>$('month').add(new Option(m,String(i+1).padStart(2,'0'))));
+for(let d=1;d<=31;d++)$('day').add(new Option(String(d),String(d).padStart(2,'0')));
+const thisYear=new Date().getFullYear();for(let y=thisYear+5;y>=1900;y--)$('year').add(new Option(String(y),String(y)));
+$('day').value=String(new Date().getDate()).padStart(2,'0');$('month').value=String(new Date().getMonth()+1).padStart(2,'0');$('year').value=String(thisYear);
+function sync(){const event=$('type').value==='event';$('photoTypeWrap').hidden=!event;$('greeting').value=defaults[$('type').value];}
 $('type').addEventListener('change',sync);sync();
+function selectedDate(){const d=$('day').value,m=$('month').value,y=$('year').value;if(!d||!m||!y)return '';const date=new Date(Number(y),Number(m)-1,Number(d));if(date.getFullYear()!==Number(y)||date.getMonth()!==Number(m)-1||date.getDate()!==Number(d))return '';return y+'-'+m+'-'+d;}
 async function upload(file,label){if(!file)return null;if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>4*1024*1024)throw Error(label+': PNG/JPG/WEBP ছবি ৪ MB-এর মধ্যে হতে হবে।');const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg',path='certificates/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;const {error}=await db.storage.from('nababi-certificates').upload(path,file,{contentType:file.type,upsert:false});if(error)throw error;return db.storage.from('nababi-certificates').getPublicUrl(path).data.publicUrl;}
-$('form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('submit');btn.disabled=true;$('status').textContent='সার্টিফিকেট তৈরি হচ্ছে…';try{if(!db)throw Error('Supabase সংযোগ পাওয়া যায়নি।');const {data:{session}}=await db.auth.getSession();if(!session)throw Error('প্রথমে অ্যাডমিন অ্যাকাউন্টে লগইন করুন।');const type=$('type').value,isEvent=type==='event';const [photo,photoLeft,photoRight,logo,signature]=await Promise.all([upload($('photo').files[0],'ছবি'),upload($('photoLeft').files[0],'বরের ছবি'),upload($('photoRight').files[0],'কনের ছবি'),upload($('logo').files[0],'লোগো'),upload($('signature').files[0],'সিগনেচার')]);const row={certificate_type:type,recipient_name:$('name').value.trim(),event_name:isEvent?'Evento':null,issue_date:$('date').value,dedication:$('greeting').value.trim(),photo_url:photo,photo_url_left:photoLeft,photo_url_right:photoRight,logo_url:logo,signature_url:signature,signer_name:$('signer').value.trim()||'Nababi Ristorante',show_photo_publicly:true,created_by:session.user.id};const {data,error}=await db.from('nababi_certificates').insert(row).select('certificate_code').single();if(error)throw error;$('outLogo').hidden=!logo;$('brandFallback').hidden=!!logo;if(logo)$('outLogo').src=logo;$('outTitle').textContent=isEvent?'CERTIFICATO PER EVENTO':'CERTIFICATO DI COMPLEANNO';$('outName').textContent=row.recipient_name;$('outCopy').textContent=row.dedication;$('outDate').textContent=new Date(row.issue_date+'T12:00:00').toLocaleDateString('it-IT');$('outCode').textContent=data.certificate_code;$('outSigner').textContent=row.signer_name;$('outSignature').hidden=!signature;if(signature)$('outSignature').src=signature;$('outPhotos').replaceChildren();for(const url of (isEvent?[photoLeft,photoRight]:[photo]))if(url){const img=document.createElement('img');img.src=url;$('outPhotos').append(img);}$('cert').style.display='flex';$('actions').style.display='block';const verifyUrl=location.origin+'/verifica-certificato.html?code='+encodeURIComponent(data.certificate_code);$('verifyLink').href=verifyUrl;$('certQr').replaceChildren();if(!window.QRCode)throw Error('QR Code লাইব্রেরি লোড হয়নি।');new QRCode($('certQr'),{text:verifyUrl,width:180,height:180,colorDark:'#17251c',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});$('status').textContent='সার্টিফিকেট তৈরি হয়েছে। নম্বর: '+data.certificate_code;}catch(err){console.error(err);$('status').textContent=err.message||'সার্টিফিকেট তৈরি করা যায়নি।';}finally{btn.disabled=false;}});
+$('form').addEventListener('submit',async e=>{e.preventDefault();const btn=$('submit');btn.disabled=true;$('status').textContent='সার্টিফিকেট তৈরি হচ্ছে…';try{if(!db)throw Error('Supabase সংযোগ পাওয়া যায়নি।');const {data:{session}}=await db.auth.getSession();if(!session)throw Error('প্রথমে অ্যাডমিন অ্যাকাউন্টে লগইন করুন।');const type=$('type').value,isEvent=type==='event';const issueDate=selectedDate();if(!issueDate)throw Error('Seleziona una data valida: giorno, mese e anno.');const [photo,logo,signature]=await Promise.all([upload($('photo').files[0],'Foto'),upload($('logo').files[0],'Logo'),upload($('signature').files[0],'Firma')]);const isGroom=isEvent&&$('photoType').value==='groom';const row={certificate_type:type,recipient_name:$('name').value.trim(),event_name:isEvent?'Evento':null,issue_date:issueDate,dedication:$('greeting').value.trim(),photo_url:isEvent?null:photo,photo_url_left:isGroom?photo:null,photo_url_right:isEvent&&!isGroom?photo:null,logo_url:logo,signature_url:signature,signer_name:$('signer').value.trim()||'Nababi Ristorante',show_photo_publicly:true,created_by:session.user.id};const {data,error}=await db.from('nababi_certificates').insert(row).select('certificate_code').single();if(error)throw error;$('outLogo').hidden=!logo;$('brandFallback').hidden=!!logo;if(logo)$('outLogo').src=logo;$('outTitle').textContent=isEvent?'CERTIFICATO PER EVENTO':'CERTIFICATO DI COMPLEANNO';$('outIntro').textContent=isEvent?'Con i nostri più sinceri auguri per questa occasione speciale':'Con i nostri più sinceri auguri di buon compleanno';$('outName').textContent=row.recipient_name;$('outCopy').textContent=row.dedication;$('outDate').textContent=new Date(row.issue_date+'T12:00:00').toLocaleDateString('it-IT');$('outCode').textContent=data.certificate_code;$('outSigner').textContent=row.signer_name;$('outSignature').hidden=!signature;if(signature)$('outSignature').src=signature;$('outPhotos').replaceChildren();if(photo){const img=document.createElement('img');img.src=photo;$('outPhotos').append(img);}$('cert').style.display='flex';$('actions').style.display='block';const verifyUrl=location.origin+'/verifica-certificato.html?code='+encodeURIComponent(data.certificate_code);$('verifyLink').href=verifyUrl;$('certQr').replaceChildren();if(!window.QRCode)throw Error('QR Code লাইব্রেরি লোড হয়নি।');new QRCode($('certQr'),{text:verifyUrl,width:180,height:180,colorDark:'#17251c',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});$('status').textContent='সার্টিফিকেট তৈরি হয়েছে। নম্বর: '+data.certificate_code;}catch(err){console.error(err);$('status').textContent=err.message||'সার্টিফিকেট তৈরি করা যায়নি।';}finally{btn.disabled=false;}});
 })();
 </script></body></html>
