@@ -662,9 +662,27 @@ async function printCertificate(id,win){
  if(role!=='admin')throw new Error('Admin only.');
  const q=await db.from('event_certificates').select('certificate_number,recipient_name,event_type,event_date,photo_url').eq('id',id).single();if(q.error)throw q.error;
  const x=q.data,template=window.certificateTemplateUrl||'',date=new Date(x.event_date+'T12:00:00').toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
- if(!template)throw new Error('Upload and save the original blank certificate image first.');
+ if(!template)throw new Error('The original Nababi certificate artwork is not configured.');
  if(!win)throw new Error('Allow pop-ups to print the certificate.');
- win.document.write('<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Certificato Nababi</title><style>@page{size:A4 landscape;margin:0}*{box-sizing:border-box}html,body{margin:0;width:297mm;height:210mm}.sheet{position:relative;width:297mm;height:210mm;background:url("'+esc(template)+'") center/100% 100% no-repeat;print-color-adjust:exact;-webkit-print-color-adjust:exact}.name{position:absolute;left:26.4%;top:45.2%;width:61.5%;text-align:center;color:#6f1020;font:italic 27pt Georgia,serif;white-space:nowrap;overflow:hidden}.date{position:absolute;left:42.8%;top:66.2%;width:17.5%;text-align:center;color:#fff;font:bold 15pt Georgia,serif}.number{position:absolute;left:31%;top:82.7%;width:24.5%;text-align:center;color:#fff;font:bold 13pt Georgia,serif;letter-spacing:.5px}</style></head><body><main class="sheet"><div class="name">'+esc(x.recipient_name)+'</div><div class="date">'+date+'</div><div class="number">'+esc(x.certificate_number)+'</div></main><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),500));<\/script></body></html>');
+ if(typeof QRCode!=='function')throw new Error('QR generator could not be loaded. Reload the admin page and try again.');
+ const qrHost=document.createElement('div');
+ new QRCode(qrHost,{text:'NABABI CERTIFICATE '+x.certificate_number,width:320,height:320,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+ const qrCanvas=qrHost.querySelector('canvas'),qrImage=qrHost.querySelector('img');
+ const qrData=qrCanvas?qrCanvas.toDataURL('image/png'):(qrImage?qrImage.src:'');
+ if(!qrData)throw new Error('QR code could not be generated.');
+ const photo=x.photo_url?'<img class="photo" src="'+esc(x.photo_url)+'" alt="">':'';
+ win.document.write('<!doctype html><html lang="it"><head><meta charset="utf-8"><title>Certificato Nababi</title><style>'+
+ '@page{size:A4 landscape;margin:0}*{box-sizing:border-box}html,body{margin:0;width:297mm;height:210mm}.sheet{position:relative;width:297mm;height:210mm;background:url("'+esc(template)+'") center/100% 100% no-repeat;overflow:hidden;print-color-adjust:exact;-webkit-print-color-adjust:exact}'+
+ /* Cover the sample image inside the existing gold oval; the original frame and bow remain untouched. */
+ '.photo-slot{position:absolute;left:4.15%;top:26.1%;width:18.25%;height:23.65%;border-radius:50%;overflow:hidden;background:#f8eedb}'+
+ '.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}'+
+ '.name{position:absolute;left:26.4%;top:45.1%;width:61.8%;height:5.4%;display:flex;align-items:center;justify-content:center;text-align:center;color:#6f1020;font:italic 25pt Georgia,serif;white-space:nowrap;overflow:hidden;padding:0 3mm}'+
+ '.date{position:absolute;left:47.8%;top:68.8%;width:18.2%;height:4.2%;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font:bold 13pt Georgia,serif;white-space:nowrap}'+
+ '.number{position:absolute;left:30.5%;top:83.25%;width:25.2%;height:5.4%;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font:bold 11pt Georgia,serif;letter-spacing:.3px;white-space:nowrap;overflow:hidden;padding:0 2mm}'+
+ '.qr{position:absolute;left:59.25%;top:76.45%;width:9.3%;height:auto;display:block;background:#fff}'+
+ '@media screen{body{background:#ddd}.sheet{margin:12px auto;box-shadow:0 2px 18px #777}}'+
+ '</style></head><body><main class="sheet"><div class="photo-slot">'+photo+'</div><div class="name">'+esc(x.recipient_name)+'</div><div class="date">'+date+'</div><div class="number">'+esc(x.certificate_number)+'</div><img class="qr" src="'+qrData+'" alt="QR"></main>'+
+ '<script>window.addEventListener("load",()=>setTimeout(()=>window.print(),700));<\/script></body></html>');
  win.document.close();
 }
 
