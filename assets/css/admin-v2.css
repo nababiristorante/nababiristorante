@@ -838,3 +838,7 @@ body{overflow-x:hidden}
 
 /* Optional certificate studio */
 .certificate-form{max-width:720px}.certificate-form select,.certificate-form input{width:100%;min-height:44px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#09150f;color:var(--ink)}.certificate-photo-preview{margin:4px 0 12px}.certificate-photo-preview img{display:block;width:112px;height:112px;object-fit:cover;border-radius:50%;border:2px solid #b18a43}.certificate-admin-panel{border-color:rgba(177,138,67,.38)}
+
+.certificate-selected-preview{margin:14px 0;padding:16px;border:1px solid rgba(177,138,67,.45);border-radius:14px;background:rgba(177,138,67,.06)}
+#certificateSearch{max-width:520px}
+[data-certificate-row][hidden]{display:none}
