@@ -4007,7 +4007,26 @@ async function render(id) {
     return;
   }
 
-  if (id === 'certificate') { window.location.href = 'crea-certificato.html'; return; }
+  if (id === 'certificate') {
+    try {
+      const {data:{session},error} = await db.auth.getSession();
+      if (error) throw error;
+      if (!session?.access_token || !session?.refresh_token) {
+        alert('Sessione amministratore non disponibile. Accedi di nuovo al pannello.');
+        return;
+      }
+      // Same-tab, short-lived handoff for the standalone certificate page.
+      sessionStorage.setItem('nababi_certificate_session_handoff', JSON.stringify({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token
+      }));
+      window.location.href = 'crea-certificato.html';
+    } catch (error) {
+      console.error('Certificate session handoff failed:', error);
+      alert('Impossibile verificare la sessione amministratore. Riprova.');
+    }
+    return;
+  }
   current = id;
   nav();
 
