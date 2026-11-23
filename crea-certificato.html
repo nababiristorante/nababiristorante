@@ -70,21 +70,24 @@ input[type="date"]{min-height:50px;font-size:16px;cursor:pointer;color-scheme:da
 </div><div class="footerline">UN RICORDO SPECIALE DA NABABI RISTORANTE</div>
 </article><div class="actions" id="actions"><button type="button" onclick="window.print()">Stampa / Salva PDF</button> <a id="verifyLink" target="_blank">Verifica certificato</a></div>
 </main><script>
-(()=>{const cfg=window.NABABI_CONFIG||{},db=window.supabase&&cfg.SUPABASE_URL?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null,$=id=>document.getElementById(id);
+(()=>{const cfg=window.NABABI_CONFIG||{},db=window.supabase&&cfg.SUPABASE_URL?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{lock:async(_name,_timeout,fn)=>await fn()}}):null,$=id=>document.getElementById(id);
 async function getCertificateSession(){
   if(!db)throw Error('Connessione a Supabase non disponibile.');
-  const current=await db.auth.getSession();
-  if(current.error)throw current.error;
-  if(current.data.session)return current.data.session;
+  // Restore the one-time handoff first; do not wait on a stale persisted-session read.
   let handoff=null;
   try{handoff=sessionStorage.getItem('nababi_certificate_session_handoff');sessionStorage.removeItem('nababi_certificate_session_handoff');}catch(_){}
-  if(!handoff)return null;
-  let tokens;
-  try{tokens=JSON.parse(handoff);}catch(_){return null;}
-  if(!tokens?.access_token||!tokens?.refresh_token)return null;
-  const restored=await db.auth.setSession({access_token:tokens.access_token,refresh_token:tokens.refresh_token});
-  if(restored.error)throw restored.error;
-  return restored.data.session||null;
+  if(handoff){
+    let tokens;
+    try{tokens=JSON.parse(handoff);}catch(_){tokens=null;}
+    if(tokens?.access_token&&tokens?.refresh_token){
+      const restored=await db.auth.setSession({access_token:tokens.access_token,refresh_token:tokens.refresh_token});
+      if(restored.error)throw restored.error;
+      if(restored.data.session)return restored.data.session;
+    }
+  }
+  const current=await db.auth.getSession();
+  if(current.error)throw current.error;
+  return current.data.session||null;
 }
 
 const defaults={birthday:'Nababi Ristorante è lieto di celebrare questo giorno speciale e porge i più sentiti auguri di buon compleanno. Che il nuovo anno di vita sia ricco di felicità, salute, serenità e splendide soddisfazioni. Con stima e affetto, auguriamo una giornata indimenticabile.',event:'Nababi Ristorante è onorato di partecipare a questo giorno così importante. In occasione delle nozze, porgiamo agli sposi i nostri più sinceri auguri: che il vostro cammino insieme sia sempre accompagnato da amore, rispetto, gioia e felicità. Con i migliori auguri per una vita ricca di momenti indimenticabili.'};
