@@ -39,7 +39,6 @@ const menu = [
   ['qr_menu','▣','QR Menu Images'],
   ['categories','▦','Categories'],
   ['bookings','▣','Bookings'],
-  ['celebrations','✦','Certificati e celebrazioni'],
   ['customers','♙','Customers'],
   ['coupons','◇','Coupons'],
   ['staff','♟','Staff Management'],
@@ -92,7 +91,6 @@ const descriptions = {
   qr_menu:'Carica le pagine immagine del menu da mostrare solo tramite QR Code.',
   categories:'Organizza le categorie del menu.',
   bookings:'Consulta le prenotazioni dei tavoli.',
-  celebrations:'Crea certificati di compleanno e attestati per l’organizzazione degli eventi.',
   customers:'Archivio clienti.',
   coupons:'Crea e gestisci codici sconto.',
   staff:'Gestisci profili e ruoli del personale.',
@@ -263,8 +261,7 @@ function openApp(email) {
 
   // Open the coupon redemption screen immediately after login.
   // Staff still need the existing "secret" permission.
-  const requestedModule = new URLSearchParams(window.location.search).get('module');
-  render(userRole === 'admin' && requestedModule === 'celebrations' ? 'celebrations' : (canSee('secret') ? 'secret' : 'dashboard'));
+  render(canSee('secret') ? 'secret' : 'dashboard');
 }
 
 async function verifyAdmin(user) {
@@ -3999,188 +3996,6 @@ async function setBookingStatus(id,status) {
 
 
 
-const CERTIFICATE_BUCKET = 'nababi-certificates';
-let certificateSettings = {};
-let currentCertificate = null;
-
-async function celebrationsPage() {
-  const [{data:settings,error:settingsError},{data:rows,error:rowsError}] = await Promise.all([
-    db.from('nababi_certificate_settings').select('*').eq('id',true).maybeSingle(),
-    db.from('nababi_certificates').select('id,certificate_code,certificate_type,recipient_name,event_name,issue_date,status,created_at').order('created_at',{ascending:false}).limit(100)
-  ]);
-  if (settingsError) throw settingsError;
-  if (rowsError) throw rowsError;
-  certificateSettings = settings || {};
-  const signature = certificateSettings.signature_url
-    ? '<img src="'+esc(certificateSettings.signature_url)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;object-fit:contain;background:#fff;padding:6px;border-radius:6px">'
-    : '<span class="help">Nessuna firma salvata</span>';
-  const defaultContent = {
-    birthday_texts:['Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.'],
-    birthday_quote:'Che ogni nuovo anno porti con sé nuove gioie, sogni e splendide opportunità.',
-    event_texts:['In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento, contribuendo a renderlo speciale e memorabile.'],
-    event_quote:'I grandi momenti nascono dalla passione, dalla collaborazione e dalla dedizione.'
-  };
-  const certificateContent = {...defaultContent,...(certificateSettings.certificate_content||{})};
-  const lines = value => Array.isArray(value) ? value.join('\\n') : '';
-  const recordRows = rows.length ? rows.map(r => '<tr><td>'+esc(r.certificate_code)+'</td><td>'+esc(r.certificate_type==='birthday'?'Compleanno':'Riconoscimento evento')+'</td><td>'+esc(r.recipient_name)+'</td><td>'+esc(r.issue_date)+'</td><td>'+esc(r.status==='active'?'Attivo':'Revocato')+'</td><td>'+(r.status==='active'?'<button class="outline-btn" type="button" data-revoke-certificate="'+esc(r.id)+'">Revoca</button>':'—')+'</td></tr>').join('') : '<tr><td colspan="6">Nessun certificato ancora creato.</td></tr>';
-  return '<style>'+
-    '.cert-grid{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(320px,1.2fr);gap:16px}'+
-    '.cert-panel{padding:18px;border:1px solid rgba(216,183,106,.35);border-radius:14px;background:linear-gradient(145deg,#10251c,#0b1511);color:#f8f0df}'+
-    '.cert-panel h3{margin:0 0 14px;color:#e7c777}.cert-form{display:grid;grid-template-columns:1fr 1fr;gap:11px}.cert-form label{display:grid;gap:6px;font-size:13px;color:#e8dfc9}.cert-form input,.cert-form select,.cert-form textarea{width:100%;min-height:42px;padding:10px;border:1px solid rgba(216,183,106,.35);border-radius:8px;background:#08120e;color:#fff;font:inherit}.cert-form textarea{min-height:76px}.cert-wide{grid-column:1/-1}.cert-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.cert-actions button{border:1px solid #d8b76a;border-radius:8px;padding:10px 14px;background:#d8b76a;color:#17251c;font-weight:700;cursor:pointer}.cert-actions .alt{background:transparent;color:#f4dfaa}.cert-paper{width:100%;max-width:none;min-height:190mm;padding:22px 28px;background:radial-gradient(ellipse at center,#fffdf5 0%,#fff4df 78%,#f6e6c7 100%);color:#24130f;border:12px ridge #b8872f;text-align:center;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:9px;box-shadow:inset 0 0 0 4px #6f101d,inset 0 0 0 7px #e2bf68}.cert-paper:before{content:"";position:absolute;inset:10px;border:1px solid #bd9140;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 18px,rgba(184,135,47,.035) 19px 20px);z-index:0}.cert-paper:after{content:"❧  ❦  ❧";position:absolute;top:7px;left:0;right:0;color:#bd9140;font-size:19px;letter-spacing:15px;pointer-events:none}.cert-paper>*{position:relative;z-index:1}.cert-paper h2{font:700 27px Georgia,serif;color:#f8e6b0;letter-spacing:1px;margin:5px auto 8px;padding:8px 18px;max-width:90%;background:linear-gradient(90deg,#6c0e1b,#8f1828,#6c0e1b);border:4px double #d8b45d;box-shadow:0 2px 0 #5b0a16}.cert-paper.cert-birthday,.cert-paper.cert-event{border-color:#b8872f}.cert-paper.cert-event .cert-person,.cert-paper.cert-birthday .cert-person{color:#741323;border-color:#bd9140}.cert-brand-logo{max-width:175px;max-height:68px;object-fit:contain;display:block;margin:0 auto 4px}.cert-brand-wordmark{color:#741323;letter-spacing:4px;font:bold 27px Georgia,serif}.cert-person{font:italic 29px Georgia,serif;color:#741323;border-bottom:2px solid #bd9140;display:inline-block;padding:7px 18px;min-width:60%;overflow-wrap:anywhere}.cert-photo{width:132px;height:132px;object-fit:cover;border:5px double #c49a45;border-radius:50%;margin:8px auto;background:#fff8e8}.cert-main-layout{display:grid;grid-template-columns:155px minmax(0,1fr);align-items:center;gap:18px;text-align:center}.cert-photo-side{display:flex;align-items:center;justify-content:center;min-height:150px}.cert-content-side{min-width:0}.cert-bottom{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-top:10px;text-align:left;font-size:11px;border-top:1px solid #bd9140;padding-top:10px}.cert-sign{max-width:145px;max-height:58px;object-fit:contain;display:block;margin:0 auto 4px}.cert-qr{width:76px;height:76px;object-fit:contain}.cert-status{min-height:20px;margin-top:10px}.cert-table-wrap{overflow:auto}.cert-table{width:100%;border-collapse:collapse;min-width:680px}.cert-table th,.cert-table td{padding:10px;border-bottom:1px solid rgba(216,183,106,.2);text-align:left}.cert-table th{color:#e7c777}.cert-note{font-size:12px;color:#d4c8ad}.cert-print-only{display:none}@media(max-width:760px){.cert-grid{grid-template-columns:1fr}.cert-form{grid-template-columns:1fr}.cert-wide{grid-column:auto}.cert-paper{padding:22px 13px;min-height:340px}.cert-paper h2{font-size:20px}.cert-person{font-size:24px}.cert-main-layout{grid-template-columns:1fr;gap:4px}.cert-photo-side{min-height:0}.cert-photo{width:96px;height:96px}.cert-bottom{flex-wrap:wrap}}@media print{@page{size:A4 landscape;margin:8mm}body *{visibility:hidden!important}#certificatePreview,#certificatePreview *{visibility:visible!important}#certificatePreview{position:absolute;left:0;top:0;width:100%;padding:0!important;background:#fff!important}#certificatePreview .cert-paper{width:100%;height:190mm;min-height:190mm;padding:18mm 20mm;break-inside:avoid;print-color-adjust:exact;-webkit-print-color-adjust:exact}.cert-actions{display:none!important}}'+
-  '</style>'+
-  '<section class="section-card"><div class="section-title"><h2>Certificati e verifica online</h2></div><p class="help">Crea certificati in italiano, salvali nell’archivio centrale e rendili verificabili tramite codice univoco o QR Code.</p>'+
-  '<div class="cert-grid">'+
-  '<article class="cert-panel"><h3>Testi e frasi modificabili</h3><p class="cert-note">Ogni riga è una frase separata. Puoi aggiungere, modificare o rimuovere tutte le frasi: saranno usate nell’anteprima, nel PDF e nella verifica online.</p><label style="display:block;margin:12px 0">Frasi Compleanno<textarea id="certificateBirthdayTexts" rows="5" maxlength="3000" style="display:block;width:100%;margin-top:6px">'+esc(lines(certificateContent.birthday_texts))+'</textarea></label><label style="display:block;margin:12px 0">Quote Compleanno<input id="certificateBirthdayQuote" maxlength="300" value="'+esc(certificateContent.birthday_quote||'')+'" style="display:block;width:100%;margin-top:6px"></label><label style="display:block;margin:12px 0">Frasi Evento<textarea id="certificateEventTexts" rows="5" maxlength="3000" style="display:block;width:100%;margin-top:6px">'+esc(lines(certificateContent.event_texts))+'</textarea></label><label style="display:block;margin:12px 0">Quote Evento<input id="certificateEventQuote" maxlength="300" value="'+esc(certificateContent.event_quote||'')+'" style="display:block;width:100%;margin-top:6px"></label><div class="cert-actions"><button type="button" id="certificateSaveContent">Salva testi e frasi</button></div><p id="certificateContentStatus" class="cert-status help" aria-live="polite"></p></article>'+
-  '<article class="cert-panel"><h3>Logo e firma Nababi</h3><p class="cert-note">Il logo ufficiale viene mostrato su entrambi i modelli. In assenza di immagine, viene usato il marchio ♛ NABABI RISTORANTE.</p><div id="certificateLogoPreview">'+(certificateSettings.logo_url?'<img class="cert-brand-logo" src="'+esc(certificateSettings.logo_url)+'" alt="Logo Nababi">':'<span class="cert-note">Marchio testuale Nababi</span>')+'</div><label style="display:block;margin-top:12px">Carica il logo Nababi<input id="certificateLogoFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:7px"></label><div id="certificateSignaturePreview">'+signature+'</div><label style="display:block;margin-top:12px">Immagine della firma<input id="certificateSignatureFile" type="file" accept="image/png,image/jpeg,image/webp" style="display:block;margin-top:7px"></label><label style="display:block;margin-top:12px">Nome del firmatario<input id="certificateSignerName" type="text" maxlength="100" value="'+esc(certificateSettings.signer_name||'Direzione — Nababi Ristorante')+'" style="display:block;width:100%;margin-top:6px"></label><label style="display:block;margin-top:12px">Ruolo del firmatario<input id="certificateSignerRole" type="text" maxlength="100" value="'+esc(certificateSettings.signer_role||'Direzione')+'" style="display:block;width:100%;margin-top:6px"></label><div class="cert-actions"><button type="button" id="certificateSaveSettings">Salva impostazioni</button><button type="button" class="alt" id="certificateRemoveSignature">Rimuovi firma</button></div><p id="certificateSettingsStatus" class="cert-status help" aria-live="polite"></p></article>'+
-  '<article class="cert-panel"><h3>Nuovo certificato</h3><form id="certificateForm" class="cert-form">'+
-  '<label class="cert-wide">Tipo di certificato<select id="certificateType"><option value="birthday">Certificato di Compleanno</option><option value="event">Attestato di Riconoscimento — Organizzazione Evento</option></select></label>'+
-  '<label>Nome e cognome<input id="certificateRecipient" maxlength="150" required placeholder="Nome e cognome"></label><label><span id="certificateDateLabel">Data del compleanno</span><input id="certificateDate" type="date" required></label>'+
-  '<label id="certificateEventField" class="cert-wide" hidden>Nome dell’evento<input id="certificateEventName" maxlength="150" placeholder="Nome dell’evento"></label>'+
-  '<label class="cert-wide">Dedica personalizzata (facoltativa)<textarea id="certificateMessage" maxlength="300" placeholder="Scrivi una dedica..."></textarea></label>'+
-  '<label class="cert-wide">Foto (facoltativa)<input id="certificatePhoto" type="file" accept="image/png,image/jpeg,image/webp"><span class="cert-note">La foto è facoltativa. Formati JPG, PNG o WebP, massimo 4 MB.</span></label><label class="cert-wide" style="display:flex;align-items:center;gap:8px"><input id="certificatePhotoPublic" type="checkbox" style="width:auto;min-height:0"> Autorizzo la visualizzazione pubblica della foto sul certificato</label>'+
-  '<div class="cert-actions cert-wide"><button type="submit" id="certificateCreate">Crea e salva certificato</button><button type="button" class="alt" id="certificateReset">Nuovo</button></div></form><p id="certificateFormStatus" class="cert-status help" aria-live="polite"></p></article></div></section>'+
-  '<section class="section-card"><div class="section-title"><h2>Anteprima del certificato</h2><span class="help">PDF completo · A4 orizzontale</span></div><div id="certificatePreview"><div class="cert-paper cert-birthday"><div><div style="font-size:34px;color:#bd9140;line-height:1">♛</div><img id="certificatePreviewLogo" class="cert-brand-logo" src="'+esc(certificateSettings.logo_url||'')+'" alt="Logo Nababi" style="display:'+(certificateSettings.logo_url?'block':'none')+'"><div id="certificatePreviewBrand" class="cert-brand-wordmark" style="display:'+(certificateSettings.logo_url?'none':'block')+'">NABABI</div><div style="font:600 12px Georgia,serif;letter-spacing:5px;color:#741323">RISTORANTE</div></div><h2 id="certificatePreviewTitle">CERTIFICATO DI CELEBRAZIONE</h2><div class="cert-main-layout"><div class="cert-photo-side"><img id="certificatePreviewPhoto" class="cert-photo" alt="Foto del destinatario" hidden></div><div class="cert-content-side"><p style="font:italic 19px Georgia,serif;margin:5px 0 10px">Conferito a</p><div class="cert-person" id="certificatePreviewName">Nome e cognome</div><div id="certificatePreviewText" style="font:italic 15px Georgia,serif;line-height:1.45;margin-top:12px"></div><p id="certificatePreviewMessage" style="font-style:italic"></p><p id="certificatePreviewQuote" style="font-style:italic;color:#9b712b;font-size:13px"></p></div></div><div class="cert-bottom"><div><strong>Data:</strong> <span id="certificatePreviewDate">—</span><br><strong>Codice:</strong> <span id="certificatePreviewCode">Assegnato al salvataggio</span><br><span style="font-size:9px">Verifica: nababistorante.vercel.app/verifica-certificato.html</span></div><div style="text-align:center;min-width:145px"><img id="certificatePreviewSignature" class="cert-sign" alt="Firma autorizzata" hidden><div id="certificatePreviewSigner" style="border-top:1px solid #9d7b39;padding-top:5px">Direzione — Nababi Ristorante</div><strong style="font-size:9px">FIRMA AUTORIZZATA</strong></div><img id="certificatePreviewQr" class="cert-qr" alt="QR Code" hidden></div><div style="margin-top:4px;color:#741323;font:11px Georgia,serif;letter-spacing:3px">✦ UN RICORDO SPECIALE FIRMATO NABABI ✦</div></div></div><div class="cert-actions"><button type="button" id="certificatePrint" class="alt" disabled>Stampa / Salva PDF</button></div></section>'+
-  '<section class="section-card"><div class="section-title"><h2>Archivio certificati</h2></div><p class="help">Archivio centrale condiviso tra i dispositivi autorizzati.</p><div class="cert-table-wrap"><table class="cert-table"><thead><tr><th>Codice</th><th>Tipo</th><th>Destinatario</th><th>Data</th><th>Stato</th><th>Azione</th></tr></thead><tbody id="certificateRows">'+recordRows+'</tbody></table></div></section>';
-}
-
-async function uploadCertificateAsset(file, folder) {
-  if (!file) return null;
-  if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 4*1024*1024) {
-    throw new Error('Scegli un file PNG, JPG o WebP fino a 4 MB.');
-  }
-  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-  const path = folder+'/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
-  const {error} = await db.storage.from(CERTIFICATE_BUCKET).upload(path,file,{upsert:false,contentType:file.type});
-  if (error) throw error;
-  return db.storage.from(CERTIFICATE_BUCKET).getPublicUrl(path).data.publicUrl;
-}
-
-function updateCertificatePreview() {
-  const type = $('#certificateType').value;
-  const name = $('#certificateRecipient').value.trim() || 'Nome e cognome';
-  const dateValue = $('#certificateDate').value;
-  const date = dateValue ? new Date(dateValue+'T12:00:00').toLocaleDateString('it-IT') : '—';
-  const eventName = $('#certificateEventName').value.trim();
-  $('#certificateEventField').hidden = type !== 'event';
-  const paper=$('#certificatePreview').querySelector('.cert-paper');
-  paper.classList.toggle('cert-birthday',type==='birthday');
-  paper.classList.toggle('cert-event',type==='event');
-  $('#certificateDateLabel').textContent = type === 'event' ? 'Data dell’evento' : 'Data del compleanno';
-  $('#certificatePreviewTitle').textContent = type === 'event' ? 'ATTESTATO DI RICONOSCIMENTO' : 'CERTIFICATO DI COMPLEANNO';
-  $('#certificatePreviewName').textContent = name;
-  $('#certificatePreviewDate').textContent = date;
-  const content = certificateSettings.certificate_content || {};
-  const defaults = type === 'event'
-    ? ['In riconoscimento del prezioso contributo e dell’impegno dimostrato nell’organizzazione dell’evento'+(eventName?' «'+eventName+'»':'')+', contribuendo a renderlo speciale e memorabile.']
-    : ['Per celebrare il tuo giorno speciale, con i più sinceri auguri di felicità, gioia e momenti indimenticabili.'];
-  const messages = (type === 'event' ? content.event_texts : content.birthday_texts);
-  const chosenMessages = Array.isArray(messages) && messages.length ? messages : defaults;
-  $('#certificatePreviewText').innerHTML = chosenMessages.map(line => '<p>'+esc(line)+'</p>').join('');
-  $('#certificatePreviewQuote').textContent = type === 'event' ? (content.event_quote || '') : (content.birthday_quote || '');
-  $('#certificatePreviewMessage').textContent = $('#certificateMessage').value.trim();
-  $('#certificatePreviewSigner').textContent = [certificateSettings.signer_name||'Direzione — Nababi Ristorante',certificateSettings.signer_role||''].filter(Boolean).join(' · ');
-  $('#certificatePreviewLogo').src=certificateSettings.logo_url||'';
-  $('#certificatePreviewLogo').style.display=certificateSettings.logo_url?'block':'none';
-  $('#certificatePreviewBrand').style.display=certificateSettings.logo_url?'none':'block';
-  $('#certificatePreviewSignature').src = certificateSettings.signature_url || '';
-  $('#certificatePreviewSignature').hidden = !certificateSettings.signature_url;
-}
-
-function setupCelebrations() {
-  const ids = ['certificateType','certificateRecipient','certificateDate','certificateEventName','certificateMessage'];
-  ids.forEach(id => $('#'+id).addEventListener('input',updateCertificatePreview));
-  $('#certificateType').addEventListener('change',updateCertificatePreview);
-  $('#certificateForm').addEventListener('submit',async e=>{
-    e.preventDefault();
-    const button=$('#certificateCreate'), status=$('#certificateFormStatus');
-    button.disabled=true; status.textContent='Salvataggio in corso…';
-    try {
-      const type=$('#certificateType').value, recipient=$('#certificateRecipient').value.trim(), date=$('#certificateDate').value, eventName=$('#certificateEventName').value.trim();
-      if(!recipient||!date||(type==='event'&&!eventName)) throw new Error('Compila il nome, la data e il nome dell’evento quando richiesto.');
-      const photoFile=$('#certificatePhoto').files?.[0]||null;
-      const photoUrl=photoFile?await uploadCertificateAsset(photoFile,'photos'):null;
-      const row={
-        certificate_type:type,recipient_name:recipient,event_name:type==='event'?eventName:null,
-        issue_date:date,dedication:$('#certificateMessage').value.trim()||null,
-        photo_url:photoUrl,show_photo_publicly:!!photoUrl && $('#certificatePhotoPublic').checked,
-        signer_name:certificateSettings.signer_name||'Direzione — Nababi Ristorante',
-        signer_role:certificateSettings.signer_role||'',
-        signature_url:certificateSettings.signature_url||null,status:'active'
-      };
-      const {data,error}=await db.from('nababi_certificates').insert(row).select('*').single();
-      if(error) throw error;
-      currentCertificate=data;
-      $('#certificatePreviewCode').textContent=data.certificate_code;
-      if(data.photo_url){$('#certificatePreviewPhoto').src=data.photo_url;$('#certificatePreviewPhoto').hidden=false;} else $('#certificatePreviewPhoto').hidden=true;
-      const verifyUrl=window.location.origin+'/verifica-certificato.html?code='+encodeURIComponent(data.certificate_code);
-      $('#certificatePreviewQr').src='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(verifyUrl);
-      $('#certificatePreviewQr').hidden=false;
-      $('#certificatePrint').disabled=false;
-      status.textContent='Certificato creato e salvato. Codice: '+data.certificate_code;
-      const rowMarkup='<tr><td>'+esc(data.certificate_code)+'</td><td>'+esc(type==='birthday'?'Compleanno':'Riconoscimento evento')+'</td><td>'+esc(data.recipient_name)+'</td><td>'+esc(data.issue_date)+'</td><td>Attivo</td><td><button class="outline-btn" type="button" data-revoke-certificate="'+esc(data.id)+'">Revoca</button></td></tr>';
-      $('#certificateRows').insertAdjacentHTML('afterbegin',rowMarkup);
-      $('#certificateFormStatus').textContent='Certificato salvato: '+data.certificate_code;
-    } catch(err) { status.textContent=err.message||'Errore durante il salvataggio.'; }
-    finally { button.disabled=false; }
-  });
-  $('#certificateSaveSettings').onclick=async()=>{
-    const status=$('#certificateSettingsStatus'), button=$('#certificateSaveSettings');button.disabled=true;
-    try{
-      let signatureUrl=certificateSettings.signature_url||null;
-      const file=$('#certificateSignatureFile').files?.[0];
-      if(file) signatureUrl=await uploadCertificateAsset(file,'signatures');
-      let logoUrl=certificateSettings.logo_url||null;
-      const logoFile=$('#certificateLogoFile').files?.[0];
-      if(logoFile) logoUrl=await uploadCertificateAsset(logoFile,'logos');
-      const settings={id:true,logo_url:logoUrl,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:signatureUrl,updated_at:new Date().toISOString()};
-      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});
-      if(error)throw error;certificateSettings=settings;status.textContent='Logo e impostazioni salvati correttamente.';
-      $('#certificateLogoPreview').innerHTML=logoUrl?'<img class="cert-brand-logo" src="'+esc(logoUrl)+'" alt="Logo Nababi">':'<span class="cert-note">Marchio testuale Nababi</span>';
-      $('#certificateSignaturePreview').innerHTML=signatureUrl?'<img src="'+esc(signatureUrl)+'" alt="Firma salvata" style="max-width:190px;max-height:65px;background:#fff;padding:6px;border-radius:6px">':'Nessuna firma salvata';
-      updateCertificatePreview();
-    }catch(err){status.textContent=err.message||'Impossibile salvare le impostazioni.';}
-    finally{button.disabled=false;}
-  };
-  $('#certificateSaveContent').onclick=async()=>{
-    const status=$('#certificateContentStatus'), button=$('#certificateSaveContent');button.disabled=true;
-    try{
-      const cleanLines=id=>$('#'+id).value.split('\\n').map(x=>x.trim()).filter(Boolean);
-      const content={
-        birthday_texts:cleanLines('certificateBirthdayTexts'),
-        birthday_quote:$('#certificateBirthdayQuote').value.trim(),
-        event_texts:cleanLines('certificateEventTexts'),
-        event_quote:$('#certificateEventQuote').value.trim()
-      };
-      if(!content.birthday_texts.length || !content.event_texts.length) throw new Error('Inserisci almeno una frase per ogni tipo di certificato.');
-      const settings={id:true,logo_url:certificateSettings.logo_url||null,signer_name:certificateSettings.signer_name||'Direzione — Nababi Ristorante',signer_role:certificateSettings.signer_role||'',signature_url:certificateSettings.signature_url||null,certificate_content:content,updated_at:new Date().toISOString()};
-      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});
-      if(error)throw error;
-      certificateSettings={...certificateSettings,...settings};
-      status.textContent='Testi e quote salvati. Saranno usati nei nuovi certificati e nella verifica online.';
-      updateCertificatePreview();
-    }catch(err){status.textContent=err.message||'Impossibile salvare i testi.';}
-    finally{button.disabled=false;}
-  };
-  $('#certificateRemoveSignature').onclick=async()=>{
-    const status=$('#certificateSettingsStatus');
-    try{
-      const settings={id:true,logo_url:certificateSettings.logo_url||null,signer_name:$('#certificateSignerName').value.trim()||'Direzione — Nababi Ristorante',signer_role:$('#certificateSignerRole').value.trim(),signature_url:null,updated_at:new Date().toISOString()};
-      const {error}=await db.from('nababi_certificate_settings').upsert(settings,{onConflict:'id'});if(error)throw error;
-      certificateSettings=settings;$('#certificateSignaturePreview').textContent='Nessuna firma salvata';$('#certificateSignatureFile').value='';status.textContent='Firma rimossa.';updateCertificatePreview();
-    }catch(err){status.textContent=err.message||'Impossibile rimuovere la firma.';}
-  };
-  $('#certificatePrint').onclick=()=>{if(currentCertificate)window.print();};
-  $('#certificateReset').onclick=()=>render('celebrations');
-  $('#certificateRows').onclick=async e=>{
-    const button=e.target.closest('[data-revoke-certificate]');if(!button)return;
-    if(!confirm('Vuoi revocare definitivamente questo certificato?'))return;
-    button.disabled=true;
-    try{const {error}=await db.from('nababi_certificates').update({status:'revoked'}).eq('id',button.dataset.revokeCertificate);if(error)throw error;await render('celebrations');}
-    catch(err){alert(err.message||'Impossibile revocare il certificato.');button.disabled=false;}
-  };
-  updateCertificatePreview();
-}
-
 /* MODULE RENDERING */
 
 async function render(id) {
@@ -4199,13 +4014,6 @@ async function render(id) {
   host.innerHTML = '<div class="empty-state">Caricamento…</div>';
 
   try {
-    if (id === 'celebrations') {
-      if (userRole !== 'admin') { host.innerHTML = '<p>Solo l’amministratore può creare certificati.</p>'; return; }
-      host.innerHTML = await celebrationsPage();
-      setupCelebrations();
-      return;
-    }
-
     if (id === 'bookings') {
       if (userRole !== 'admin') {
         host.innerHTML = '<p>Solo l’amministratore può gestire le prenotazioni.</p>';
