@@ -831,3 +831,6 @@ body{overflow-x:hidden}
 @media(prefers-reduced-motion:reduce){
   #loginView .login-card{transition:none}
 }
+
+/* Cash drawer module */
+.cash-drawer-form,.cash-drawer-filter{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.cash-drawer-form label,.cash-drawer-filter label{display:grid;gap:7px;min-width:130px;flex:1;color:var(--muted);font-size:13px}.cash-drawer-form input,.cash-drawer-form select,.cash-drawer-filter input{width:100%;min-height:44px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#09150f;color:var(--ink)}.cash-drawer-form .gold-button{width:auto;min-height:44px;margin:0;padding:11px 18px}.cash-drawer-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}.cash-drawer-filter{margin-bottom:18px}.cash-drawer-filter .small-button{min-height:42px}@media(max-width:650px){.cash-drawer-stats{grid-template-columns:1fr}.cash-drawer-form{align-items:stretch;flex-direction:column}.cash-drawer-form .gold-button{width:100%}}
