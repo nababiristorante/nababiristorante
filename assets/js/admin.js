@@ -110,7 +110,6 @@ const descriptions = {
   reports:'Statistiche e report del ristorante.',
   contact:'Leggi e gestisci i messaggi inviati dal modulo Contatti.',
   settings:'Impostazioni generali del sito.',
-  certificate:'Apri il modulo per creare certificati Birthday ed Event.',
   certificate:'Apri il modulo per creare certificati Birthday ed Event.'
 };
 
