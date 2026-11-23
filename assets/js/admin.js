@@ -263,7 +263,8 @@ function openApp(email) {
 
   // Open the coupon redemption screen immediately after login.
   // Staff still need the existing "secret" permission.
-  render(canSee('secret') ? 'secret' : 'dashboard');
+  const requestedModule = new URLSearchParams(window.location.search).get('module');
+  render(userRole === 'admin' && requestedModule === 'celebrations' ? 'celebrations' : (canSee('secret') ? 'secret' : 'dashboard'));
 }
 
 async function verifyAdmin(user) {
