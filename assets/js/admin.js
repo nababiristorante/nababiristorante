@@ -5043,6 +5043,30 @@ $('#logoutBtn').onclick = async () => {
   );
 
   try {
+    // Carry the authenticated Admin v2 session across the same-tab navigation
+    // without placing access or refresh tokens in the URL.
+    let handoffRaw = null;
+    try {
+      handoffRaw = sessionStorage.getItem('nababi_admin_session_handoff');
+      if (handoffRaw) sessionStorage.removeItem('nababi_admin_session_handoff');
+    } catch (storageError) {
+      console.warn('Admin session handoff storage unavailable:', storageError?.message || storageError);
+    }
+
+    if (handoffRaw) {
+      const handoff = JSON.parse(handoffRaw);
+      const isFresh = Number.isFinite(handoff.created_at) &&
+        Date.now() - handoff.created_at >= 0 &&
+        Date.now() - handoff.created_at < 120000;
+      if (isFresh && handoff.access_token && handoff.refresh_token) {
+        const restored = await db.auth.setSession({
+          access_token: handoff.access_token,
+          refresh_token: handoff.refresh_token
+        });
+        if (restored.error) throw restored.error;
+      }
+    }
+
     const {data,error} = await db.auth.getSession();
 
     if (error) throw error;
