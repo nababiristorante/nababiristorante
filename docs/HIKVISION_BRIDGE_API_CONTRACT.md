@@ -1,103 +1,70 @@
-# Hikvision bridge API contract (firmware-independent)
+# Hik-Connect OpenAPI integration contract
 
 ## Purpose and current state
 
-This contract prepares the Nababi Admin Panel for a secure on-premises bridge between the deployed application and the Hikvision NVR on the restaurant LAN. It deliberately does not assume a Hikvision endpoint, authentication scheme, codec, or firmware capability.
+This document defines the intended cloud/P2P integration for the NABABI Admin Panel using the owner's Hik-Connect OpenAPI access. It replaces the earlier assumption that a separate on-premises bridge is the required integration path.
 
-**This document is a contract only.** No bridge service, NVR connection, live stream, recording search, or playback endpoint is implemented by this change. Until a real bridge is deployed and verified, the Admin Panel must show the connection as **Not configured** and keep live view, recording playback, and automatic detections unavailable.
+Known device facts supplied by the owner:
+- NVR model: `DS-7604NXI-K1(D)`
+- LAN address reported by owner: `192.168.1.185` (DHCP enabled)
+- Four camera channels display video on the NVR.
+- The four camera live views are available in the owner's Hik-Connect mobile app.
+- The owner reports having a Hik-Connect OpenAPI App Key and Secret.
 
-Device currently reported by the site owner: DS-7604NXI-K1(D), LAN address 192.168.1.185 (DHCP). Firmware and channel mapping remain unverified. Do not hard-code the LAN address into browser code or production configuration.
+These facts do **not** yet prove that the OpenAPI application is approved, that this NVR is associated with the same authorized Hik-Connect account/team, or that the API permissions and streaming SDK are ready.
 
-## Trust boundaries
+**Current implementation status:** the repository contains CCTV admin UI foundations and a shared status notice, but no Hik-Connect API client, server-side OpenAPI integration, JSDecoder/WASM SDK, live-view session, or playback session. Do not display a connected/ready state until end-to-end tests succeed.
 
-1. The browser communicates only with Nababi's authenticated server API.
-2. The Nababi server authenticates the administrator using the existing server-side Supabase Auth verification and checks the existing admin authorization source. A browser-supplied role is never trusted.
-3. The bridge makes an outbound, mutually authenticated connection to Nababi. No inbound router port, port-forward, DMZ, public NVR URL, or direct browser-to-NVR request is permitted.
-4. The bridge communicates with the NVR only over a protocol and operations verified against the installed device/firmware.
-5. NVR credentials are held in a secret store accessible only to the bridge. They must never be returned to the browser, stored in frontend-readable Supabase rows, committed to Git, or sent in chat.
-6. Video remains on the NVR. Nababi persists operational metadata and access audit events only; it does not persist video, continuous streams, or video thumbnails.
+## Supported integration path
 
-## Shared connection state
+Hikvision's official Hik-Connect Integration page describes:
+- a RESTful Hik-Connect OpenAPI for partner applications;
+- an application process involving a Hik-Connect account, API Key application, Technology Partner Portal registration and approval;
+- a downloadable OpenAPI Developer Guide and WASM (JSDecoder) development kit;
+- JSDecoder for web-browser live view and playback;
+- P2P connectivity without port mapping or a static device IP.
 
-All CCTV-related Admin Panel modules consume one server-authoritative connection state. The server must not infer health from a saved IP address or from a successful browser request to the local login page.
+The exact API host/region, authentication/signature rules, request schemas, stream-token flow, device identifiers, permissions and JSDecoder initialization must be taken from the owner's approved developer guide and matching SDK package. Do not guess these values or copy endpoints from unrelated Hik-Connect Team, Hik-Partner Pro, HikCentral, EZVIZ or unofficial examples.
 
-Suggested response for `GET /api/admin/cctv/connection`:
+## Architecture
 
-```json
-{
-  "state": "not_configured",
-  "bridge": { "registered": false, "online": false, "last_seen_at": null },
-  "nvr": { "reachable": false, "model": null, "firmware": null, "clock_offset_seconds": null },
-  "capabilities": {
-    "live_view": false,
-    "recording_search": false,
-    "playback": false,
-    "event_push": false
-  },
-  "checked_at": "2026-11-26T00:00:00Z",
-  "reason_code": "BRIDGE_NOT_REGISTERED"
-}
-```
+1. The Admin Panel authenticates the administrator using the existing Supabase Auth session and existing admin authorization checks.
+2. Browser requests go only to authenticated Nababi server-side functions.
+3. A Supabase Edge Function (or another existing trusted server runtime, if deployment configuration proves that is the active backend) stores and uses the Hik-Connect App Key/Secret. Secrets must never be embedded in frontend JavaScript, HTML, public Supabase rows, logs, Git commits, or chat.
+4. The server-side function calls only the approved Hik-Connect OpenAPI endpoints documented for the owner's application and region.
+5. The server returns only the minimum scoped data needed by the authorized admin, such as camera metadata, short-lived stream authorization data, and capability state.
+6. The browser uses the official matching JSDecoder/WASM kit for supported live view and playback. Do not substitute a normal HTML video element or raw RTSP URL for an EZOPEN/P2P stream unless the official guide explicitly documents that protocol path.
+7. Keep video on Hik-Connect/NVR infrastructure. Do not store continuous video in Supabase.
 
-Allowed states: `not_configured`, `bridge_offline`, `nvr_unreachable`, `compatibility_unverified`, `ready`, `degraded`. Capability flags are independently enabled only after end-to-end tests pass. Do not show a green/connected state for a merely registered bridge.
+No inbound router port, port forwarding, DMZ, public NVR URL, or direct browser-to-NVR request is part of this design. The NVR's LAN IP remains diagnostic/configuration information and is not the cloud P2P connection method.
 
-## Server API
+## Required server-side safeguards
 
-All routes below are server-side routes. Every admin route requires a valid Supabase access token, server-side admin authorization, rate limiting, and an audit record. The bridge channel uses a separate machine identity and mutually authenticated transport; it never reuses a browser token.
+- Store App Key and Secret as server-side deployment secrets only.
+- Verify Supabase access token and administrator authorization on every admin endpoint.
+- Validate device/camera identifiers against the authorized account's returned device list.
+- Enforce rate limits and request timeouts.
+- Never return App Secret, raw authorization headers, reusable access tokens, device verification codes, NVR passwords, private LAN URLs or unrestricted stream URLs to the browser.
+- Use short-lived, camera-scoped stream sessions where supported by the official API.
+- Avoid logging secrets, tokens, stream URLs, or video content.
+- Record administrator ID, camera, action, result, timestamp and session expiry/revocation for audit.
 
-| Method and route | Purpose | Required behavior |
-|---|---|---|
-| GET `/api/admin/cctv/connection` | Shared connection state | Return safe status only; never return secrets, LAN credentials, or raw NVR URLs |
-| POST `/api/admin/cctv/recordings/search` | Search historical segments | Validate camera key, time range and permission; return metadata only |
-| POST `/api/admin/cctv/playback-sessions` | Create playback session | Return a short-lived, scoped session; audit create/expiry/revoke |
-| POST `/api/admin/cctv/live-sessions` | Create live-view session | Enable only for verified channel/capability and authorized admins |
-| DELETE `/api/admin/cctv/sessions/{session_id}` | Revoke session | Revoke promptly; idempotent |
-| GET `/api/bridge/v1/commands/next` | Bridge outbound poll | Machine-authenticated; return only commands for that registered bridge |
-| POST `/api/bridge/v1/heartbeat` | Bridge health/capabilities | Validate bridge identity and schema; record server receive time |
-| POST `/api/bridge/v1/results` | Bridge command result | Correlate request ID; validate operation and payload size |
-| POST `/api/bridge/v1/events` | Optional validated event metadata | Reject unknown camera keys and invalid timestamps; deduplicate event IDs |
+## Shared connection states
 
-The bridge API may use an outbound WebSocket instead of polling if the deployment supports it, but the trust boundary and machine authentication requirements remain the same. Do not expose a public bridge-registration endpoint that accepts an unauthenticated device identity.
+The existing CCTV modules must use one server-authoritative state:
+- `not_configured`: server-side credentials or approved app configuration are absent;
+- `api_auth_failed`: Hik-Connect rejects application authentication;
+- `device_not_authorized`: the NVR is not available to the approved API account/team or permission is missing;
+- `device_offline`: API reports the device offline;
+- `compatibility_unverified`: device is listed but live/playback capability has not passed tests;
+- `ready`: required device, channel and stream tests passed;
+- `degraded`: API or one or more capabilities are unavailable.
 
-## Request and response shapes
+The server derives state from real API responses and end-to-end tests. A saved IP, model number, serial number, mobile-app success, or successful visit to the local NVR login page must never by itself produce `ready`.
 
-### Recording search
+## Existing Admin Panel modules
 
-Request:
-
-```json
-{
-  "camera_key": "dining_room_1",
-  "from": "2026-11-25T18:00:00+01:00",
-  "to": "2026-11-25T19:00:00+01:00"
-}
-```
-
-Validation:
-- `camera_key` must reference an enabled, administrator-configured camera/channel mapping.
-- `from` and `to` must be valid timestamps; `to` must be after `from`.
-- Enforce a configurable maximum search interval and rate limit.
-- Return segment IDs, start/end times, duration and supported recording type only. Never return NVR credentials or direct RTSP/ISAPI URLs.
-
-### Playback/live session
-
-A session response contains only an opaque session ID, an application-controlled playback URL, expiry time, and supported controls. The URL must be short-lived, scoped to one administrator, one camera, one time interval (for playback), and one session. It must not contain credentials or a raw NVR address. Session URLs must be non-cacheable and protected against cross-origin use.
-
-### Bridge heartbeat
-
-Heartbeat reports:
-- bridge software version and stable registered bridge ID;
-- NVR reachability as observed from the bridge;
-- detected model/firmware only when read successfully;
-- verified capabilities and the test timestamp for each capability;
-- NVR clock/time-zone observations;
-- camera channel mapping status (configured/verified, not inferred).
-
-The server timestamps receipt. A bridge must not self-assert `ready`; the server derives state from fresh heartbeat, compatibility checks, and successful end-to-end probes.
-
-## Admin Panel behavior
-
-The same connection summary is shown consistently in:
+The same verified state is shared by:
 - Camera Management;
 - AI Monitoring;
 - Table Monitoring;
@@ -105,40 +72,43 @@ The same connection summary is shown consistently in:
 - Fire & Smoke Monitoring;
 - CCTV Operations.
 
-While state is not `ready`:
-- show the specific unavailable reason and last successful check;
-- keep Live View and Playback disabled;
-- keep existing manual table-task workflows available;
-- do not create automatic AI, occupancy, cash-drawer, fire, or smoke events;
-- do not imply that a camera is recording merely because it is configured.
+Until the relevant capability is verified:
+- keep Live View and Playback unavailable;
+- keep manual table-task workflows working;
+- do not generate automatic AI, occupancy, cash-drawer, fire or smoke events;
+- do not imply that camera analytics are a certified safety/fire alarm system;
+- do not identify employees from faces or add facial recognition.
 
-Tables, bookings, cash-drawer records, reports, and staff activity may link to a recording search only after the camera mapping and session authorization are verified. Do not identify employees from faces or add facial recognition.
+## Channel and recording checks
 
-## Required audit events
+After API access is confirmed:
+- map each of the four actual NVR channels to its real restaurant area;
+- verify device time, timezone, recording schedule and retention;
+- test live view on every channel;
+- search and play back a known recording from today and a previous day;
+- verify session expiry and revocation;
+- enable individual capabilities only after their tests pass.
 
-Record administrator ID, action, camera key, requested time range, result, bridge ID, timestamp, and session expiry/revocation. Never log passwords, authorization headers, session tokens, playback secrets, or raw stream URLs.
+## Privacy and operational safeguards
 
-## Italian privacy and operational safeguards
+- Audio stays disabled by default.
+- Before enabling employee monitoring, complete the applicable Italian workplace/privacy review and configure transparent notices, purpose limitation, access restrictions and retention with qualified advice.
+- Restrict footage access to authorized administrators and log access.
+- Do not treat camera analytics as a certified fire or safety system.
 
-- Keep audio disabled by default.
-- Before enabling employee monitoring, complete applicable Italian workplace/privacy review and configure transparent notices, access restrictions, retention and documented purposes with qualified advice.
-- Do not present camera analytics as a certified fire alarm or safety system.
-- Preserve manual operational workflows when the bridge or NVR is offline.
+## Implementation gates
 
-## Readiness and acceptance gates
+- [ ] Confirm the App Key/Secret belong to the approved **Hik-Connect OpenAPI** application (not Team OpenAPI or Hik-Partner Pro).
+- [ ] Confirm the application approval, API region/host and authorized Hik-Connect account.
+- [ ] Obtain the matching official OpenAPI Developer Guide and WASM (JSDecoder) development kit from the Technology Partner Portal.
+- [ ] Confirm the NVR is visible and authorized in the same Hik-Connect account/application.
+- [ ] Implement server-side API authentication using the exact official guide.
+- [ ] Implement safe device/channel discovery and shared connection state.
+- [ ] Integrate the official JSDecoder/WASM kit and test all four channels.
+- [ ] Test real recording search and playback, including previous-day footage.
+- [ ] Verify secrets never reach browser responses, logs or Git.
+- [ ] Complete privacy review before enabling staff monitoring or analytics.
 
-- [ ] Bridge is installed on an approved always-on host on the restaurant LAN.
-- [ ] Bridge establishes outbound authenticated transport; no inbound router exposure is required.
-- [ ] NVR model, firmware, regional variant and supported API operations are verified.
-- [ ] NVR clock/time zone, recording schedule and retention are verified.
-- [ ] Each configured channel is physically checked and mapped to its actual area.
-- [ ] Server-side admin authorization, machine identity, secret storage and audit logging pass review.
-- [ ] Connection state correctly distinguishes unconfigured, bridge offline, NVR unreachable and ready.
-- [ ] Recording search and playback are tested against real recordings, including previous-day footage.
-- [ ] Browser responses contain no NVR credentials, private NVR endpoints or unrestricted stream URLs.
-- [ ] Video remains on the NVR and session expiry/revocation is tested.
-- [ ] No automated detection is enabled until its specific detector is validated end-to-end.
+## Why implementation is not faked in this commit
 
-## Next implementation stage
-
-After this contract is reviewed, implement the server API and bridge runtime in the repository's actual deployment architecture, then wire the shared connection state into the existing Admin Panel pages. Vendor-specific NVR operations remain behind a capability adapter and are added only after the exact device firmware is verified.
+The public Hikvision integration page confirms the product flow and SDK availability, but the detailed developer guide and SDK download are behind the Technology Partner Portal. The exact signing rules, API endpoints, regional host and JSDecoder package are therefore not available in the repository. Implementing guessed request signatures or fake stream URLs would create a non-working or unsafe integration. The next coding step must use the approved developer guide and matching SDK, not invented endpoints.

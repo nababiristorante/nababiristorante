@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  // Shared CCTV status indicator for existing Admin Panel modules.
-  // Deliberately reports "not configured" until a real authenticated bridge API exists.
+  // Shared Hik-Connect status indicator for existing Admin Panel modules.
+  // This is intentionally a truthful readiness notice, not a simulated connection.
   const targetPages = new Set([
     'ai monitoring',
     'table monitoring',
@@ -66,11 +66,11 @@
     banner.setAttribute('aria-live', 'polite');
     banner.innerHTML = `
       <div class="cctv-shared-copy">
-        <h2>Stato unico connessione CCTV / NVR</h2>
-        <p class="cctv-shared-muted">La stessa condizione di connessione viene mostrata in tutti i moduli CCTV.</p>
-        <p><strong>Bridge:</strong> Non configurato · <strong>NVR:</strong> Non verificato</p>
-        <p class="cctv-shared-muted">Il collegamento sicuro del bridge non è ancora installato. La pagina locale del NVR raggiungibile dal browser non equivale a una connessione del sito.</p>
-        <p class="cctv-shared-muted">Live View, Playback e rilevamenti automatici restano disattivati finché il bridge e le verifiche reali non saranno completati.</p>
+        <h2>Stato unico connessione Hik-Connect / NVR</h2>
+        <p class="cctv-shared-muted">Questo stato è condiviso tra i moduli CCTV del pannello NABABI.</p>
+        <p><strong>Hik-Connect OpenAPI:</strong> Integrazione non ancora configurata · <strong>NVR:</strong> Non verificato tramite API</p>
+        <p class="cctv-shared-muted">Il modello e l'indirizzo LAN salvati non dimostrano da soli che il servizio OpenAPI possa accedere al dispositivo. La connessione P2P deve essere verificata tramite l'account/API autorizzato.</p>
+        <p class="cctv-shared-muted">Live View, Playback e rilevamenti automatici restano disattivati finché API, dispositivo, canali e flussi video non superano i test reali.</p>
       </div>
       <div class="cctv-shared-state"><span class="cctv-shared-dot" aria-hidden="true"></span><span>Non configurato</span></div>
     `;
